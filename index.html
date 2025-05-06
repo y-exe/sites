@@ -20,6 +20,14 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .face {
@@ -50,23 +58,22 @@
       color: black;
     }
 
-    .visit-counter {
-      margin-top: 2em;
-      font-size: 1em;
+    .bottom-bar {
+      position: absolute;
+      bottom: 1em;
+      width: 100%;
+      text-align: center;
+      font-size: 0.8em;
       color: rgba(0, 0, 0, 0.6);
     }
 
-    .github-link {
-      margin-top: 0.5em;
-      font-size: 0.9em;
-    }
-
-    .github-link a {
-      color: rgba(0, 0, 0, 0.5);
+    .bottom-bar a {
+      color: rgba(0, 0, 0, 0.6);
       text-decoration: underline;
+      margin-left: 1em;
     }
 
-    .github-link a:hover {
+    .bottom-bar a:hover {
       color: black;
     }
   </style>
@@ -79,12 +86,11 @@
       y.exe<br>
       SNSなど: <a href="https://x.com/y__exe/bio" target="_blank">https://x.com/y__exe/bio</a>
     </div>
-    <div class="visit-counter" id="visitor">
-      あなたは <span id="count">読み込み中...</span> 番目の来訪者です
-    </div>
-    <div class="github-link">
-      GitHub: <a href="https://github.com/y-exe/sites" target="_blank">https://github.com/y-exe/sites</a>
-    </div>
+  </div>
+
+  <div class="bottom-bar">
+    あなたは <span id="count">読み込み中...</span> 番目の来訪者です
+    <a href="https://github.com/y-exe/sites" target="_blank">GitHub</a>
   </div>
 
   <script>
