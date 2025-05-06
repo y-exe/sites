@@ -60,26 +60,29 @@
 
     .bottom-bar {
       position: absolute;
-      bottom: 1em;
+      bottom: 1.5em;
       width: 100%;
       text-align: center;
-      font-size: 0.8em;
-      color: rgba(0, 0, 0, 0.6);
+      font-size: 1.1em;
     }
 
-    .bottom-bar a {
-      color: rgba(0, 0, 0, 0.6);
-      text-decoration: underline;
-      margin-left: 1em;
-    }
-
-    .bottom-bar a:hover {
-      color: black;
+    .bottom-bar a, .bottom-bar img {
+      margin: 0 1em;
+      vertical-align: middle;
     }
 
     .bottom-bar img {
-      vertical-align: middle;
-      height: 1em;
+      height: 1.5em;
+    }
+
+    .bottom-bar a {
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+    }
+
+    .bottom-bar a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -94,7 +97,7 @@
   </div>
 
   <div class="bottom-bar">
-    あなたは <img src="https://hits.sh/y-exe.github.io.svg?style=flat-square" alt="カウント"> 番目の来訪者です
+    <img src="https://hits.sh/y-exe.github.io.svg?style=flat-square" alt="カウント">
     <a href="https://github.com/y-exe/sites" target="_blank">GitHub</a>
   </div>
 </body>
