@@ -22,12 +22,6 @@
       align-items: center;
     }
 
-    .main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
     .face {
       width: 80px;
       margin-bottom: 1em;
@@ -55,6 +49,26 @@
     .footer a:hover {
       color: black;
     }
+
+    .visit-counter {
+      margin-top: 2em;
+      font-size: 1em;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .github-link {
+      margin-top: 0.5em;
+      font-size: 0.9em;
+    }
+
+    .github-link a {
+      color: rgba(0, 0, 0, 0.5);
+      text-decoration: underline;
+    }
+
+    .github-link a:hover {
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -65,6 +79,23 @@
       y.exe<br>
       SNSなど: <a href="https://x.com/y__exe/bio" target="_blank">https://x.com/y__exe/bio</a>
     </div>
+    <div class="visit-counter" id="visitor">
+      あなたは <span id="count">読み込み中...</span> 番目の来訪者です
+    </div>
+    <div class="github-link">
+      GitHub: <a href="https://github.com/y-exe/sites" target="_blank">https://github.com/y-exe/sites</a>
+    </div>
   </div>
+
+  <script>
+    fetch("https://your-worker-name.yourname.workers.dev/")
+      .then(res => res.text())
+      .then(count => {
+        document.getElementById("count").textContent = count;
+      })
+      .catch(() => {
+        document.getElementById("count").textContent = "エラー";
+      });
+  </script>
 </body>
 </html>
