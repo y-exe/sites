@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>(*'▽')</title>
   <link rel="icon" type="image/webp" href="cookie.webp">
   <style>
@@ -22,12 +23,14 @@
       align-items: center;
       min-height: 100vh;
       position: relative;
+      font-size: 16px; /* ベースフォントサイズ */
     }
 
     .main {
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 1em;
     }
 
     .face {
@@ -45,7 +48,7 @@
 
     .footer {
       margin-top: 1em;
-      font-size: 1em;
+      font-size: 1.1em;
       color: rgba(0, 0, 0, 0.5);
     }
 
@@ -83,6 +86,43 @@
 
     .bottom-bar a:hover {
       text-decoration: underline;
+    }
+
+    /* レスポンシブ対応 */
+    @media screen and (max-width: 768px) {
+      body {
+        font-size: 14px; /* モバイル向けの文字サイズ */
+      }
+
+      h1 {
+        font-size: 2.5em; /* 見出しのフォントサイズを小さく */
+      }
+
+      .face {
+        width: 60px; /* アイコン画像のサイズ調整 */
+      }
+
+      .footer {
+        font-size: 1em; /* フッターの文字サイズ調整 */
+      }
+
+      .bottom-bar {
+        font-size: 1em; /* フッターの文字サイズ調整 */
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      h1 {
+        font-size: 2em; /* より小さいデバイス向けに調整 */
+      }
+
+      .face {
+        width: 50px; /* アイコン画像のサイズ調整 */
+      }
+
+      .footer {
+        font-size: 0.9em; /* モバイルでのフォントサイズ調整 */
+      }
     }
   </style>
 </head>
