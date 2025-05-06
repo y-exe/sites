@@ -76,6 +76,11 @@
     .bottom-bar a:hover {
       color: black;
     }
+
+    .bottom-bar img {
+      vertical-align: middle;
+      height: 1em;
+    }
   </style>
 </head>
 <body>
@@ -89,19 +94,8 @@
   </div>
 
   <div class="bottom-bar">
-    あなたは <span id="count">読み込み中...</span> 番目の来訪者です
+    あなたは <img src="https://hits.sh/y-exe.github.io.svg?style=flat-square" alt="カウント"> 番目の来訪者です
     <a href="https://github.com/y-exe/sites" target="_blank">GitHub</a>
   </div>
-
-  <script>
-    fetch("https://your-worker-name.yourname.workers.dev/")
-      .then(res => res.text())
-      .then(count => {
-        document.getElementById("count").textContent = count;
-      })
-      .catch(() => {
-        document.getElementById("count").textContent = "エラー";
-      });
-  </script>
 </body>
 </html>
