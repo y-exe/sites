@@ -9,3 +9,4 @@
 ---
 
 Let's EncryptとGitHub Pagesに感謝
+訪問者カウント機能はなんかめんどくさくなってきたのでhits.shで我慢しよ
