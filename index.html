@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(*'▽')</title>
-    <link rel="icon" type="image/webp" href="favicon.webp">
+    <link rel="icon" type="image/webp" href="cookie.webp">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         html, body {
@@ -26,7 +26,7 @@
             min-height: 100vh;
             position: relative;
             font-size: 16px;
-            transition: background-color 1s ease; /* 背景色の変化にトランジションを追加 */
+            transition: background-color 1s ease;
         }
 
         .main {
@@ -142,13 +142,13 @@
             font-size: 2em;
             font-family: 'Noto Sans JP', sans-serif;
             flex-direction: column;
-            opacity: 1; /* 初期値を1に設定 */
-            transition: opacity 1s ease-in-out; /* フェードアウトのためのトランジション */
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
         }
 
         #loading.fade-out {
-            opacity: 0; /* アニメーション後に0にする */
-            pointer-events: none; /* フェードアウト中にクリックできないようにする */
+            opacity: 0;
+            pointer-events: none;
         }
 
         #loading-percentage {
@@ -206,11 +206,28 @@
                 font-size: 0.9em;
             }
         }
+
+        /* landscape時のスタイル */
+        @media screen and (max-height: 400px) {
+            .main {
+                padding: 0.5em;
+            }
+
+            .face {
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+            }
+
+            .bottom-bar {
+                bottom: 1em;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="loading">
-        <span id="loading-percentage">0%</span> <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
+        <span id="loading-percentage">0%</span>
+        <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
     </div>
     <div class="main" style="display: none;">
         <div class="face">(*'▽')</div>
@@ -235,7 +252,7 @@
             const bottomBar = document.querySelector('.bottom-bar');
 
 
-            let progress = 0; // 初期値を0に変更
+            let progress = 0;
             const interval = setInterval(() => {
                 if (progress < 60) {
                     progress += 2;
@@ -260,7 +277,6 @@
                 bottomBar.style.animationPlayState = 'running';
             }, 500);
 
-            // bodyのbackgroundColorの初期値を設定
             body.style.backgroundColor = '#fff';
         });
     </script>
