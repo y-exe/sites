@@ -65,7 +65,7 @@
             font-weight: bold;
             margin: 0;
             text-shadow: 2px 2px 0 white, -2px -2px 0 white, -2px 2px 0 white, 2px -2px 0 white,
-                          1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
+                         1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
             font-family: 'Zen Maru Gothic', sans-serif;
         }
 
@@ -169,7 +169,7 @@
             }
 
             h1 {
-                font-size: 2.5em;
+                font-size: 3.5em;
             }
 
             .face {
@@ -177,7 +177,7 @@
             }
 
             .footer {
-                font-size: 1em;
+                font-size: 1.4em;
             }
 
             .bottom-bar {
@@ -195,7 +195,7 @@
 
         @media screen and (max-width: 480px) {
             h1 {
-                font-size: 2em;
+                font-size: 3em;
             }
 
             .face {
@@ -203,7 +203,7 @@
             }
 
             .footer {
-                font-size: 0.9em;
+                font-size: 1.2em;
             }
         }
 
@@ -325,6 +325,21 @@
             }
             #hayane.visible{
                 display: none;
+            }
+            h1 {
+                font-size: 3.5em; /* スマートフォンでのh1のサイズ */
+            }
+            .footer {
+                font-size: 1.4em; /* スマートフォンでのfooterのサイズ */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 3em; /* さらに小さい画面でのh1のサイズ */
+            }
+            .footer {
+                font-size: 1.2em; /* さらに小さい画面でのfooterのサイズ */
             }
         }
     </style>
