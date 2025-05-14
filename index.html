@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(*'▽')</title>
-    <link rel="icon" type="image/webp" href="favicon.webp">
+    <link rel="icon" type="image/webp" href="cookie.webp">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         html, body {
@@ -222,6 +222,50 @@
                 bottom: 1em;
             }
         }
+
+        .shields-container {
+            position: fixed;
+            top: 1em;
+            left: 1em;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .shields-container.visible {
+            opacity: 1;
+        }
+
+        .shields-badge {
+            margin-bottom: 0.5em;
+        }
+
+        #getloli-counter {
+            position: fixed;
+            top: 1em;
+            right: 1em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 1s ease;
+            display: flex; /* Flexboxを使用 */
+            flex-direction: column; /* 子要素を縦に並べる */
+            align-items: center; /* 子要素を中央揃えにする */
+        }
+
+        #getloli-counter.visible {
+            opacity: 1;
+        }
+
+        #getloli-counter-text {
+            font-size: 0.8em;
+            color: #555;
+            margin-top: 0.2em;
+            font-family: 'Zen Maru Gothic', sans-serif;
+        }
+
     </style>
 </head>
 <body>
@@ -239,8 +283,23 @@
     </div>
 
     <div class="bottom-bar">
-        <img src="https://hits.sh/yexe.net.svg?style=flat-square" alt="カウント">
-        <a href="https://github.com/y-exe/sites" target="_blank">GitHub</a>
+        &copy;yexe.net
+    </div>
+
+    <div class="shields-container">
+        <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit">
+        <a href="https://github.com/y-exe/sites">
+            <img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github">
+        </a>
+        <a href="https://x.com/y__exe">
+            <img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)">
+        </a>
+        <img class="shields-badge" src="https://img.shields.io/github/v/y-exe/sites?style=flat-square" alt="Version">
+        <img class="shields-badge" src="https://img.shields.io/github/actions/workflow/status/y-exe/sites/main.yml?branch=main&style=flat-square" alt="Build Status">
+    </div>
+    <div id="getloli-counter">
+        <img src="https://count.getloli.com/@yexe.net?name=yexe.net&theme=rule34&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto" alt=":カウンター" />
+        <span id="getloli-counter-text">アクセス感謝～</span>
     </div>
 
     <script>
@@ -250,7 +309,8 @@
             const loadingPercentage = document.getElementById('loading-percentage');
             const body = document.body;
             const bottomBar = document.querySelector('.bottom-bar');
-
+            const shieldsContainer = document.querySelector('.shields-container');
+            const getloliCounter = document.getElementById('getloli-counter');
 
             let progress = 0;
             const interval = setInterval(() => {
@@ -267,6 +327,8 @@
                         loadingScreen.style.display = 'none';
                         mainContent.style.display = 'flex';
                         body.style.backgroundColor = '#fff';
+                        shieldsContainer.classList.add('visible');
+                        getloliCounter.classList.add('visible');
                     }, 1000);
                 }
             }, 8);
