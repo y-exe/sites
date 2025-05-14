@@ -1,144 +1,250 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>(*'▽')</title>
-  <link rel="icon" type="image/webp" href="cookie.webp">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background-color: white;
-      color: black;
-      font-family: 'Arial', sans-serif;
-      height: 100%;
-      text-align: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(*'▽')</title>
+    <link rel="icon" type="image/webp" href="cookie.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: black;
+            font-family: 'Arial', sans-serif;
+            height: 100%;
+            text-align: center;
+            overflow: hidden;
+        }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      position: relative;
-      font-size: 16px;
-    }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            font-size: 16px;
+            transition: background-color 1s ease;
+        }
 
-    .main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1em;
-    }
+        .main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1em;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards 0.5s;
+        }
 
-    .face {
-      width: 80px;
-      margin-bottom: 1em;
-    }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    h1 {
-      font-size: 3em;
-      font-weight: bold;
-      margin: 0;
-      text-shadow: 2px 2px 0 white, -2px -2px 0 white, -2px 2px 0 white, 2px -2px 0 white,
-                   1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
-    }
+        .face {
+            width: 80px;
+            margin-bottom: 1em;
+        }
 
-    .footer {
-      margin-top: 1em;
-      font-size: 1.1em;
-      color: rgba(0, 0, 0, 0.5);
-    }
+        h1 {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 2px 2px 0 white, -2px -2px 0 white, -2px 2px 0 white, 2px -2px 0 white,
+                        1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
+        }
 
-    .footer a {
-      color: rgba(0, 0, 0, 0.5);
-      text-decoration: underline;
-    }
+        .footer {
+            margin-top: 1em;
+            font-size: 1.1em;
+            color: rgba(0, 0, 0, 0.5);
+        }
 
-    .footer a:hover {
-      color: black;
-    }
+        .footer a {
+            color: rgba(0, 0, 0, 0.5);
+            text-decoration: underline;
+        }
 
-    .bottom-bar {
-      position: absolute;
-      bottom: 1.5em;
-      width: 100%;
-      text-align: center;
-      font-size: 1.1em;
-    }
+        .footer a:hover {
+            color: black;
+        }
 
-    .bottom-bar a, .bottom-bar img {
-      margin: 0 1em;
-      vertical-align: middle;
-    }
+        .bottom-bar {
+            position: absolute;
+            bottom: 1.5em;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1em;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInBottomBar 1s forwards 1.2s;
+        }
 
-    .bottom-bar img {
-      height: 1.5em;
-    }
+        @keyframes fadeInBottomBar {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .bottom-bar a {
-      text-decoration: none;
-      color: black;
-      font-weight: bold;
-    }
+        .bottom-bar a, .bottom-bar img {
+            margin: 0 1em;
+            vertical-align: middle;
+        }
 
-    .bottom-bar a:hover {
-      text-decoration: underline;
-    }
+        .bottom-bar img {
+            height: 1.5em;
+        }
 
-    /* レスポンシブ対応 */
-    @media screen and (max-width: 768px) {
-      body {
-        font-size: 14px;
-      }
+        .bottom-bar a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
 
-      h1 {
-        font-size: 2.5em; 
-      }
+        .bottom-bar a:hover {
+            text-decoration: underline;
+        }
 
-      .face {
-        width: 60px;
-      }
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            font-size: 2em;
+            font-family: 'Orbitron', sans-serif;
+            flex-direction: column;
+        }
 
-      .footer {
-        font-size: 1em;
-      }
+        #loading-percentage {
+            font-size: 2em;
+        }
 
-      .bottom-bar {
-        font-size: 1em;
-      }
-    }
+        #loading-text {
+            font-size: 1em;
+            margin-top: 0.5em;
+        }
 
-    @media screen and (max-width: 480px) {
-      h1 {
-        font-size: 2em; 
-      }
+        /* レスポンシブ対応 */
+        @media screen and (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
 
-      .face {
-        width: 50px; 
-      }
+            h1 {
+                font-size: 2.5em;
+            }
 
-      .footer {
-        font-size: 0.9em; 
-      }
-    }
-  </style>
+            .face {
+                width: 60px;
+            }
+
+            .footer {
+                font-size: 1em;
+            }
+
+            .bottom-bar {
+                font-size: 1em;
+            }
+
+            #loading {
+                font-size: 1.5em;
+            }
+
+            #loading-percentage {
+                font-size: 2em;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .face {
+                width: 50px;
+            }
+
+            .footer {
+                font-size: 0.9em;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="main">
-    <img src="face.png" alt="顔" class="face">
-    <h1>こっち見るな童貞</h1>
-    <div class="footer">
-      y.exe<br>
-      SNSなど: <a href="https://x.com/y__exe/bio" target="_blank">https://x.com/y__exe/bio</a>
+    <div id="loading">
+        <span id="loading-percentage">1%</span>
+        <div id="loading-text">(*'▽')</div>
     </div>
-  </div>
+    <div class="main" style="display: none;">
+        <img src="face.png" alt="顔" class="face">
+        <h1>こっち見んな童貞</h1>
+        <div class="footer">
+            y.exe<br>
+            SNSなど: <a href="https://x.com/y__exe/bio" target="_blank">https://x.com/y__exe/bio</a>
+        </div>
+    </div>
 
-  <div class="bottom-bar">
-    <img src="https://hits.sh/yexe.net.svg?style=flat-square" alt="カウント">
-    <a href="https://github.com/y-exe/sites" target="_blank">GitHub</a>
-  </div>
+    <div class="bottom-bar">
+        <img src="https://hits.sh/yexe.net.svg?style=flat-square" alt="カウント">
+        <a href="https://github.com/y-exe/sites" target="_blank">GitHub</a>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            const loadingScreen = document.getElementById('loading');
+            const mainContent = document.querySelector('.main');
+            const loadingPercentage = document.getElementById('loading-percentage');
+            const body = document.body;
+            const bottomBar = document.querySelector('.bottom-bar');
+
+
+            let progress = 1;
+            const interval = setInterval(() => {
+                if (progress < 60) {
+                    progress += 2;
+                } else {
+                    progress += 1;
+                }
+                loadingPercentage.textContent = `${progress}%`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    loadingScreen.style.transition = 'opacity 1s ease-in-out';
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        mainContent.style.display = 'flex';
+                        body.style.backgroundColor = '#fff';
+                    }, 800);
+                }
+            }, 8);
+
+            // フェードイン開始を遅らせる
+            setTimeout(() => {
+                mainContent.style.animationPlayState = 'running';
+                bottomBar.style.animationPlayState = 'running';
+            }, 500);
+        });
+    </script>
 </body>
 </html>
