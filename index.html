@@ -266,6 +266,40 @@
             font-family: 'Zen Maru Gothic', sans-serif;
         }
 
+        #now {
+            position: fixed;
+            top: 1em;
+            right: 50%;
+            transform: translateX(50%);
+            z-index: 1000;
+            color: #555;
+            font-size: 1em;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #now.visible {
+            opacity: 1;
+        }
+
+        #hayane {
+            position: fixed;
+            top: 3em;
+            right: 50%;
+            transform: translateX(50%);
+            z-index: 1000;
+            color: #555;
+            font-size: 1em;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #hayane.visible {
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -294,12 +328,16 @@
         <a href="https://x.com/y__exe">
             <img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)">
         </a>
-        <img class="shields-badge" src="https://img.shields.io/github/v/y-exe/sites?style=flat-square" alt="Version">
-        <img class="shields-badge" src="https://img.shields.io/github/actions/workflow/status/y-exe/sites/main.yml?branch=main&style=flat-square" alt="Build Status">
     </div>
     <div id="getloli-counter">
         <img src="https://count.getloli.com/@yexe.net?name=yexe.net&theme=rule34&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto" alt=":カウンター" />
         <span id="getloli-counter-text">アクセス感謝～</span>
+    </div>
+    <div id="now">
+        現在時刻：<span id="current-time"></span>
+    </div>
+    <div id="hayane">
+        はよ寝ろ
     </div>
 
     <script>
@@ -311,6 +349,9 @@
             const bottomBar = document.querySelector('.bottom-bar');
             const shieldsContainer = document.querySelector('.shields-container');
             const getloliCounter = document.getElementById('getloli-counter');
+            const nowElement = document.getElementById('now');
+            const currentTimeElement = document.getElementById('current-time');
+            const hayaneElement = document.getElementById('hayane');
 
             let progress = 0;
             const interval = setInterval(() => {
@@ -329,6 +370,10 @@
                         body.style.backgroundColor = '#fff';
                         shieldsContainer.classList.add('visible');
                         getloliCounter.classList.add('visible');
+                        nowElement.classList.add('visible');
+                        hayaneElement.classList.add('visible');
+                        updateCurrentTime();
+                        setInterval(updateCurrentTime, 1000);
                     }, 1000);
                 }
             }, 8);
@@ -340,6 +385,14 @@
             }, 500);
 
             body.style.backgroundColor = '#fff';
+
+            function updateCurrentTime() {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                currentTimeElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
         });
     </script>
 </body>
