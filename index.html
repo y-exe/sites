@@ -250,9 +250,9 @@
             z-index: 1000;
             opacity: 0;
             transition: opacity 1s ease;
-            display: flex; /* Flexboxを使用 */
-            flex-direction: column; /* 子要素を縦に並べる */
-            align-items: center; /* 子要素を中央揃えにする */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #getloli-counter.visible {
@@ -277,6 +277,7 @@
             font-family: 'Zen Maru Gothic', sans-serif;
             opacity: 0;
             transition: opacity 1s ease;
+            white-space: nowrap;
         }
 
         #now.visible {
@@ -300,6 +301,32 @@
             opacity: 1;
         }
 
+        /* スマートフォン向けの調整 */
+        @media screen and (max-width: 767px) {
+            #getloli-counter {
+                transform: translateX(0);
+                right: 1em;
+                bottom: auto;
+            }
+            #getloli-counter img {
+                height: 4em;
+            }
+            #getloli-counter-text {
+                font-size: 1.2em;
+            }
+            #now {
+                display: none;
+            }
+            #now.visible {
+                display: none;
+            }
+            #hayane {
+                display: none;
+            }
+            #hayane.visible{
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
