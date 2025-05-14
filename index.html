@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(*'▽')</title>
-    <link rel="icon" type="image/webp" href="cookie.webp">
+    <link rel="icon" type="image/webp" href="favicon.webp">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         html, body {
@@ -26,7 +26,7 @@
             min-height: 100vh;
             position: relative;
             font-size: 16px;
-            transition: background-color 1s ease;
+            transition: background-color 1s ease; /* 背景色の変化にトランジションを追加 */
         }
 
         .main {
@@ -56,7 +56,7 @@
             font-size: 2.5em;
             font-weight: 900;
             margin-left: -1.0em;
-            margin-top: 1.0em; /* 変更：  margin-topの値を増やして、さらに下に移動 */
+            margin-top: 1.0em;
             font-family: 'Zen Maru Gothic', sans-serif;
         }
 
@@ -65,7 +65,7 @@
             font-weight: bold;
             margin: 0;
             text-shadow: 2px 2px 0 white, -2px -2px 0 white, -2px 2px 0 white, 2px -2px 0 white,
-                        1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
+                          1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
             font-family: 'Zen Maru Gothic', sans-serif;
         }
 
@@ -140,19 +140,26 @@
             z-index: 1000;
             color: white;
             font-size: 2em;
-            font-family: 'Noto Sans JP', sans-serif; /* 読み込み時のフォントを Noto Sans JP に指定 */
+            font-family: 'Noto Sans JP', sans-serif;
             flex-direction: column;
+            opacity: 1; /* 初期値を1に設定 */
+            transition: opacity 1s ease-in-out; /* フェードアウトのためのトランジション */
+        }
+
+        #loading.fade-out {
+            opacity: 0; /* アニメーション後に0にする */
+            pointer-events: none; /* フェードアウト中にクリックできないようにする */
         }
 
         #loading-percentage {
             font-size: 2em;
-            font-family: 'Orbitron', sans-serif; /* パーセント表示のフォントを Orbitron に指定 */
+            font-family: 'Orbitron', sans-serif;
         }
 
         #loading-text {
             font-size: 1em;
             margin-top: 0.5em;
-            font-family: 'Noto Sans JP', sans-serif; /* 読み込みテキストのフォントを Noto Sans JP に指定 */
+            font-family: 'Noto Sans JP', sans-serif;
         }
 
         /* レスポンシブ対応 */
@@ -203,8 +210,7 @@
 </head>
 <body>
     <div id="loading">
-        <span id="loading-percentage">1%</span>
-        <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
+        <span id="loading-percentage">0%</span> <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
     </div>
     <div class="main" style="display: none;">
         <div class="face">(*'▽')</div>
@@ -229,7 +235,7 @@
             const bottomBar = document.querySelector('.bottom-bar');
 
 
-            let progress = 1;
+            let progress = 0; // 初期値を0に変更
             const interval = setInterval(() => {
                 if (progress < 60) {
                     progress += 2;
@@ -239,12 +245,12 @@
                 loadingPercentage.textContent = `${progress}%`;
                 if (progress >= 100) {
                     clearInterval(interval);
-                    loadingScreen.style.transition = 'opacity 1s ease-in-out';
+                    loadingScreen.classList.add('fade-out');
                     setTimeout(() => {
                         loadingScreen.style.display = 'none';
                         mainContent.style.display = 'flex';
                         body.style.backgroundColor = '#fff';
-                    }, 800);
+                    }, 1000);
                 }
             }, 8);
 
@@ -253,6 +259,9 @@
                 mainContent.style.animationPlayState = 'running';
                 bottomBar.style.animationPlayState = 'running';
             }, 500);
+
+            // bodyのbackgroundColorの初期値を設定
+            body.style.backgroundColor = '#fff';
         });
     </script>
 </body>
