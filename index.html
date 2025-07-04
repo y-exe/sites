@@ -4,190 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(*'▽')</title>
+
+    <!-- ファビコンと外部フォントの読み込み -->
     <link rel="icon" type="image/jpeg" href="https://paicha.cloud/uploader/uploads/icon2.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --face-offset-x: -0.3em;
-        }
-        html, body {
-            margin: 0; padding: 0; background-color: #fff; color: black;
-            font-family: 'Arial', sans-serif; text-align: center; overflow-x: hidden;
-        }
-        html { scroll-behavior: smooth; }
-        body {
-            display: block; min-height: 100vh; position: relative;
-            font-size: 16px; transition: background-color 1s ease;
-        }
-        .section {
-            min-height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            padding: 2em 1em; box-sizing: border-box; position: relative;
-        }
-        .main {
-            opacity: 0; transform: translateY(20px);
-            animation: fadeIn 0.8s forwards 0.5s;
-            justify-content: flex-start;
-            padding-top: 20vh;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .face {
-            margin-bottom: 0.5em; font-size: 2.5em; font-weight: 900;
-            margin-left: var(--face-offset-x);
-            font-family: 'Zen Maru Gothic', sans-serif;
-        }
-        h1 {
-            font-size: 2.5em;
-            font-weight: 700;
-            margin: 0 0 40px 0;
-            text-shadow: 2px 2px 0 white, -2px -2px 0 white, -2px 2px 0 white, 2px -2px 0 white,
-                         1px 1px 0 black, -1px -1px 0 black, -1px 1px 0 black, 1px -1px 0 black;
-            font-family: 'Zen Maru Gothic', sans-serif;
-        }
 
-        .contact-links {
-            display: flex; flex-direction: column; gap: 1.2em;
-            width: 100%; max-width: 420px; margin: 0 auto;
-        }
-        .contact-item {
-            display: flex; align-items: center; justify-content: space-between;
-            text-decoration: none; color: #333; font-family: 'Noto Sans JP', sans-serif;
-            padding: 0.2em 0.5em; border-radius: 8px; transition: background-color 0.2s;
-        }
-        .contact-item:not(.discord):hover { background-color: #f5f5f5; }
-        .contact-info-left { display: flex; align-items: center; gap: 1em; }
-        .contact-info-left i { font-size: 1.5em; color: #555; width: 1.5em; text-align: center; }
-        .contact-info-left .contact-name { font-weight: 500; font-size: 1.1em; color: #333; }
-        .contact-username-pill {
-            background-color: #f0eef1; color: #555; padding: 0.4em 0.9em;
-            border-radius: 30px; font-size: 0.95em; font-weight: 500;
-        }
-        
-        .contact-item.discord {
-            position: relative; padding: 0; height: 100px;
-            overflow: visible;
-            color: white; background-color: #37373e;
-            border-radius: 8px;
-        }
-        .discord-banner {
-            position: absolute; top: 0; left: 0; width: 100%; height: 60px;
-            overflow: hidden; opacity: 0.9; border-radius: 8px 8px 0 0;
-        }
-        .discord-banner img { width: 100%; height: 100%; object-fit: cover; }
-        .discord-pfp { position: absolute; left: 15px; bottom: 10px; }
-        .discord-pfp-wrapper { position: relative; width: 65px; height: 65px; }
-        .discord-pfp-wrapper img {
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 4px solid #37373e; transition: border-color 0.2s;
-        }
-        .status-indicator {
-            position: absolute; right: 2px; bottom: 2px; width: 18px; height: 18px;
-            border-radius: 50%; border: 3px solid #37373e; background-color: #747f8d;
-        }
-        .status-indicator.online { background-color: #3ba55d; }
-        .status-indicator.idle { background-color: #faa81a; }
-        .status-indicator.dnd { background-color: #ed4245; }
-        .discord-text {
-            position: absolute;
-            left: 95px;
-            bottom: 15px;
-            text-align: left;
-        }
-        .discord-display-name {
-            font-family: 'Zen Maru Gothic', sans-serif;
-            font-weight: 900; font-size: 1.1em; text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-        }
-        .discord-username { font-size: 0.9em; color: #ccc; text-shadow: 1px 1px 3px rgba(0,0,0,0.7); }
-        .contact-item.discord:hover .discord-pfp-wrapper img { border-color: #4a4a55; }
-        .discord-icon { position: absolute; right: 15px; bottom: 12px; font-size: 1.4em; color: #ccc; }
-        .custom-status-bubble {
-            position: absolute; bottom: calc(100% + 5px); left: 0;
-            background-color: #111214; color: #dcddde;
-            padding: 8px 12px; border-radius: 8px;
-            font-size: 0.9em; font-family: 'Zen Maru Gothic', sans-serif;
-            font-weight: 500; white-space: nowrap; z-index: 10;
-            opacity: 0; visibility: hidden;
-            transition: opacity 0.2s, visibility 0.2s;
-        }
-        .custom-status-bubble.visible { opacity: 1; visibility: visible; }
-        .custom-status-bubble::after {
-            content: ''; position: absolute; top: 100%; left: 15px;
-            margin-left: -5px; border-width: 5px; border-style: solid;
-            border-color: #111214 transparent transparent transparent;
-        }
-        .custom-status-text { display: flex; align-items: center; gap: 6px; }
-        .custom-status-emoji { width: 1.2em; height: 1.2em; }
-        
-        #scroll-down-container {
-            position: absolute; bottom: 3em; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center;
-            text-decoration: none; color: rgba(0, 0, 0, 0.4);
-            animation: bounce 2s infinite;
-        }
-        #scroll-down-container:hover { color: #000; }
-        .scroll-down-text { font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.9em; font-weight: bold; letter-spacing: 1px; margin-bottom: 0.5em; }
-        .scroll-down-icon { font-size: 1.5em; }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
-            40% { transform: translate(-50%, -15px); }
-            60% { transform: translate(-50%, -8px); }
-        }
-        
-        .projects-section { background-color: #f9f9f9; opacity: 0; transition: opacity 1s ease-in-out; }
-        .projects-section.visible { opacity: 1; }
-        .projects-section h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 2.5em; margin-bottom: 1em; color: #333; }
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5em; width: 100%; max-width: 1200px; padding: 0 1em; }
-        .project-card { background-color: #fff; border-radius: 8px; padding: 1.5em; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
-        .project-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .project-card h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 1.4em; margin: 0 0 0.5em 0; }
-        .project-card p { font-family: 'Noto Sans JP', sans-serif; font-size: 0.95em; color: #555; flex-grow: 1; margin-bottom: 1em; }
-        .project-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; color: #777; font-family: 'Noto Sans JP', sans-serif; }
-        .project-meta .language-color { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; background-color: #ccc; }
-        
-        .bottom-bar { position: relative; width: 100%; text-align: center; font-size: 1.1em; padding: 2em 0; background-color: #f9f9f9; font-family: 'Zen Maru Gothic', sans-serif; }
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; display: flex; justify-content: center; align-items: center; z-index: 1000; color: white; font-size: 2em; font-family: 'Noto Sans JP', sans-serif; flex-direction: column; opacity: 1; transition: opacity 1s ease-in-out; }
-        #loading.fade-out { opacity: 0; pointer-events: none; }
-        #loading-percentage { font-size: 2em; font-family: 'Orbitron', sans-serif; }
-        #loading-text { font-size: 1em; margin-top: 0.5em; font-family: 'Noto Sans JP', sans-serif; }
-        .shields-container, #getloli-counter, #now, #hayane { position: fixed; z-index: 1000; opacity: 0; transition: opacity 1s ease; }
-        .shields-container.visible, #getloli-counter.visible, #now.visible, #hayane.visible { opacity: 1; }
-        .shields-container { top: 1em; left: 1em; display: flex; flex-direction: column; align-items: flex-start; }
-        .shields-badge { margin-bottom: 0.5em; }
-        #getloli-counter { top: 1em; right: 1em; display: flex; flex-direction: column; align-items: center; }
-        #getloli-counter-text { font-size: 0.8em; color: #555; margin-top: 0.2em; font-family: 'Zen Maru Gothic', sans-serif; }
-        #now { top: 1em; right: 50%; transform: translateX(50%); color: #555; font-size: 1em; font-family: 'Zen Maru Gothic', sans-serif; white-space: nowrap; }
-        #hayane { top: 3em; right: 50%; transform: translateX(50%); color: #555; font-size: 1em; font-family: 'Zen Maru Gothic', sans-serif; }
-
-        @media screen and (max-width: 768px) {
-            body { font-size: 14px; }
-            h1 { font-size: 8vw; } 
-            .face { width: 60px; }
-            #loading { font-size: 1.5em; }
-            #now, #hayane { display: none; } 
-
-            #getloli-counter { transform: translateX(0); right: 1em; bottom: auto; }
-            #getloli-counter img { height: 4.8em; }
-            #getloli-counter-text { font-size: 0.8em; } 
-        }
-        @media screen and (max-width: 480px) {
-            h1 { font-size: 7.5vw; } 
-        }
-
-    </style>
+    <!-- 外部CSSファイルの読み込み -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+
+<body id="top">
+    <!-- ローディング画面 -->
     <div id="loading">
         <span id="loading-percentage">0%</span>
         <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
     </div>
     
-    <div class="section main">
+    <!-- ヘッダーの固定要素 -->
+    <div class="shields-container header-fixed-item">
+        <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit">
+        <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github"></a>
+        <a href="https://x.com/y__exe"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)"></a>
+    </div>
+    <div id="getloli-counter" class="header-fixed-item">
+        <img src="https://count.getloli.com/@yexe.net" alt=":counter" />
+        <span id="getloli-counter-text">アクセス感謝～</span>
+    </div>
+    <div id="now" class="header-fixed-item">現在時刻：<span id="current-time"></span></div>
+    <div id="hayane" class="header-fixed-item">はよ寝ろ</div>
+
+    <!-- 上部ナビゲーション（スクロール時に表示） -->
+    <nav id="top-nav">
+        <a href="#top">Home</a>
+        <a href="#projects">Projects</a>
+        <a href="#about">About</a>
+        <button id="dark-mode-toggle" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+    </nav>
+
+    <!-- トップセクション -->
+    <section class="section main">
         <div class="face">(*'▽')</div>
-        <h1>下ネタしか言わないカス</h1>
+        <h1>どこにでもいる変な人</h1>
         
         <div class="contact-links">
             <a href="https://discord.com/users/1102557945889300480" target="_blank" class="contact-item discord">
@@ -226,154 +84,103 @@
             </a>
             <a href="#" id="email-link" class="contact-item">
                 <div class="contact-info-left"><i class="fa-solid fa-envelope"></i><span class="contact-name">Email</span></div>
-                <span id="email-pill" class="contact-username-pill">y.exe.1201@proton.me</span>
+                <span class="contact-username-pill">y.exe.1201</span>
             </a>
+            <a href="#" id="pgp-link" class="contact-item">
+                <div class="contact-info-left"><i class="fa-solid fa-key"></i><span class="contact-name">PGP</span></div>
+                <span class="contact-username-pill">Public Key</span>
+            </a>
+            
+            <div class="server-status">
+                <h3>起動状況</h3>
+                <div class="shields-group">
+                    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1">
+                    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2">
+                </div>
+            </div>
         </div>
         
-        <a href="#projects" id="scroll-down-container" aria-label="Scroll to projects">
+        <a href="#projects" id="scroll-down-container" aria-label="Scroll to Projects">
             <span class="scroll-down-text">Projects</span>
             <i class="fa-solid fa-chevron-down scroll-down-icon"></i>
         </a>
-    </div>
+    </section>
 
+    <!-- Projectsセクション -->
     <section id="projects" class="section projects-section">
         <h2>Projects</h2>
         <div class="projects-grid"></div>
     </section>
-    <div class="bottom-bar">©yexe.net</div>
-    <div class="shields-container">
-        <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit">
-        <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github"></a>
-        <a href="https://x.com/y__exe"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)"></a>
+
+    <!-- Aboutセクション -->
+    <section id="about" class="section about-section">
+        <div class="about-card">
+            <h2>Hello, I'm (*'▽')</h2>
+            <p>I am a 16 year old developer-wannabe.</p>
+            <div class="info-pills">
+                <span><i class="fa-solid fa-user"></i> He/Him</span>
+                <span id="about-time"><i class="fa-solid fa-clock"></i> JST - ...</span>
+                <span><i class="fa-solid fa-location-dot"></i> JAPAN</span>
+            </div>
+        </div>
+        <div class="about-card">
+            <div class="tech-category">
+                <h4>IDEs</h4>
+                <div class="tech-pills">
+                    <span><i class="fa-solid fa-code"></i> VSCode</span>
+                    <span><i class="fa-solid fa-code"></i> IntelliJ IDEA</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <h4>Backend</h4>
+                <div class="tech-pills">
+                    <span><i class="fa-brands fa-python"></i> Python</span>
+                    <span><i class="fa-brands fa-java"></i> Java</span>
+                    <span><i class="fa-solid fa-k"></i> Kotlin</span>
+                    <span><i class="fa-brands fa-js"></i> TypeScript</span>
+                    <span><i class="fa-brands fa-js"></i> JavaScript</span>
+                    <span><i class="fa-brands fa-node-js"></i> Node.js</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <h4>Frontend</h4>
+                <div class="tech-pills">
+                    <span><i class="fa-brands fa-js"></i> TypeScript</span>
+                    <span><i class="fa-brands fa-js"></i> JavaScript</span>
+                    <span><i class="fa-solid fa-code"></i> Next.js</span>
+                </div>
+            </div>
+             <div class="about-footer">
+                ©yexe.net
+            </div>
+        </div>
+    </section>
+
+    <!-- PGPモーダル -->
+    <div id="pgp-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>PGP Public Key</h2>
+                <button class="modal-close-btn">×</button>
+            </div>
+            <pre id="pgp-key-text" class="pgp-key-block"></pre>
+            <div class="pgp-fingerprint">
+                <strong>Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
+            </div>
+            <div class="modal-actions">
+                <button id="pgp-copy-btn">クリップボードにコピー</button>
+                <a id="pgp-download-link" href="#">キーファイルをダウンロード</a>
+            </div>
+        </div>
     </div>
-    <div id="getloli-counter">
-        <img src="https://count.getloli.com/@yexe.net" alt=":counter" />
-        <span id="getloli-counter-text">アクセス感謝～</span>
-    </div>
-    <div id="now">現在時刻：<span id="current-time"></span></div>
-    <div id="hayane">はよ寝ろ</div>
     
-    <script>
-        async function fetchDiscordStatus() {
-            const userId = '1102557945889300480';
-            const statusIndicator = document.getElementById('discord-status-indicator');
-            const statusBubble = document.getElementById('custom-status-bubble');
-            const statusTextSpan = document.getElementById('custom-status-text');
+    <!-- トースト通知 -->
+    <div id="toast-notification"></div>
 
-            try {
-                const response = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
-                if (!response.ok) return;
-
-                const { data } = await response.json();
-
-                if (data && statusIndicator) {
-                    statusIndicator.className = 'status-indicator ' + (data.discord_status || 'offline');
-                    
-                    const customStatus = data.activities.find(activity => activity.type === 4);
-
-                    if (customStatus && customStatus.state) {
-                        let emojiHtml = '';
-                        if (customStatus.emoji) {
-                            if (customStatus.emoji.id) {
-                                const emojiUrl = `https://cdn.discordapp.com/emojis/${customStatus.emoji.id}.${customStatus.emoji.animated ? 'gif' : 'png'}`;
-                                emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji">`;
-                            } else {
-                                emojiHtml = `<span>${customStatus.emoji.name}</span>`;
-                            }
-                        }
-                        statusTextSpan.innerHTML = `${emojiHtml} ${customStatus.state}`;
-                        statusBubble.classList.add('visible');
-                    } else {
-                        statusBubble.classList.remove('visible');
-                    }
-                }
-            } catch (error) {
-                console.error("Lanyard APIの読み込みに失敗しました:", error);
-            }
-        }
-
-        async function fetchGithubProjects() {
-            const username = 'y-exe';
-            const projectsGrid = document.querySelector('.projects-grid');
-            const projectsSection = document.querySelector('.projects-section');
-            const apiUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=9`;
-            const languageColors = {'JavaScript':'#f1e05a','TypeScript':'#3178c6','HTML':'#e34c26','CSS':'#563d7c','Python':'#3572A5','Java':'#b07219','C++':'#f34b7d','C#':'#178600','PHP':'#4F5D95','Go':'#00ADD8','Rust':'#dea584','Ruby':'#701516','Shell':'#89e051'};
-
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
-                const repos = await response.json();
-                const originalRepos = repos.filter(repo => !repo.fork);
-
-                if (originalRepos.length === 0) {
-                    projectsGrid.innerHTML = '<p>公開されているプロジェクトはありません。</p>';
-                } else {
-                    projectsGrid.innerHTML = originalRepos.map(repo => {
-                        const langColor = languageColors[repo.language] || '#ccc';
-                        return `<a href="${repo.html_url}" target="_blank" class="project-card"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error('GitHubプロジェクトの読み込みに失敗しました:', error);
-                projectsGrid.innerHTML = '<p>プロジェクトの読み込みに失敗しました。</p>';
-            } finally {
-                projectsSection.classList.add('visible');
-            }
-        }
-        
-        window.addEventListener('load', function() {
-            const loadingScreen = document.getElementById('loading');
-            const shieldsContainer = document.querySelector('.shields-container');
-            const getloliCounter = document.getElementById('getloli-counter');
-            const nowElement = document.getElementById('now');
-            const hayaneElement = document.getElementById('hayane');
-            const emailLink = document.getElementById('email-link');
-
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress = Math.min(100, progress + (progress < 60 ? 2 : 1));
-                document.getElementById('loading-percentage').textContent = `${progress}%`;
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    loadingScreen.classList.add('fade-out');
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                        shieldsContainer.classList.add('visible');
-                        getloliCounter.classList.add('visible');
-                        nowElement.classList.add('visible');
-                        hayaneElement.classList.add('visible');
-                        
-                        fetchDiscordStatus();
-                        fetchGithubProjects();
-                        
-                        updateCurrentTime();
-                        setInterval(updateCurrentTime, 1000);
-                    }, 1000);
-                }
-            }, 8);
-
-            function updateCurrentTime() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('ja-JP', { hour12: false });
-                document.getElementById('current-time').textContent = timeString;
-            }
-
-            if (emailLink) {
-                emailLink.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    const emailPill = document.getElementById('email-pill');
-                    const originalText = emailPill.textContent;
-                    const emailToCopy = 'y.exe.1201@proton.me';
-
-                    navigator.clipboard.writeText(emailToCopy).then(() => {
-                        emailPill.textContent = 'Copied!';
-                        setTimeout(() => { emailPill.textContent = originalText; }, 2000);
-                    }).catch(err => {
-                        console.error('クリップボードへのコピーに失敗しました:', err);
-                    });
-                });
-            }
-        });
-    </script>
+    <!-- トップへ戻るボタン -->
+    <a href="#top" id="back-to-top" title="Back to Top"><i class="fa-solid fa-arrow-up"></i></a>
+    
+    <!-- 外部JavaScriptファイルの読み込み -->
+    <script src="script.js" defer></script>
 </body>
 </html>
