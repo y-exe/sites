@@ -17,6 +17,7 @@ l3vt8HcNWaH+4Ob5YpDq7BzHIAI=
 
 function showToast(message) {
     const toast = document.getElementById('toast-notification');
+    if (!toast) return;
     toast.textContent = message;
     toast.classList.add('show');
     setTimeout(() => { toast.classList.remove('show'); }, 3000);
@@ -28,12 +29,14 @@ async function fetchDiscordStatus() {
     const statusBubble = document.getElementById('custom-status-bubble');
     const statusTextSpan = document.getElementById('custom-status-text');
 
+    if (!statusIndicator || !statusBubble || !statusTextSpan) return;
+
     try {
         const response = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
         if (!response.ok) return;
         const { data } = await response.json();
 
-        if (data && statusIndicator) {
+        if (data) {
             statusIndicator.className = 'status-indicator ' + (data.discord_status || 'offline');
             const customStatus = data.activities.find(activity => activity.type === 4);
             if (customStatus && customStatus.state) {
@@ -58,6 +61,8 @@ async function fetchGithubProjects() {
     const apiUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=9`;
     const languageColors = {'JavaScript':'#f1e05a','TypeScript':'#3178c6','HTML':'#e34c26','CSS':'#563d7c','Python':'#3572A5','Java':'#b07219','C++':'#f34b7d','C#':'#178600','PHP':'#4F5D95','Go':'#00ADD8','Rust':'#dea584','Ruby':'#701516','Shell':'#89e051'};
 
+    if (!projectsGrid) return;
+    
     try {
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
@@ -73,13 +78,12 @@ async function fetchGithubProjects() {
         }
     } catch (error) {
         console.error('GitHubプロジェクトの読み込みに失敗しました:', error);
-        if (projectsGrid) projectsGrid.innerHTML = '<p>プロジェクトの読み込みに失敗しました。</p>';
+        projectsGrid.innerHTML = '<p>プロジェクトの読み込みに失敗しました。</p>';
     } finally {
         if (projectsSection) projectsSection.classList.add('visible');
     }
 }
 
-// DOMが読み込まれたら実行
 document.addEventListener('DOMContentLoaded', function() {
     const loadingScreen = document.getElementById('loading');
     const pgpLink = document.getElementById('pgp-link');
@@ -93,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('pgp-key-text').textContent = pgpKeyText;
 
-    // ダークモード設定の読み込み
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
         darkModeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -102,8 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let progress = 0;
     const interval = setInterval(() => {
         progress = Math.min(100, progress + (progress < 60 ? 2 : 1));
-        if(document.getElementById('loading-percentage')) {
-            document.getElementById('loading-percentage').textContent = `${progress}%`;
+        const loadingPercentageEl = document.getElementById('loading-percentage');
+        if(loadingPercentageEl) {
+            loadingPercentageEl.textContent = `${progress}%`;
         }
         if (progress >= 100) {
             clearInterval(interval);
@@ -145,7 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if(emailLink) emailLink.addEventListener('click', e => { e.preventDefault(); navigator.clipboard.writeText('y.exe.1201@proton.me').then(() => showToast('メールアドレスをコピーしました')); });
     
-    // ダークモード切り替え
     darkModeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         if (document.body.classList.contains('dark-mode')) {
@@ -157,9 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // スクロール連動UI
     window.addEventListener('scroll', () => {
-        const scrollThreshold = 50;
+        const scrollThreshold = 10;
         const isScrolledDown = window.scrollY > scrollThreshold;
         headerItems.forEach(item => item.classList.toggle('hidden', isScrolledDown));
         if(topNav) topNav.classList.toggle('visible', isScrolledDown);
