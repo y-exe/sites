@@ -5,23 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>(*'▽')</title>
 
-    <!-- ファビコンと外部フォントの読み込み -->
     <link rel="icon" type="image/jpeg" href="https://paicha.cloud/uploader/uploads/icon2.jpg">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- 外部CSSファイルの読み込み -->
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body id="top">
-    <!-- ローディング画面 -->
     <div id="loading">
         <span id="loading-percentage">0%</span>
         <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
     </div>
     
-    <!-- ヘッダーの固定要素 -->
     <div class="shields-container header-fixed-item">
         <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit">
         <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github"></a>
@@ -34,7 +32,6 @@
     <div id="now" class="header-fixed-item">現在時刻：<span id="current-time"></span></div>
     <div id="hayane" class="header-fixed-item">はよ寝ろ</div>
 
-    <!-- 上部ナビゲーション（スクロール時に表示） -->
     <nav id="top-nav">
         <a href="#top">Home</a>
         <a href="#projects">Projects</a>
@@ -42,77 +39,83 @@
         <button id="dark-mode-toggle" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
     </nav>
 
-    <!-- トップセクション -->
     <section class="section main">
-        <div class="face">(*'▽')</div>
-        <h1>どこにでもいる変な人</h1>
-        
-        <div class="contact-links">
-            <a href="https://discord.com/users/1102557945889300480" target="_blank" class="contact-item discord">
-                <div class="discord-banner"><img src="https://paicha.cloud/uploader/uploads/Discord.gif" alt="Banner"></div>
-                <div class="discord-pfp">
-                    <div class="discord-pfp-wrapper">
-                        <img src="https://paicha.cloud/uploader/uploads/Discord.png" alt="PFP">
-                        <span id="discord-status-indicator" class="status-indicator"></span>
-                    </div>
-                </div>
-                <div class="discord-text">
-                    <div id="custom-status-bubble" class="custom-status-bubble">
-                        <span id="custom-status-text" class="custom-status-text"></span>
-                    </div>
-                    <span class="discord-display-name">(*'▽')</span>
-                    <span class="discord-username">@y_exe</span>
-                </div>
-                <i class="fa-brands fa-discord discord-icon"></i>
-            </a>
-            
-            <a href="https://x.com/y__exe" target="_blank" class="contact-item">
-                <div class="contact-info-left"><i class="fa-brands fa-twitter"></i><span class="contact-name">Twitter</span></div>
-                <span class="contact-username-pill">@y__exe</span>
-            </a>
-            <a href="https://github.com/y-exe" target="_blank" class="contact-item">
-                <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
-                <span class="contact-username-pill">@y-exe</span>
-            </a>
-            <a href="https://t.me/h_exe" target="_blank" class="contact-item">
-                <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
-                <span class="contact-username-pill">@h_exe</span>
-            </a>
-            <a href="https://signal.me/#u/y_exe77" target="_blank" class="contact-item">
-                <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
-                <span class="contact-username-pill">@y_exe77</span>
-            </a>
-            <a href="#" id="email-link" class="contact-item">
-                <div class="contact-info-left"><i class="fa-solid fa-envelope"></i><span class="contact-name">Email</span></div>
-                <span class="contact-username-pill">y.exe.1201</span>
-            </a>
-            <a href="#" id="pgp-link" class="contact-item">
-                <div class="contact-info-left"><i class="fa-solid fa-key"></i><span class="contact-name">PGP</span></div>
-                <span class="contact-username-pill">Public Key</span>
-            </a>
-            
-            <div class="server-status">
-                <h3>起動状況</h3>
-                <div class="shields-group">
-                    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1">
-                    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2">
-                </div>
-            </div>
+        <div class="hero-text">
+            <p class="text-line-1">(*'▽')</p>
+            <p class="text-line-2">I'm <span class="gradient-text">Hentai</span></p>
+            <p class="text-line-3">なんかやってます 詳しいことは全然わかりませーん</p>
+        </div>
+        <div class="quick-nav-buttons">
+            <a href="#projects" class="quick-nav-btn btn-primary">Projects <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#about" class="quick-nav-btn btn-secondary">About <i class="fa-solid fa-arrow-right"></i></a>
         </div>
         
+        <div class="contact-section">
+            <div class="contact-links">
+                <a href="https://discord.com/users/1102557945889300480" target="_blank" class="contact-item discord">
+                    <div class="discord-banner"><img src="https://paicha.cloud/uploader/uploads/Discord.gif" alt="Banner"></div>
+                    <div class="discord-pfp">
+                        <div class="discord-pfp-wrapper">
+                            <img src="https://paicha.cloud/uploader/uploads/Discord.png" alt="PFP">
+                            <span id="discord-status-indicator" class="status-indicator"></span>
+                        </div>
+                    </div>
+                    <div class="discord-text">
+                        <div id="custom-status-bubble" class="custom-status-bubble">
+                            <span id="custom-status-text" class="custom-status-text"></span>
+                        </div>
+                        <span class="discord-display-name">(*'▽')</span>
+                        <span class="discord-username">@y_exe</span>
+                    </div>
+                    <i class="fa-brands fa-discord discord-icon"></i>
+                </a>
+                
+                <a href="https://x.com/y__exe" target="_blank" class="contact-item">
+                    <div class="contact-info-left"><i class="fa-brands fa-twitter"></i><span class="contact-name">Twitter</span></div>
+                    <span class="contact-username-pill">@y__exe</span>
+                </a>
+                <a href="https://github.com/y-exe" target="_blank" class="contact-item">
+                    <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
+                    <span class="contact-username-pill">@y-exe</span>
+                </a>
+                <a href="https://t.me/h_exe" target="_blank" class="contact-item">
+                    <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
+                    <span class="contact-username-pill">@h_exe</span>
+                </a>
+                <a href="https://signal.me/#u/y_exe77" target="_blank" class="contact-item">
+                    <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
+                    <span class="contact-username-pill">@y_exe77</span>
+                </a>
+                <a href="#" id="email-link" class="contact-item">
+                    <div class="contact-info-left"><i class="fa-solid fa-envelope"></i><span class="contact-name">Email</span></div>
+                    <span class="contact-username-pill">y.exe.1201</span>
+                </a>
+                <a href="#" id="pgp-link" class="contact-item">
+                    <div class="contact-info-left"><i class="fa-solid fa-key"></i><span class="contact-name">PGP</span></div>
+                    <span class="contact-username-pill">Public Key</span>
+                </a>
+                
+                <div class="server-status">
+                    <h3>起動状況</h3>
+                    <div class="shields-group">
+                        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1">
+                        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2">
+                    </div>
+                </div>
         <a href="#projects" id="scroll-down-container" aria-label="Scroll to Projects">
             <span class="scroll-down-text">Projects</span>
             <i class="fa-solid fa-chevron-down scroll-down-icon"></i>
         </a>
     </section>
+            </div>
+        </div>
+    </section>
 
-    <!-- Projectsセクション -->
     <section id="projects" class="section projects-section">
         <h2>Projects</h2>
         <div class="projects-grid"></div>
     </section>
 
-    <!-- Aboutセクション -->
     <section id="about" class="section about-section">
         <div class="about-card">
             <h2>Hello, I'm (*'▽')</h2>
@@ -156,7 +159,6 @@
         </div>
     </section>
 
-    <!-- PGPモーダル -->
     <div id="pgp-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -174,13 +176,10 @@
         </div>
     </div>
     
-    <!-- トースト通知 -->
     <div id="toast-notification"></div>
 
-    <!-- トップへ戻るボタン -->
     <a href="#top" id="back-to-top" title="Back to Top"><i class="fa-solid fa-arrow-up"></i></a>
     
-    <!-- 外部JavaScriptファイルの読み込み -->
     <script src="script.js" defer></script>
 </body>
 </html>
