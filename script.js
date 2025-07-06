@@ -57,7 +57,6 @@ async function fetchDiscordStatus() {
 async function fetchGithubProjects() {
     const username = 'y-exe';
     const projectsGrid = document.querySelector('.projects-grid');
-    const projectsSection = document.querySelector('.projects-section');
     const apiUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=9`;
     const languageColors = {'JavaScript':'#f1e05a','TypeScript':'#3178c6','HTML':'#e34c26','CSS':'#563d7c','Python':'#3572A5','Java':'#b07219','C++':'#f34b7d','C#':'#178600','PHP':'#4F5D95','Go':'#00ADD8','Rust':'#dea584','Ruby':'#701516','Shell':'#89e051'};
 
@@ -73,16 +72,28 @@ async function fetchGithubProjects() {
         } else {
             projectsGrid.innerHTML = originalRepos.map(repo => {
                 const langColor = languageColors[repo.language] || '#ccc';
-                return `<a href="${repo.html_url}" target="_blank" class="project-card"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
+                return `<a href="${repo.html_url}" target="_blank" class="project-card fade-in-scroll"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
             }).join('');
         }
     } catch (error) {
         console.error('GitHubプロジェクトの読み込みに失敗しました:', error);
         projectsGrid.innerHTML = '<p>プロジェクトの読み込みに失敗しました。</p>';
     } finally {
-        if (projectsSection) projectsSection.classList.add('visible');
+        const projectCards = document.querySelectorAll('.project-card.fade-in-scroll');
+        projectCards.forEach(card => fadeInObserver.observe(card));
     }
 }
+
+const fadeInObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+        }
+    });
+}, {
+    threshold: 0.1 
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     const loadingScreen = document.getElementById('loading');
@@ -115,6 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
+
+                const initialFadeInElements = document.querySelectorAll('.fade-in-init');
+                initialFadeInElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('is-visible');
+                    }, 200 * index); 
+                });
+
                 fetchDiscordStatus();
                 fetchGithubProjects();
                 updateCurrentTime();
@@ -134,6 +153,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const aboutTimeEl = document.getElementById('about-time');
         if(aboutTimeEl) aboutTimeEl.innerHTML = `<i class="fa-solid fa-clock"></i> JST - ${jstTime}`;
     }
+
+    const scrollFadeInElements = document.querySelectorAll('.fade-in-scroll');
+    scrollFadeInElements.forEach(el => fadeInObserver.observe(el));
 
     if(pgpLink) pgpLink.addEventListener('click', e => { e.preventDefault(); pgpModal.classList.add('visible'); });
     if(pgpModal) pgpModal.addEventListener('click', e => { if (e.target === pgpModal || e.target.classList.contains('modal-close-btn')) pgpModal.classList.remove('visible'); });
