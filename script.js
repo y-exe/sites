@@ -72,27 +72,51 @@ async function fetchGithubProjects() {
         } else {
             projectsGrid.innerHTML = originalRepos.map(repo => {
                 const langColor = languageColors[repo.language] || '#ccc';
-                return `<a href="${repo.html_url}" target="_blank" class="project-card fade-in-scroll"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
+                return `<a href="${repo.html_url}" target="_blank" class="project-card fade-in-element"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
             }).join('');
         }
     } catch (error) {
         console.error('GitHubプロジェクトの読み込みに失敗しました:', error);
         projectsGrid.innerHTML = '<p>プロジェクトの読み込みに失敗しました。</p>';
     } finally {
-        const projectCards = document.querySelectorAll('.project-card.fade-in-scroll');
+        const projectCards = document.querySelectorAll('.project-card');
+        const viewportWidth = window.innerWidth;
+        
+        if (viewportWidth > 768) {
+            const gridComputedStyle = window.getComputedStyle(projectsGrid);
+            const gridColumnCount = gridComputedStyle.getPropertyValue('grid-template-columns').split(' ').length;
+
+            projectCards.forEach((card, index) => {
+                const columnIndex = index % gridColumnCount;
+                if (gridColumnCount > 1 && columnIndex === 0) {
+                    card.classList.add('fade-from-left');
+                } else if (gridColumnCount > 1 && columnIndex === gridColumnCount - 1) {
+                    card.classList.add('fade-from-right');
+                } else {
+                    card.classList.add('fade-from-bottom');
+                }
+            });
+        } else {
+            projectCards.forEach(card => card.classList.add('fade-from-bottom'));
+        }
+        
         projectCards.forEach(card => fadeInObserver.observe(card));
     }
 }
 
 const fadeInObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
+    entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
+            const delay = entry.target.closest('.about-card') && entry.target.classList.contains('tech-category') ? index * 150 : 0;
+            setTimeout(() => {
+                entry.target.classList.add('is-visible');
+            }, delay);
             observer.unobserve(entry.target);
         }
     });
 }, {
-    threshold: 0.1 
+    rootMargin: '0px 0px -50px 0px',
+    threshold: 0
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -108,10 +132,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('pgp-key-text').textContent = pgpKeyText;
 
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        darkModeIcon.classList.replace('fa-moon', 'fa-sun');
-    }
+    document.querySelectorAll('.fade-in-init').forEach(el => {
+        el.classList.add('fade-from-bottom');
+    });
 
     let progress = 0;
     const interval = setInterval(() => {
@@ -124,6 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(interval);
             loadingScreen.classList.add('fade-out');
             setTimeout(() => {
+                window.scrollTo(0, 0);
+
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
 
@@ -131,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 initialFadeInElements.forEach((el, index) => {
                     setTimeout(() => {
                         el.classList.add('is-visible');
-                    }, 200 * index); 
+                    }, 200 * index);
                 });
 
                 fetchDiscordStatus();
@@ -154,8 +179,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if(aboutTimeEl) aboutTimeEl.innerHTML = `<i class="fa-solid fa-clock"></i> JST - ${jstTime}`;
     }
 
-    const scrollFadeInElements = document.querySelectorAll('.fade-in-scroll');
-    scrollFadeInElements.forEach(el => fadeInObserver.observe(el));
+    const scrollFadeInElements = document.querySelectorAll('.fade-in-element');
+    scrollFadeInElements.forEach(el => {
+        if(!el.classList.contains('is-visible')) {
+            fadeInObserver.observe(el);
+        }
+    });
 
     if(pgpLink) pgpLink.addEventListener('click', e => { e.preventDefault(); pgpModal.classList.add('visible'); });
     if(pgpModal) pgpModal.addEventListener('click', e => { if (e.target === pgpModal || e.target.classList.contains('modal-close-btn')) pgpModal.classList.remove('visible'); });
