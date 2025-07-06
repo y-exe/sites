@@ -9,7 +9,6 @@
     --shadow-hover-color: rgba(0,0,0,0.1);
     --gradient: linear-gradient(to right, #3b82f6, #8b5cf6);
     
-    /* ↓↓↓ この値を変更するとヒーローテキストとボタンの間の余白を調整できます ↓↓↓ */
     --hero-bottom-margin: 0.0em;
 }
 body.dark-mode {
@@ -41,19 +40,13 @@ body {
     padding: 4em 1em; box-sizing: border-box; position: relative;
 }
 .main {
-    opacity: 0; transform: translateY(20px);
-    animation: fadeIn 0.8s forwards 0.5s;
+    opacity: 1; 
     justify-content: center;
     padding-top: 0;
 }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
-/* トップセクションの新しいテキストスタイル */
 .hero-text {
-    margin-bottom: var(--hero-bottom-margin); /* ★ 調整可能な余白に変更 */
+    margin-bottom: var(--hero-bottom-margin);
 }
 .text-line-1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 3em; font-weight: 900; margin: 0; }
 .text-line-2 { font-family: 'Inter', sans-serif; font-size: 2.2em; font-weight: 500; color: var(--text-muted-color); margin: 0.2em 0; }
@@ -182,7 +175,7 @@ body.dark-mode #scroll-down-container { color: rgba(255, 255, 255, 0.4); }
 .projects-section { background-color: var(--background-color); }
 .projects-section h2 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 2.5em; margin-bottom: 1em; color: var(--text-color); }
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5em; width: 100%; max-width: 1200px; padding: 0 1em; }
-.project-card { background-color: var(--card-background); border: 1px solid var(--card-border-color); border-radius: 8px; padding: 1.5em; text-align: left; box-shadow: 0 4px 12px var(--shadow-color); transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+.project-card { background-color: var(--card-background); border: 1px solid var(--card-border-color); border-radius: 8px; padding: 1.5em; text-align: left; box-shadow: 0 4px 12px var(--shadow-color); transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.8s, transform 0.8s; /* ★ 変更 */ display: flex; flex-direction: column; text-decoration: none; color: inherit; }
 .project-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px var(--shadow-hover-color); border-color: #ddd; }
 body.dark-mode .project-card:hover { border-color: #444; }
 .project-card h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 1.4em; margin: 0 0 0.5em 0; color: var(--text-color); }
@@ -195,20 +188,40 @@ body.dark-mode .project-card:hover { border-color: #444; }
 #loading-percentage { font-size: 2em; font-family: 'Orbitron', sans-serif; }
 #loading-text { font-size: 1em; margin-top: 0.5em; font-family: 'Noto Sans JP', sans-serif; }
 
+.fade-in-init, .fade-in-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.fade-in-init.is-visible, .fade-in-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.project-card {
+    opacity: 0;
+    transform: translateY(30px);
+}
+.project-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
 @media screen and (max-width: 768px) {
     body { font-size: 14px; }
     .main { padding-top: 15vh; }
     .text-line-1 { font-size: 2.5em; }
     .text-line-2 { font-size: 1.8em; }
     .contact-links { grid-template-columns: 1fr; }
-    .shields-group { flex-direction: column; } 
-    #now, #hayane, #top-nav { display: none; }
+
+    #now, #hayane { display: none; }
     #getloli-counter img { height: 3.5em; }
     #getloli-counter-text { font-size: 0.8em; }
     .about-card, .tech-card { padding: 1em 1.5em; }
     .about-card h2 { font-size: 1.8em; }
-    .projects-section #scroll-down-container { display: none; } /
+    .projects-section #scroll-down-container { display: none; }
 }
+
 @media screen and (max-width: 480px) {
     .text-line-1 { font-size: 10vw; }
     .text-line-2 { font-size: 8vw; }
