@@ -44,8 +44,9 @@ body {
     padding-top: 0;
 }
 
-/* トップセクションの新しいテキストスタイル */
+/* トップセクション */
 .hero-text { margin-bottom: var(--hero-bottom-margin); }
+.seo-h1 { display: none; } /* SEO用h1は画面上非表示 */
 .text-line-1 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 3em; font-weight: 900; margin: 0; }
 .hero-text .face-emoji { font-size: 0.8em; vertical-align: middle; }
 .text-line-2 { font-family: 'Inter', sans-serif; font-size: 2.2em; font-weight: 500; color: var(--text-muted-color); margin: 0.2em 0; }
@@ -212,6 +213,30 @@ body.dark-mode .project-card:hover { border-color: #444; }
 .main .reveal:nth-child(1) { transition-delay: 0.1s; }
 .main .reveal:nth-child(2) { transition-delay: 0.2s; }
 .main .reveal:nth-child(3) { transition-delay: 0.3s; }
+
+.reveal-child {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal.is-visible .reveal-child {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* Aboutカード内の要素に時間差をつける */
+.reveal.is-visible .reveal-child:nth-child(1) { transition-delay: 0.2s; }
+.reveal.is-visible .reveal-child:nth-child(2) { transition-delay: 0.3s; }
+.reveal.is-visible .reveal-child:nth-child(3) { transition-delay: 0.4s; }
+.reveal.is-visible .reveal-child:nth-child(4) { transition-delay: 0.5s; }
+
+/* Projectsカードの列ごとのアニメーション */
+.projects-grid.is-visible .project-card:nth-child(3n+1) { transition-delay: 0.1s; transform: translateX(-30px); } /* 左の列 */
+.projects-grid.is-visible .project-card:nth-child(3n+2) { transition-delay: 0.2s; transform: translateY(30px); }  /* 中央の列 */
+.projects-grid.is-visible .project-card:nth-child(3n+3) { transition-delay: 0.3s; transform: translateX(30px); }  /* 右の列 */
+.projects-grid.is-visible .project-card.is-visible {
+    transform: translate(0, 0);
+}
+
 
 @media screen and (max-width: 768px) {
     .section { padding-top: 6em; padding-bottom: 6em; }
