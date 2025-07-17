@@ -85,7 +85,7 @@ async function fetchGithubProjects() {
 const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            entry.target.classList.add('is-visible');
             observer.unobserve(entry.target);
         }
     });
@@ -123,9 +123,10 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
-                // メインセクションの要素を監視対象に追加
+                
+                // ★バグ修正：トップページの要素は直接表示クラスを付与
                 document.querySelectorAll('.main .reveal').forEach(el => {
-                    revealObserver.observe(el);
+                    el.classList.add('is-visible');
                 });
                 
                 fetchDiscordStatus();
