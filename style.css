@@ -205,7 +205,7 @@ body.dark-mode .project-card:hover { border-color: #444; }
     transform: translateY(30px);
     transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
-.reveal.visible {
+.reveal.is-visible {
     opacity: 1;
     transform: translateY(0);
 }
