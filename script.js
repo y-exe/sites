@@ -91,7 +91,6 @@ const revealObserver = new IntersectionObserver((entries, observer) => {
     });
 }, { threshold: 0.15 });
 
-
 document.addEventListener('DOMContentLoaded', function() {
     const loadingScreen = document.getElementById('loading');
     const pgpLink = document.getElementById('pgp-link');
@@ -120,7 +119,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (progress >= 100) {
             clearInterval(interval);
             loadingScreen.classList.add('fade-out');
-            setTimeout(() => {
+            // ★ローディング画面が完全に消えてから次の処理を開始
+            loadingScreen.addEventListener('transitionend', () => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
                 document.querySelectorAll('.main .reveal').forEach(el => {
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetchGithubProjects();
                 updateCurrentTime();
                 setInterval(updateCurrentTime, 1000);
-            }, 500);
+            }, { once: true }); // イベントリスナーを一度だけ実行
         }
     }, 8);
 
