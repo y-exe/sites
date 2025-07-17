@@ -44,7 +44,7 @@ async function fetchDiscordStatus() {
                 if (customStatus.emoji) {
                     if (customStatus.emoji.id) {
                         const emojiUrl = `https://cdn.discordapp.com/emojis/${customStatus.emoji.id}.${customStatus.emoji.animated ? 'gif' : 'png'}`;
-                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji">`;
+                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji" width="17" height="17">`;
                     } else { emojiHtml = `<span>${customStatus.emoji.name}</span>`; }
                 }
                 statusTextSpan.innerHTML = `${emojiHtml} ${customStatus.state}`;
@@ -123,8 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
-                
-                // ★バグ修正：トップページの要素は直接表示クラスを付与
                 document.querySelectorAll('.main .reveal').forEach(el => {
                     el.classList.add('is-visible');
                 });
