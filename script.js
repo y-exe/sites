@@ -121,8 +121,13 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingScreen.classList.add('fade-out');
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
+                document.body.style.opacity = '1';
                 headerItems.forEach(el => el.classList.add('visible'));
-                document.querySelectorAll('.main .reveal').forEach(el => revealObserver.observe(el));
+                document.querySelectorAll('.main .reveal').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 100);
+                });
                 
                 fetchDiscordStatus();
                 fetchGithubProjects();
