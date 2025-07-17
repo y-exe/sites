@@ -44,7 +44,7 @@ async function fetchDiscordStatus() {
                 if (customStatus.emoji) {
                     if (customStatus.emoji.id) {
                         const emojiUrl = `https://cdn.discordapp.com/emojis/${customStatus.emoji.id}.${customStatus.emoji.animated ? 'gif' : 'png'}`;
-                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji">`;
+                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji" width="20" height="20">`;
                     } else { emojiHtml = `<span>${customStatus.emoji.name}</span>`; }
                 }
                 statusTextSpan.innerHTML = `${emojiHtml} ${customStatus.state}`;
@@ -122,9 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
-                document.querySelectorAll('.main .reveal').forEach(el => {
-                    revealObserver.observe(el);
-                });
+                document.querySelectorAll('.main .reveal').forEach(el => revealObserver.observe(el));
                 
                 fetchDiscordStatus();
                 fetchGithubProjects();
