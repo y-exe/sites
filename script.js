@@ -44,7 +44,7 @@ async function fetchDiscordStatus() {
                 if (customStatus.emoji) {
                     if (customStatus.emoji.id) {
                         const emojiUrl = `https://cdn.discordapp.com/emojis/${customStatus.emoji.id}.${customStatus.emoji.animated ? 'gif' : 'png'}`;
-                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji" width="17" height="17">`;
+                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji">`;
                     } else { emojiHtml = `<span>${customStatus.emoji.name}</span>`; }
                 }
                 statusTextSpan.innerHTML = `${emojiHtml} ${customStatus.state}`;
@@ -86,10 +86,22 @@ const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
+            if (entry.target.classList.contains('about-card')) {
+                const children = entry.target.querySelectorAll('.reveal-child');
+                children.forEach((child, index) => {
+                    child.style.transitionDelay = `${index * 0.1}s`;
+                    child.classList.add('is-visible');
+                });
+            }
+            if (entry.target.classList.contains('projects-grid')) {
+                entry.target.querySelectorAll('.project-card').forEach(card => card.classList.add('is-visible'));
+            }
+
             observer.unobserve(entry.target);
         }
     });
-}, { threshold: 0.15 });
+}, { threshold: 0.1 });
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const loadingScreen = document.getElementById('loading');
@@ -119,7 +131,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (progress >= 100) {
             clearInterval(interval);
             loadingScreen.classList.add('fade-out');
-            // ★ローディング画面が完全に消えてから次の処理を開始
             loadingScreen.addEventListener('transitionend', () => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
@@ -131,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetchGithubProjects();
                 updateCurrentTime();
                 setInterval(updateCurrentTime, 1000);
-            }, { once: true }); // イベントリスナーを一度だけ実行
+            }, { once: true });
         }
     }, 8);
 
@@ -174,9 +185,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.querySelectorAll('.section:not(.main) .reveal').forEach(el => {
+    document.querySelectorAll('.section .reveal:not(.main .reveal)').forEach(el => {
         revealObserver.observe(el);
     });
+    const projectsGridEl = document.querySelector('.projects-grid');
+    if (projectsGridEl) {
+        revealObserver.observe(projectsGridEl);
+    }
 
     window.addEventListener('scroll', () => {
         const scrollThreshold = 10;
