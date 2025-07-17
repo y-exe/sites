@@ -74,7 +74,7 @@ async function fetchGithubProjects() {
                 const langColor = languageColors[repo.language] || '#ccc';
                 return `<a href="${repo.html_url}" target="_blank" class="project-card reveal"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
             }).join('');
-            document.querySelectorAll('.project-card').forEach(el => revealObserver.observe(el));
+            document.querySelectorAll('.project-card.reveal').forEach(el => revealObserver.observe(el));
         }
     } catch (error) {
         console.error('GitHubプロジェクトの読み込みに失敗しました:', error);
@@ -90,6 +90,7 @@ const revealObserver = new IntersectionObserver((entries, observer) => {
         }
     });
 }, { threshold: 0.15 });
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const loadingScreen = document.getElementById('loading');
@@ -122,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 headerItems.forEach(el => el.classList.add('visible'));
+                // メインセクションの要素を監視対象に追加
                 document.querySelectorAll('.main .reveal').forEach(el => {
                     revealObserver.observe(el);
                 });
@@ -173,7 +175,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.querySelectorAll('.section:not(.main) .reveal').forEach(el => revealObserver.observe(el));
+    document.querySelectorAll('.section:not(.main) .reveal').forEach(el => {
+        revealObserver.observe(el);
+    });
 
     window.addEventListener('scroll', () => {
         const scrollThreshold = 10;
