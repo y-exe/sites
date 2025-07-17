@@ -220,7 +220,7 @@ body.dark-mode .project-card:hover { border-color: #444; }
     .text-line-2 { font-size: 1.8em; }
     .contact-links { grid-template-columns: 1fr; }
     #now, #hayane { display: none; }
-    #getloli-counter img { height: 3.5em; }
+    #getloli-counter img { height: 4.5em; width: auto; }
     #getloli-counter-text { font-size: 0.8em; }
     .about-card, .tech-card { padding: 1em 1.5em; }
     .about-card h2 { font-size: 1.8em; }
