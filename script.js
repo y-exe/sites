@@ -44,7 +44,7 @@ async function fetchDiscordStatus() {
                 if (customStatus.emoji) {
                     if (customStatus.emoji.id) {
                         const emojiUrl = `https://cdn.discordapp.com/emojis/${customStatus.emoji.id}.${customStatus.emoji.animated ? 'gif' : 'png'}`;
-                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji" width="20" height="20">`;
+                        emojiHtml = `<img src="${emojiUrl}" alt="emoji" class="custom-status-emoji">`;
                     } else { emojiHtml = `<span>${customStatus.emoji.name}</span>`; }
                 }
                 statusTextSpan.innerHTML = `${emojiHtml} ${customStatus.state}`;
@@ -72,4 +72,115 @@ async function fetchGithubProjects() {
         } else {
             projectsGrid.innerHTML = originalRepos.map(repo => {
                 const langColor = languageColors[repo.language] || '#ccc';
-                return `<a href="${repo.html_url}" target="_blank" class="project-card reveal"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo
+                return `<a href="${repo.html_url}" target="_blank" class="project-card reveal"><h3>${repo.name}</h3><p>${repo.description || '説明がありません。'}</p><div class="project-meta"><span>${repo.language ? `<span class="language-color" style="background-color: ${langColor};"></span> ${repo.language}` : ''}</span><span><i class="fa-regular fa-star"></i> ${repo.stargazers_count}</span></div></a>`;
+            }).join('');
+            document.querySelectorAll('.project-card').forEach(el => revealObserver.observe(el));
+        }
+    } catch (error) {
+        console.error('GitHubプロジェクトの読み込みに失敗しました:', error);
+        projectsGrid.innerHTML = '<p>プロジェクトの読み込みに失敗しました。</p>';
+    }
+}
+
+// スクロールアニメーション用のオブザーバー
+const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.15 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loadingScreen = document.getElementById('loading');
+    const pgpLink = document.getElementById('pgp-link');
+    const pgpModal = document.getElementById('pgp-modal');
+    const emailLink = document.getElementById('email-link');
+    const headerItems = document.querySelectorAll('.header-fixed-item');
+    const topNav = document.getElementById('top-nav');
+    const backToTopBtn = document.getElementById('back-to-top');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const darkModeIcon = darkModeToggle ? darkModeToggle.querySelector('i') : null;
+
+    document.getElementById('pgp-key-text').textContent = pgpKeyText;
+
+    if (localStorage.getItem('theme') === 'dark' && darkModeIcon) {
+        document.body.classList.add('dark-mode');
+        darkModeIcon.classList.replace('fa-moon', 'fa-sun');
+    }
+
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress = Math.min(100, progress + (progress < 60 ? 2 : 1));
+        const loadingPercentageEl = document.getElementById('loading-percentage');
+        if(loadingPercentageEl) {
+            loadingPercentageEl.textContent = `${progress}%`;
+        }
+        if (progress >= 100) {
+            clearInterval(interval);
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                headerItems.forEach(el => el.classList.add('visible'));
+                document.querySelectorAll('.main .reveal').forEach(el => {
+                    revealObserver.observe(el);
+                });
+                
+                fetchDiscordStatus();
+                fetchGithubProjects();
+                updateCurrentTime();
+                setInterval(updateCurrentTime, 1000);
+            }, 500);
+        }
+    }, 8);
+
+    function updateCurrentTime() {
+        const now = new Date();
+        const jstTime = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', hour12: true });
+        const timeString = now.toLocaleTimeString('ja-JP', { hour12: false });
+        
+        const currentTimeEl = document.getElementById('current-time');
+        if (currentTimeEl) currentTimeEl.textContent = timeString;
+
+        const aboutTimeEl = document.getElementById('about-time');
+        if(aboutTimeEl) aboutTimeEl.innerHTML = `<i class="fa-solid fa-clock"></i> JST - ${jstTime}`;
+    }
+
+    if(pgpLink) pgpLink.addEventListener('click', e => { e.preventDefault(); pgpModal.classList.add('visible'); });
+    if(pgpModal) pgpModal.addEventListener('click', e => { if (e.target === pgpModal || e.target.classList.contains('modal-close-btn')) pgpModal.classList.remove('visible'); });
+    const pgpCopyBtn = document.getElementById('pgp-copy-btn');
+    if(pgpCopyBtn) pgpCopyBtn.addEventListener('click', () => { navigator.clipboard.writeText(pgpKeyText).then(() => showToast('PGPキーをコピーしました')); });
+    
+    const pgpDownloadLink = document.getElementById('pgp-download-link');
+    if(pgpDownloadLink) {
+        const blob = new Blob([pgpKeyText], { type: 'text/plain' });
+        pgpDownloadLink.href = URL.createObjectURL(blob);
+        pgpDownloadLink.download = 'y.exe_pgp_key.asc';
+    }
+    
+    if(emailLink) emailLink.addEventListener('click', e => { e.preventDefault(); navigator.clipboard.writeText('y.exe.1201@proton.me').then(() => showToast('メールアドレスをコピーしました')); });
+    
+    if(darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                darkModeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                darkModeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+        });
+    }
+
+    document.querySelectorAll('.section:not(.main) .reveal').forEach(el => revealObserver.observe(el));
+
+    window.addEventListener('scroll', () => {
+        const scrollThreshold = 10;
+        const isScrolledDown = window.scrollY > scrollThreshold;
+        headerItems.forEach(item => item.classList.toggle('hidden', isScrolledDown));
+        if(topNav) topNav.classList.toggle('visible', isScrolledDown);
+        if(backToTopBtn) backToTopBtn.classList.toggle('visible', window.scrollY > 300);
+    });
+});
