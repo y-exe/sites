@@ -85,7 +85,7 @@ body.dark-mode .btn-primary { background-color: #f0f0f0; color: #111; }
 .shields-group { display: flex; justify-content: center; gap: 0.5em; flex-wrap: wrap; }
 .contact-item.discord { position: relative; padding: 0; height: 100px; overflow: visible; color: white; background-color: #37373e; border-radius: 8px; }
 .discord-banner { position: absolute; top: 0; left: 0; width: 100%; height: 60px; overflow: hidden; opacity: 0.9; border-radius: 8px 8px 0 0; }
-.discord-banner img { width: 100%; height: 100%; object-fit: cover; }
+.discord-banner img, .discord-banner video { width: 100%; height: 100%; object-fit: cover; }
 .discord-pfp { position: absolute; left: 15px; bottom: 10px; }
 .discord-pfp-wrapper { position: relative; width: 65px; height: 65px; }
 .discord-pfp-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #37373e; transition: border-color 0.2s; }
