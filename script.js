@@ -82,7 +82,6 @@ async function fetchGithubProjects() {
     }
 }
 
-// スクロールアニメーション用のオブザーバー
 const revealObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
