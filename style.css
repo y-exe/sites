@@ -392,3 +392,12 @@ body.dark-mode .project-card:hover { border-color: #444; }
     .text-line-1 { font-size: 10vw; }
     .text-line-2 { font-size: 8vw; }
 }
+
+.hero-text .face-emoji {
+    font-size: 0.8em; 
+    vertical-align: middle;
+}
+
+.about-footer p {
+    margin: 0;
+}
