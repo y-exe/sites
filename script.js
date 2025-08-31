@@ -24,7 +24,7 @@ function showToast(message) {
 }
 
 async function fetchDiscordStatus() {
-    const userId = '703734573108035715';
+    const userId = '722878329975210055';
     const statusIndicator = document.getElementById('discord-status-indicator');
     const statusBubble = document.getElementById('custom-status-bubble');
     const statusTextSpan = document.getElementById('custom-status-text');
@@ -201,5 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if(backToTopBtn) backToTopBtn.classList.toggle('visible', window.scrollY > 300);
     });
 });
+
 
 
