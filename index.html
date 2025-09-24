@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Orbitron:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&family=Orbitron:wght@400;500;700;900&display=swap">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     </noscript>
 
@@ -64,145 +64,158 @@
         <div id="loading-text">ま、こんなサイトなんもないんですけどね()</div>
     </div>
     
-    <div class="shields-container header-fixed-item">
-        <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit" width="126" height="20">
-        <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github" width="94" height="20"></a>
-        <a href="https://x.com/y__exe"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)" width="122" height="20"></a>
+    <div class="stalker"></div>
+    <div class="stalker"></div>
+    <div class="stalker"></div>
+    
+    <div class="header-fixed-item shields-container" data-reveal="down">
+        <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit">
+        <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github"></a>
+        <a href="https://x.com/y__exe"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)"></a>
     </div>
-    <div id="getloli-counter" class="header-fixed-item">
-        <img src="https://count.yexe.xyz/@yexe.net?theme=rule34" alt=":counter" width="315" height="100" />
+    <div id="getloli-counter" class="header-fixed-item" data-reveal="down">
+        <img src="https://count.yexe.xyz/@yexe.net?theme=rule34" alt=":counter" />
         <span id="getloli-counter-text">アクセス感謝～</span>
     </div>
-    <div id="now" class="header-fixed-item">現在時刻：<span id="current-time"></span></div>
-    <div id="hayane" class="header-fixed-item">はよ寝ろ</div>
+    <div id="now" class="header-fixed-item" data-reveal="down">現在時刻：<span id="current-time"></span></div>
+    <div id="hayane" class="header-fixed-item" data-reveal="down">はよ寝ろ</div>
 
     <nav id="top-nav">
-        <a href="#top">Home</a>
-        <a href="#projects">Projects</a>
-        <a href="#about">About</a>
+        <div class="nav-links">
+            <a href="#top">Home</a>
+            <a href="#projects">Projects</a>
+            <a href="#about">About</a>
+        </div>
         <button id="dark-mode-toggle" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
     </nav>
-
-    <section class="section main">
-        <header class="hero-text reveal">
-            <p class="text-line-1">(*'▽')</p>
-            <p class="text-line-2">I'm <span class="gradient-text">Hentai</span></p>
-            <p class="text-line-3">なんかやってます 詳しいことは全然わかりませーん</p>
-        </header>
-        <div class="quick-nav-buttons reveal">
-            <a href="#projects" class="quick-nav-btn btn-primary">Projects <i class="fa-solid fa-arrow-right"></i></a>
-            <a href="#about" class="quick-nav-btn btn-secondary">About <i class="fa-solid fa-arrow-right"></i></a>
-        </div>
-        
-        <div class="contact-section reveal">
-            <div class="contact-links">
-                <a href="https://discord.com/users/1413106295686561846" target="_blank" class="contact-item discord">
-                    <div class="discord-banner">
-                         <video autoplay loop muted playsinline src="https://raw.githubusercontent.com/y-exe/sites/refs/heads/main/file/Discord.webm" width="420" height="60"></video>
-                    </div>
-                    <div class="discord-pfp">
-                        <div class="discord-pfp-wrapper">
-                            <img src="https://raw.githubusercontent.com/y-exe/sites/refs/heads/main/file/icon.webp" alt="PFP" width="65" height="65">
-                            <span id="discord-status-indicator" class="status-indicator"></span>
+    
+    <main>
+        <section class="section main">
+            <header class="hero-text">
+                <p class="text-line-1" data-split-text>(*'▽')</p>
+                <p class="text-line-2" data-split-text>I'm <span class="gradient-text">Hentai</span></p>
+                <p class="text-line-3" data-split-text>なんかやってます 詳しいことは全然わかりませーん</p>
+            </header>
+            <div class="quick-nav-buttons" data-reveal="up">
+                <a href="#projects" class="quick-nav-btn btn-primary">Projects <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="#about" class="quick-nav-btn btn-secondary">About <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            
+            <div class="contact-section">
+                <div class="contact-links">
+                    <a href="https://discord.com/users/1413106295686561846" target="_blank" class="contact-item discord" data-reveal="up">
+                        <div class="discord-banner">
+                             <video autoplay loop muted playsinline src="https://raw.githubusercontent.com/y-exe/sites/refs/heads/main/file/Discord.webm"></video>
+                        </div>
+                        <div class="discord-pfp">
+                            <div class="discord-pfp-wrapper">
+                                <img src="https://raw.githubusercontent.com/y-exe/sites/refs/heads/main/file/icon.webp" alt="PFP">
+                                <span id="discord-status-indicator" class="status-indicator"></span>
+                            </div>
+                        </div>
+                        <div class="discord-text">
+                            <div id="custom-status-bubble" class="custom-status-bubble">
+                                <span id="custom-status-text" class="custom-status-text"></span>
+                            </div>
+                            <span class="discord-display-name">(*'▽')</span>
+                            <span class="discord-username">@y__exe</span>
+                        </div>
+                        <i class="fa-brands fa-discord discord-icon"></i>
+                    </a>
+                    
+                    <a href="https://x.com/y__exe" target="_blank" class="contact-item" data-reveal="up">
+                        <div class="contact-info-left"><i class="fa-brands fa-twitter"></i><span class="contact-name">Twitter</span></div>
+                        <span class="contact-username-pill">@y__exe</span>
+                    </a>
+                    <a href="https://github.com/y-exe" target="_blank" class="contact-item" data-reveal="up">
+                        <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
+                        <span class="contact-username-pill">@y-exe</span>
+                    </a>
+                    <a href="https://t.me/h_exe" target="_blank" class="contact-item" data-reveal="up">
+                        <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
+                        <span class="contact-username-pill">@h_exe</span>
+                    </a>
+                    <a href="https://signal.me/#eu/coWGpls-QtNkrqZ8-wohlyrkC35mfWNncnTFRuoU_q6P9mXTqnpDp4h1g05dWLTY" target="_blank" class="contact-item" data-reveal="up">
+                        <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
+                        <span class="contact-username-pill">@yexe.77</span>
+                    </a>
+                    <a href="#" id="email-link" class="contact-item" data-reveal="up">
+                        <div class="contact-info-left"><i class="fa-solid fa-envelope"></i><span class="contact-name">Email</span></div>
+                        <span class="contact-username-pill">y.exe.1201</span>
+                    </a>
+                    <a href="#" id="pgp-link" class="contact-item" data-reveal="up">
+                        <div class="contact-info-left"><i class="fa-solid fa-key"></i><span class="contact-name">PGP</span></div>
+                        <span class="contact-username-pill">Public Key</span>
+                    </a>
+                    
+                    <div class="server-status" data-reveal="up">
+                        <h3 class="hover-highlight" data-split-text>起動状況</h3>
+                        <div class="shields-group">
+                            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1">
+                            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2">
                         </div>
                     </div>
-                    <div class="discord-text">
-                        <div id="custom-status-bubble" class="custom-status-bubble">
-                            <span id="custom-status-text" class="custom-status-text"></span>
+                </div>
+            </div>
+            <a href="#projects" id="scroll-down-container" aria-label="Scroll to Projects" data-reveal="up">
+                <span class="scroll-down-text">Projects</span>
+                <i class="fa-solid fa-chevron-down scroll-down-icon"></i>
+            </a>
+            <div id="scroll-trigger"></div>
+        </section>
+
+        <section id="projects" class="section projects-section">
+            <h2 class="section-title hover-highlight" data-split-text>Projects</h2>
+            <div class="projects-grid"></div>
+        </section>
+
+        <section id="about" class="section about-section">
+            <div class="about-container">
+                <div class="about-card">
+                    <img src="https://raw.githubusercontent.com/y-exe/sites/refs/heads/main/file/icon.webp" alt="y_exe icon" id="about-icon" data-reveal="up">
+                    <h2 class="section-title hover-highlight" data-split-text>Hello, I'm (*'▽')</h2>
+                    <p class="hover-highlight" data-split-text>I am a 16 year old developer-wannabe.</p>
+                    <div class="info-pills" data-reveal="up">
+                        <span><i class="fa-solid fa-user"></i> He/Him</span>
+                        <span id="about-time"><i class="fa-solid fa-clock"></i> JST - ...</span>
+                        <span><i class="fa-solid fa-location-dot"></i> JAPAN</span>
+                    </div>
+                </div>
+                <div class="about-card">
+                    <div class="tech-category" data-reveal="up">
+                        <h3 class="hover-highlight" data-split-text>IDEs</h3>
+                        <div class="tech-pills">
+                            <span><i class="fa-solid fa-code"></i> VSCode</span>
+                            <span><i class="fa-solid fa-code"></i> IntelliJ IDEA</span>
                         </div>
-                        <span class="discord-display-name">(*'▽')</span>
-                        <span class="discord-username">@y__exe</span>
                     </div>
-                    <i class="fa-brands fa-discord discord-icon"></i>
-                </a>
-                
-                <a href="https://x.com/y__exe" target="_blank" class="contact-item">
-                    <div class="contact-info-left"><i class="fa-brands fa-twitter"></i><span class="contact-name">Twitter</span></div>
-                    <span class="contact-username-pill">@y__exe</span>
-                </a>
-                <a href="https://github.com/y-exe" target="_blank" class="contact-item">
-                    <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
-                    <span class="contact-username-pill">@y-exe</span>
-                </a>
-                <a href="https://t.me/h_exe" target="_blank" class="contact-item">
-                    <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
-                    <span class="contact-username-pill">@h_exe</span>
-                </a>
-                <a href="https://signal.me/#eu/coWGpls-QtNkrqZ8-wohlyrkC35mfWNncnTFRuoU_q6P9mXTqnpDp4h1g05dWLTY" target="_blank" class="contact-item">
-                    <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
-                    <span class="contact-username-pill">@yexe.77</span>
-                </a>
-                <a href="#" id="email-link" class="contact-item">
-                    <div class="contact-info-left"><i class="fa-solid fa-envelope"></i><span class="contact-name">Email</span></div>
-                    <span class="contact-username-pill">y.exe.1201</span>
-                </a>
-                <a href="#" id="pgp-link" class="contact-item">
-                    <div class="contact-info-left"><i class="fa-solid fa-key"></i><span class="contact-name">PGP</span></div>
-                    <span class="contact-username-pill">Public Key</span>
-                </a>
-                
-                <div class="server-status">
-                    <h3>起動状況</h3>
-                    <div class="shields-group">
-                        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1" width="76" height="20">
-                        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2" width="76" height="20">
+                    <div class="tech-category" data-reveal="up">
+                        <h3 class="hover-highlight" data-split-text>Backend</h3>
+                        <div class="tech-pills">
+                            <span><i class="fa-brands fa-python"></i> Python</span>
+                            <span><i class="fa-brands fa-java"></i> Java</span>
+                            <span><i class="fa-solid fa-k"></i> Kotlin</span>
+                            <span><i class="fa-brands fa-js"></i> TypeScript</span>
+                            <span><i class="fa-brands fa-js"></i> JavaScript</span>
+                            <span><i class="fa-brands fa-node-js"></i> Node.js</span>
+                        </div>
+                    </div>
+                    <div class="tech-category" data-reveal="up">
+                        <h3 class="hover-highlight" data-split-text>Frontend</h3>
+                        <div class="tech-pills">
+                            <span><i class="fa-brands fa-js"></i> TypeScript</span>
+                            <span><i class="fa-brands fa-js"></i> JavaScript</span>
+                            <span><i class="fa-solid fa-code"></i> Next.js</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <a href="#projects" id="scroll-down-container" aria-label="Scroll to Projects">
-            <span class="scroll-down-text">Projects</span>
-            <i class="fa-solid fa-chevron-down scroll-down-icon"></i>
-        </a>
-    </section>
-
-    <section id="projects" class="section projects-section">
-        <h2 class="reveal">Projects</h2>
-        <div class="projects-grid"></div>
-    </section>
-
-    <section id="about" class="section about-section">
-        <div class="about-card reveal">
-            <h2 class="reveal-child">Hello, I'm (*'▽')</h2>
-            <p class="reveal-child">I am a 16 year old developer-wannabe.</p>
-            <div class="info-pills reveal-child">
-                <span><i class="fa-solid fa-user"></i> He/Him</span>
-                <span id="about-time"><i class="fa-solid fa-clock"></i> JST - ...</span>
-                <span><i class="fa-solid fa-location-dot"></i> JAPAN</span>
-            </div>
-        </div>
-        <div class="about-card reveal">
-            <div class="tech-category reveal-child">
-                <h3>IDEs</h3>
-                <div class="tech-pills">
-                    <span><i class="fa-solid fa-code"></i> VSCode</span>
-                    <span><i class="fa-solid fa-code"></i> IntelliJ IDEA</span>
-                </div>
-            </div>
-            <div class="tech-category reveal-child">
-                <h3>Backend</h3>
-                <div class="tech-pills">
-                    <span><i class="fa-brands fa-python"></i> Python</span>
-                    <span><i class="fa-brands fa-java"></i> Java</span>
-                    <span><i class="fa-solid fa-k"></i> Kotlin</span>
-                    <span><i class="fa-brands fa-js"></i> TypeScript</span>
-                    <span><i class="fa-brands fa-js"></i> JavaScript</span>
-                    <span><i class="fa-brands fa-node-js"></i> Node.js</span>
-                </div>
-            </div>
-            <div class="tech-category reveal-child">
-                <h3>Frontend</h3>
-                <div class="tech-pills">
-                    <span><i class="fa-brands fa-js"></i> TypeScript</span>
-                    <span><i class="fa-brands fa-js"></i> JavaScript</span>
-                    <span><i class="fa-solid fa-code"></i> Next.js</span>
-                </div>
-            </div>
-             <footer class="about-footer">
-                <p>©yexe.net</p>
+             <footer class="footer">
+                <p class="footer-logo" data-reveal="up">yexe.net</p>
+                <p class="footer-copyright" data-reveal="up">Copyright © 2025 yexe</p>
             </footer>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <div id="pgp-modal" class="modal-overlay">
         <div class="modal-content">
@@ -225,15 +238,8 @@
 
     <a href="#top" id="back-to-top" title="Back to Top"><i class="fa-solid fa-arrow-up"></i></a>
     
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="script.js" defer></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
