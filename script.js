@@ -11,7 +11,11 @@ function initializeSite() {
     requestAnimationFrame(raf);
 
     const stalkers = document.querySelectorAll('.stalker');
-    if (stalkers.length > 0) {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    if (isTouchDevice) {
+        stalkers.forEach(el => el.style.display = 'none');
+    } else if (stalkers.length > 0) {
         const stalkerPos = Array.from({ length: stalkers.length }, () => ({ x: 0, y: 0 }));
         let mousePos = { x: -100, y: -100 };
         window.addEventListener('mousemove', e => {
@@ -246,7 +250,7 @@ function updateCurrentTime() {
 }
 
 async function fetchDiscordStatus() {
-    const userId = '1418680947850612799';
+    const userId = '1413106295686561846';
     const statusIndicator = document.getElementById('discord-status-indicator');
     const statusBubble = document.getElementById('custom-status-bubble');
     const statusTextSpan = document.getElementById('custom-status-text');
@@ -309,5 +313,4 @@ async function fetchGithubProjects(observer) {
     if (projectsGrid.querySelector('[data-reveal]')) {
         observer.observe(projectsGrid.querySelector('[data-reveal]'));
     }
-}
-
+                                                  }
