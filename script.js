@@ -250,7 +250,7 @@ function updateCurrentTime() {
 }
 
 async function fetchDiscordStatus() {
-    const userId = '1413106295686561846';
+    const userId = '1438769007636385914';
     const statusIndicator = document.getElementById('discord-status-indicator');
     const statusBubble = document.getElementById('custom-status-bubble');
     const statusTextSpan = document.getElementById('custom-status-text');
@@ -314,3 +314,4 @@ async function fetchGithubProjects(observer) {
         observer.observe(projectsGrid.querySelector('[data-reveal]'));
     }
                                                   }
+
