@@ -426,3 +426,12 @@ body.dark-mode #top-nav { background-color: rgba(18, 18, 18, 0.8); }
     }
 }
 
+[data-split-text].is-ready {
+    visibility: visible;
+}
+
+.contact-item[data-reveal],
+.server-status[data-reveal] {
+    transition-duration: 2.2s;
+    transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+}
