@@ -55,7 +55,7 @@ onMounted(() => {
       </p>
       
       <p class="text-line-3 intro-sequence" :ref="setIntroRef" v-split-text>
-        <span v-for="(char, i) in `現在活動停止中かもしれない。`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+        <span v-for="(char, i) in `適当にコードいじいじします。詳しいことわかんない。`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
       </p>
     </header>
 
