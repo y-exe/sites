@@ -6,15 +6,35 @@ import { provide, watch } from 'vue'
 
 useSeoMeta({
   title: "yexe/(*'▽') Portfolio | yexe.net",
-  description: "y_exe (yexe) のポートフォリお。",
+  description: "y_exe (yexe) のポートフォリオ。開発したプロジェクト、使用技術 (Python, TypeScript, Next.js等)、各種SNSへのリンクを掲載しています。",
   author: 'y_exe',
   ogTitle: "y_exe's Portfolio",
+  ogDescription: "y_exe (yexe) のポートフォリオサイト。",
   ogType: 'website',
   ogUrl: 'https://yexe.net/',
   ogImage: 'https://yexe.net/icon.webp',
   ogSiteName: 'yexe.net',
   twitterCard: 'summary_large_image',
   twitterSite: '@y__exe',
+})
+
+useHead({
+  htmlAttrs: { lang: 'ja' },
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "mainEntity": {
+          "@type": "Person",
+          "name": "y_exe",
+          "image": "https://yexe.net/icon.webp",
+          "url": "https://yexe.net"
+        }
+      })
+    }
+  ]
 })
 
 const isLoading = ref(true)
@@ -30,11 +50,9 @@ const isScrolledEnough = computed(() => scrollY.value > 300)
 let lenis: Lenis | null = null
 
 const themeTriggerEl = ref<HTMLElement | null>(null)
-
 const registerThemeTrigger = (el: HTMLElement) => {
   themeTriggerEl.value = el
 }
-
 provide('registerThemeTrigger', registerThemeTrigger)
 
 const { data: projects, status: projectStatus } = await useFetch('https://api.github.com/users/y-exe/repos', {
@@ -81,6 +99,7 @@ const toggleDarkMode = (event: MouseEvent | null, forceDark?: boolean) => {
     document.startViewTransition(update)
   } else { update() }
 }
+
 const scrollToAnchor = (e: Event, id: string) => {
   e.preventDefault()
   if (!lenis) return
@@ -124,8 +143,6 @@ onMounted(() => {
 
 <template>
   <div>
-    <MouseStalker />
-
     <TheLoading :is-loading="isLoading" :is-fade-out="isFadeOut" :progress="loadingProgress" />
 
     <div v-if="isLoaded">

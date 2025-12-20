@@ -1,4 +1,3 @@
-// composables/useIntro.ts
 export const useIntro = () => {
   const introElements = useState<HTMLElement[]>('introElements', () => [])
   
