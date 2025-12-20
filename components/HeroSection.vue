@@ -43,11 +43,6 @@ onMounted(() => {
 <template>
   <section class="section main" id="top">
     <header class="hero-text">
-      <!-- 
-        テキスト系は v-split-text が data-split-text をつけるが、
-        ここも初期非表示を確実にするため class="intro-sequence" にCSSを当てるのがベスト。
-        (後述のCSS追記で対応します)
-      -->
       <p class="text-line-1 intro-sequence" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `(*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
       </p>
@@ -64,11 +59,6 @@ onMounted(() => {
       </p>
     </header>
 
-    <!-- 
-      【修正ポイント】
-      v-reveal だけだとJS実行まで属性がつかないので、
-      data-reveal="up" を静的に記述して最初からCSSを適用させる。
-    -->
     <div class="quick-nav-buttons intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
       <a href="#projects" class="quick-nav-btn btn-primary" @click="onScrollTo($event, '#projects')">Projects <i class="fa-solid fa-arrow-right"></i></a>
       <a href="#about" class="quick-nav-btn btn-secondary" @click="onScrollTo($event, '#about')">About <i class="fa-solid fa-arrow-right"></i></a>
@@ -135,6 +125,5 @@ onMounted(() => {
       <span class="scroll-down-text">Projects</span>
       <i class="fa-solid fa-chevron-down scroll-down-icon"></i>
     </a>
-    <div id="scroll-trigger"></div>
   </section>
 </template>

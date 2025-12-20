@@ -47,6 +47,7 @@ const jiggleIcon = (event: MouseEvent) => {
           <div class="tech-pills">
             <span><i class="devicon-vscode-plain"></i> VSCode</span>
             <span><i class="devicon-intellij-plain"></i> IntelliJ IDEA</span>
+            <span><i class="devicon-vim-plain"></i> Vim</span>
           </div>
         </div>
 
