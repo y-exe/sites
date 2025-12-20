@@ -34,7 +34,7 @@ const { data: projects, status: projectStatus } = await useFetch('https://api.gi
   query: { sort: 'updated', per_page: 9 },
   transform: (repos: any[]) => repos.filter(repo => !repo.fork),
   lazy: true,
-  server: true
+  server: false
 })
 
 const nuxtApp = useNuxtApp()
