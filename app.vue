@@ -7,6 +7,9 @@ const projects = ref([]);
 const projectsLoading = ref(true);
 const isMounted = ref(false);
 
+let cachedHeaderItems = [];
+let cachedTopNav = null;
+
 function toggleDarkMode(event) {
     const newIsDark = !isDarkMode.value;
     const update = () => {
@@ -51,6 +54,10 @@ onMounted(() => {
     if (history.scrollRestoration) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
 
+    // 【修正点】DOM要素を事前にキャッシュして、スクロール毎の検索負荷を回避
+    cachedHeaderItems = document.querySelectorAll('.header-fixed-item');
+    cachedTopNav = document.getElementById('top-nav');
+
     let isInitialLoad = true;
     const lenis = new Lenis();
     lenis.scrollTo(0, { immediate: true });
@@ -58,11 +65,18 @@ onMounted(() => {
     function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
     requestAnimationFrame(raf);
 
+    // 【修正点】スクロールイベントの最適化（状態変化時のみ実行）
+    let lastScrolledDown = false;
     lenis.on('scroll', (e) => {
         isScrolledEnough.value = e.scroll > 300;
         const isScrolledDown = e.scroll > 50;
-        document.querySelectorAll('.header-fixed-item').forEach(item => item?.classList.toggle('hidden', isScrolledDown));
-        document.getElementById('top-nav')?.classList.toggle('visible', isScrolledDown);
+        
+        // 前回の状態と違う場合のみDOM操作を行う
+        if (isScrolledDown !== lastScrolledDown) {
+            cachedHeaderItems.forEach(item => item?.classList.toggle('hidden', isScrolledDown));
+            if (cachedTopNav) cachedTopNav.classList.toggle('visible', isScrolledDown);
+            lastScrolledDown = isScrolledDown;
+        }
     });
 
     const scrollTrigger = document.getElementById('scroll-trigger');
