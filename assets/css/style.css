@@ -284,9 +284,9 @@ body.dark-mode #top-nav { background-color: rgba(18, 18, 18, 0.8); }
 .about-card .section-title { font-size: 2em; margin-bottom: 0.5rem; }
 
 .footer {
-    margin-top: 2rem;     /* autoをやめて、すぐ下に配置（数値で距離調整） */
-    padding-top: 0;       /* 余計なクッションを削除 */
-    padding-bottom: 2rem; /* 下に少しだけ余白確保 */
+    margin-top: 2rem;
+    padding-top: 0;
+    padding-bottom: 2rem;
     text-align: center;
     font-family: var(--font-display);
     color: var(--text-muted-color);
@@ -431,8 +431,10 @@ body.dark-mode #top-nav { background-color: rgba(18, 18, 18, 0.8); }
     visibility: visible;
 }
 
-.contact-item[data-reveal],
-.server-status[data-reveal] {
-    transition-duration: 2.2s;
-    transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+.text-line-1, .section-title {
+    font-weight: 700; 
+}
+
+.text-line-1 {
+    font-weight: 900 !important; 
 }
