@@ -1,5 +1,5 @@
 <script setup>
-import Lenis from '@studio-freight/lenis';
+import Lenis from 'lenis';
 
 const isScrolledEnough = ref(false);
 const isDarkMode = ref(false);
