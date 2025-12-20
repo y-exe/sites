@@ -1,5 +1,3 @@
-// composables/useSharedObserver.ts
-
 let revealObserver: IntersectionObserver | null = null
 let textObserver: IntersectionObserver | null = null
 

@@ -1,4 +1,3 @@
-<!-- components/ProjectsSection.vue -->
 <script setup lang="ts">
 import { inject, onMounted } from 'vue'
 
