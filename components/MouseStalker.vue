@@ -1,19 +1,26 @@
+<!-- components/MouseStalker.vue -->
 <script setup lang="ts">
 const { x, y } = useMouse()
 
-const stalker1 = ref({ x: 0, y: 0 })
-const stalker2 = ref({ x: 0, y: 0 })
-const stalker3 = ref({ x: 0, y: 0 })
+const stalkers = [
+  ref({ x: 0, y: 0 }),
+  ref({ x: 0, y: 0 }),
+  ref({ x: 0, y: 0 })
+]
+
+const speeds = [0.4, 0.25, 0.1]
 
 const updateStalker = () => {
-  stalker1.value.x += (x.value - stalker1.value.x) * 0.2
-  stalker1.value.y += (y.value - stalker1.value.y) * 0.2
+  const targetX = x.value
+  const targetY = y.value
   
-  stalker2.value.x += (x.value - stalker2.value.x) * 0.1
-  stalker2.value.y += (y.value - stalker2.value.y) * 0.1
-  
-  stalker3.value.x += (x.value - stalker3.value.x) * 0.05
-  stalker3.value.y += (y.value - stalker3.value.y) * 0.05
+  for (let i = 0; i < stalkers.length; i++) {
+    const stalker = stalkers[i].value
+    const speed = speeds[i]
+    
+    stalker.x += (targetX - stalker.x) * speed
+    stalker.y += (targetY - stalker.y) * speed
+  }
 
   requestAnimationFrame(updateStalker)
 }
@@ -26,9 +33,12 @@ onMounted(() => {
 <template>
   <ClientOnly>
     <div class="stalker-wrapper">
-      <div class="stalker" :style="{ transform: `translate(${stalker1.x}px, ${stalker1.y}px) translate(-50%, -50%)` }"></div>
-      <div class="stalker" :style="{ transform: `translate(${stalker2.x}px, ${stalker2.y}px) translate(-50%, -50%)` }"></div>
-      <div class="stalker" :style="{ transform: `translate(${stalker3.x}px, ${stalker3.y}px) translate(-50%, -50%)` }"></div>
+      <div 
+        v-for="(stalker, index) in stalkers" 
+        :key="index"
+        class="stalker" 
+        :style="{ transform: `translate(${stalker.value.x}px, ${stalker.value.y}px) translate(-50%, -50%)` }"
+      ></div>
     </div>
   </ClientOnly>
 </template>

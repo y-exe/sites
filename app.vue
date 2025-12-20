@@ -62,7 +62,7 @@ const startIntroSequence = () => {
           else revealObserver?.observe(el)
         }, 1000)
       }
-    }, index * 30)
+    }, index * 65)
   })
 }
 
@@ -125,6 +125,7 @@ onMounted(() => {
 <template>
   <div>
     <MouseStalker />
+
     <TheLoading :is-loading="isLoading" :is-fade-out="isFadeOut" :progress="loadingProgress" />
 
     <div v-if="isLoaded">
