@@ -40,31 +40,36 @@ const jiggleIcon = (event: MouseEvent) => {
           <span><i class="fa-solid fa-location-dot"></i> JAPAN</span>
         </div>
       </div>
+      
       <div class="about-card">
         <div class="tech-category" v-reveal>
           <h3 class="hover-highlight" v-split-text><span v-for="(c,i) in 'IDEs'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
           <div class="tech-pills">
-            <span><i class="fa-solid fa-code"></i> VSCode</span>
-            <span><i class="fa-solid fa-code"></i> IntelliJ IDEA</span>
+            <span><i class="devicon-vscode-plain"></i> VSCode</span>
+            <span><i class="devicon-intellij-plain"></i> IntelliJ IDEA</span>
           </div>
         </div>
-        <div class="tech-category" v-reveal>
-          <h3 class="hover-highlight" v-split-text><span v-for="(c,i) in 'Backend'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
-          <div class="tech-pills">
-            <span><i class="fa-brands fa-python"></i> Python</span>
-            <span><i class="fa-brands fa-java"></i> Java</span>
-            <span><i class="fa-solid fa-k"></i> Kotlin</span>
-            <span><i class="fa-brands fa-js"></i> TypeScript</span>
-            <span><i class="fa-brands fa-js"></i> JavaScript</span>
-            <span><i class="fa-brands fa-node-js"></i> Node.js</span>
-          </div>
-        </div>
+
         <div class="tech-category" v-reveal>
           <h3 class="hover-highlight" v-split-text><span v-for="(c,i) in 'Frontend'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
           <div class="tech-pills">
-            <span><i class="fa-brands fa-js"></i> TypeScript</span>
-            <span><i class="fa-brands fa-js"></i> JavaScript</span>
-            <span><i class="fa-solid fa-code"></i> Nuxt.js</span>
+            <span><i class="devicon-typescript-plain"></i> TypeScript</span>
+            <span><i class="devicon-javascript-plain"></i> JavaScript</span>
+            <span><i class="devicon-vuejs-plain"></i> Vue.js</span>
+            <span><i class="devicon-nuxtjs-plain"></i> Nuxt.js</span>
+            <span><i class="devicon-react-original"></i> React</span>
+            <span><i class="devicon-nextjs-plain"></i> Next.js</span>
+            <span><i class="devicon-astro-plain"></i> Astro</span>
+          </div>
+        </div>
+
+        <div class="tech-category" v-reveal>
+          <h3 class="hover-highlight" v-split-text><span v-for="(c,i) in 'Backend'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
+          <div class="tech-pills">
+            <span><i class="devicon-nodejs-plain"></i> Node.js</span>
+            <span><i class="devicon-python-plain"></i> Python</span>
+            <span><i class="devicon-java-plain"></i> Java</span>
+            <span><i class="devicon-kotlin-plain"></i> Kotlin</span>
           </div>
         </div>
       </div>
