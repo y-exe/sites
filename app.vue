@@ -2,10 +2,11 @@
 import Lenis from 'lenis'
 import { useIntro } from '~/composables/useIntro'
 import { useSharedObserver } from '~/composables/useSharedObserver'
+import { provide, watch } from 'vue'
 
 useSeoMeta({
   title: "yexe/(*'▽') Portfolio | yexe.net",
-  description: "y_exe (yexe) のポートフォリオ。",
+  description: "y_exe (yexe) のポートフォリお。",
   author: 'y_exe',
   ogTitle: "y_exe's Portfolio",
   ogType: 'website',
@@ -23,12 +24,18 @@ const isLoaded = ref(false)
 const isDarkMode = ref(false)
 const showPgpModal = ref(false)
 const toastData = ref({ show: false, message: '' })
-
 const { introElements, isHeaderIntroDone } = useIntro()
 const { y: scrollY } = useWindowScroll()
 const isScrolledEnough = computed(() => scrollY.value > 300)
-
 let lenis: Lenis | null = null
+
+const themeTriggerEl = ref<HTMLElement | null>(null)
+
+const registerThemeTrigger = (el: HTMLElement) => {
+  themeTriggerEl.value = el
+}
+
+provide('registerThemeTrigger', registerThemeTrigger)
 
 const { data: projects, status: projectStatus } = await useFetch('https://api.github.com/users/y-exe/repos', {
   query: { sort: 'updated', per_page: 9 },
@@ -37,35 +44,25 @@ const { data: projects, status: projectStatus } = await useFetch('https://api.gi
   server: false
 })
 
-const nuxtApp = useNuxtApp()
-
 const startIntroSequence = () => {
   const { getObservers } = useSharedObserver()
   const { revealObserver, textObserver } = getObservers()
-
-  const sortedElements = introElements.value.sort((a, b) => {
-    return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1
-  })
-
+  const sortedElements = introElements.value.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1)
   sortedElements.forEach((el, index) => {
     const isHeader = el.classList.contains('header-fixed-item')
-    
     setTimeout(() => {
       if (isHeader) {
         const headerCount = sortedElements.filter(e => e.classList.contains('header-fixed-item')).length
         const currentHeaderIndex = sortedElements.filter(e => e.classList.contains('header-fixed-item')).indexOf(el)
-        if (currentHeaderIndex === headerCount - 1) {
-          isHeaderIntroDone.value = true 
-        }
+        if (currentHeaderIndex === headerCount - 1) isHeaderIntroDone.value = true
       } else {
         el.classList.add('is-visible')
-        
         setTimeout(() => {
           if (el.dataset.splitText !== undefined) textObserver?.observe(el)
           else revealObserver?.observe(el)
         }, 1000)
       }
-    }, index * 60) 
+    }, index * 30)
   })
 }
 
@@ -84,7 +81,6 @@ const toggleDarkMode = (event: MouseEvent | null, forceDark?: boolean) => {
     document.startViewTransition(update)
   } else { update() }
 }
-
 const scrollToAnchor = (e: Event, id: string) => {
   e.preventDefault()
   if (!lenis) return
@@ -92,9 +88,18 @@ const scrollToAnchor = (e: Event, id: string) => {
   if (target !== null) lenis.scrollTo(target, { duration: 1.5, easing: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t) })
 }
 
+watch(themeTriggerEl, (newEl) => {
+  if (newEl) {
+    new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        document.body.classList.toggle('theme-2', entry.boundingClientRect.top < 0)
+      })
+    }, { threshold: [0, 1] }).observe(newEl)
+  }
+})
+
 onMounted(() => {
   if (localStorage.getItem('theme') === 'dark') toggleDarkMode(null, true)
-
   lenis = new Lenis()
   const raf = (time: number) => { lenis?.raf(time); requestAnimationFrame(raf); }
   requestAnimationFrame(raf)
@@ -109,7 +114,6 @@ onMounted(() => {
         setTimeout(() => {
           isLoading.value = false
           isLoaded.value = true
-          
           nextTick(() => startIntroSequence())
         }, 800)
       }, 200)
@@ -140,7 +144,6 @@ onMounted(() => {
     <a href="#top" id="back-to-top" :class="{ 'visible': isScrolledEnough }" @click="scrollToAnchor($event, '#top')">
       <i class="fa-solid fa-arrow-up"></i>
     </a>
-    <div id="scroll-trigger" style="position: absolute; top: 100vh; height: 1px; width: 100%; pointer-events: none;"></div>
   </div>
 </template>
 
