@@ -41,6 +41,7 @@ const isLoading = ref(true)
 const isFadeOut = ref(false)
 const loadingProgress = ref(0)
 const isLoaded = ref(false)
+const isWindowLoaded = ref(false)
 const isDarkMode = ref(false)
 const showPgpModal = ref(false)
 const toastData = ref({ show: false, message: '' })
@@ -123,11 +124,27 @@ onMounted(() => {
   const raf = (time: number) => { lenis?.raf(time); requestAnimationFrame(raf); }
   requestAnimationFrame(raf)
 
+  const onWindowLoad = () => {
+    isWindowLoaded.value = true
+  }
+
+  if (document.readyState === 'complete') {
+    onWindowLoad()
+  } else {
+    window.addEventListener('load', onWindowLoad)
+  }
+
   const interval = setInterval(() => {
+    if (!isWindowLoaded.value && loadingProgress.value >= 85) {
+      return
+    }
+
     loadingProgress.value += 2
     if (loadingProgress.value >= 100) {
       loadingProgress.value = 100
       clearInterval(interval)
+      window.removeEventListener('load', onWindowLoad)
+
       setTimeout(() => {
         isFadeOut.value = true
         setTimeout(() => {
@@ -145,13 +162,17 @@ onMounted(() => {
   <div>
     <TheLoading :is-loading="isLoading" :is-fade-out="isFadeOut" :progress="loadingProgress" />
 
-    <div v-if="isLoaded">
+    <div :style="!isLoaded ? { height: '100vh', overflow: 'hidden' } : {}">
       <FixedHeader />
       <TheNav :is-dark-mode="isDarkMode" :lenis="lenis" @toggle-theme="toggleDarkMode" />
 
       <main>
         <HeroSection :on-scroll-to="scrollToAnchor" @open-pgp="showPgpModal = true" />
-        <ProjectsSection :projects="projects" :status="projectStatus" />
+        
+        <ClientOnly>
+          <ProjectsSection :projects="projects" :status="projectStatus" />
+        </ClientOnly>
+        
         <AboutSection />
       </main>
     </div>

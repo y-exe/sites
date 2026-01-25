@@ -70,7 +70,7 @@ onMounted(() => {
           <div class="discord-banner"><video autoplay loop muted playsinline src="/Discord.webm"></video></div>
           <div class="discord-pfp">
             <div class="discord-pfp-wrapper">
-              <NuxtImg src="/icon.webp" width="65" height="65" format="webp" />
+              <NuxtImg src="/icon.webp" width="65" height="65" format="webp" loading="eager" />
               <span class="status-indicator" :class="discordStatus"></span>
             </div>
           </div>
@@ -114,8 +114,8 @@ onMounted(() => {
             <span v-for="(char, i) in `起動状況`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
           </h3>
           <div class="shields-group">
-            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1" width="100" height="20">
-            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2" width="100" height="20">
+            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1" width="100" height="20" loading="eager">
+            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2" width="100" height="20" loading="eager">
           </div>
         </div>
       </div>

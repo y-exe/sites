@@ -15,19 +15,22 @@ const headerClasses = computed(() => ({
 <template>
   <div>
     <div class="header-fixed-item shields-container intro-sequence" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
-      <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit" width="120" height="20">
-      <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github" width="90" height="20"></a>
-      <a href="https://x.com/y__exe"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)" width="110" height="20"></a>
+      <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit" width="120" height="20" loading="eager">
+      <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github" width="90" height="20" loading="eager"></a>
+      <a href="https://x.com/y__exe"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y__exe-blue?style=flat-square" alt="Twitter(X)" width="110" height="20" loading="eager"></a>
     </div>
 
     <div id="getloli-counter" class="header-fixed-item intro-sequence" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
-      <img src="https://count.getloli.com/@yexe.net?theme=rule34" alt=":counter" width="300" height="80" />
+      <img src="https://count.yexe.xyz/@yexe.net?theme=rule34" alt=":counter" width="300" height="80" loading="eager" />
       <span id="getloli-counter-text">アクセス感謝～</span>
     </div>
 
-    <div id="now" class="header-fixed-item intro-sequence" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
-      現在時刻：{{ currentTime }}
-    </div>
+    <ClientOnly>
+      <div id="now" class="header-fixed-item intro-sequence" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
+        現在時刻：{{ currentTime }}
+      </div>
+    </ClientOnly>
+
     <div id="hayane" class="header-fixed-item intro-sequence" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
       はよ寝ろ
     </div>

@@ -27,7 +27,17 @@ const jiggleIcon = (event: MouseEvent) => {
   <section id="about" class="section about-section">
     <div class="about-container">
       <div class="about-card">
-        <NuxtImg src="/icon.webp" alt="y_exe icon" id="about-icon" v-reveal width="100" height="100" format="webp" @click="jiggleIcon" />
+        <NuxtImg 
+          src="/icon.webp" 
+          alt="y_exe icon" 
+          id="about-icon" 
+          v-reveal 
+          width="100" 
+          height="100" 
+          format="webp" 
+          loading="eager"
+          @click="jiggleIcon" 
+        />
         <h2 class="section-title hover-highlight" v-split-text>
           <span v-for="(char, i) in `Hello, I'm (*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '&nbsp;' : char }}</span>
         </h2>
