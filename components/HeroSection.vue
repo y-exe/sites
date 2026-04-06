@@ -19,10 +19,6 @@ const combinedActivityText = computed(() => {
   if (currentActivity.value?.details) text += currentActivity.value.details
   if (currentActivity.value?.details && currentActivity.value?.state) text += ' - '
   if (currentActivity.value?.state) text += currentActivity.value.state
-  if (!currentActivity.value?.timestamps?.end && elapsedFormatted.value) {
-    if (text) text += ' - '
-    text += `${elapsedFormatted.value} elapsed`
-  }
   return text
 })
 
@@ -31,6 +27,10 @@ const needsMarquee = computed(() => {
   const txt = combinedActivityText.value
   for (let i = 0; i < txt.length; i++) {
     len += txt.charCodeAt(i) > 255 ? 2 : 1
+  }
+  if (!currentActivity.value?.timestamps?.end && elapsedFormatted.value) {
+    if (txt) len += 3
+    len += elapsedFormatted.value.length + 2
   }
   return len > 28
 })
@@ -157,6 +157,17 @@ const updateDiscordData = (data: any) => {
       iconUrl,
       timestamps: otherAct.timestamps
     }
+
+    if (!iconUrl && otherAct.application_id) {
+      fetch(`https://discord.com/api/v10/applications/${otherAct.application_id}/rpc`)
+        .then(res => res.json())
+        .then(appData => {
+          if (appData.icon && currentActivity.value && currentActivity.value.name === otherAct.name) {
+            currentActivity.value.iconUrl = `https://cdn.discordapp.com/app-icons/${otherAct.application_id}/${appData.icon}.webp`
+          }
+        })
+        .catch(err => console.error('Failed to fetch app icon:', err))
+    }
   } else if (data.spotify) {
     currentActivity.value = {
       name: 'Spotify',
@@ -231,10 +242,14 @@ onUnmounted(() => {
                   <i v-if="currentActivity.name === 'Spotify'" class="fa-brands fa-spotify" style="color: #1ed760; margin-right: 4px;"></i>
                   {{ currentActivity.name }}
                 </div>
-                <div class="activity-details-combined" v-if="combinedActivityText">
+                <div class="activity-details-combined" v-if="combinedActivityText || (!currentActivity.timestamps?.end && elapsedFormatted)">
                   <div class="marquee-wrapper" :class="{ 'is-marquee': needsMarquee }">
-                    <span class="marquee-part">{{ combinedActivityText }}</span>
-                    <span class="marquee-part" v-if="needsMarquee">{{ combinedActivityText }}</span>
+                    <span class="marquee-part">
+                      {{ combinedActivityText }}<template v-if="!currentActivity.timestamps?.end && elapsedFormatted"><span v-if="combinedActivityText"> - </span><span class="elapsed-green"><i class="fa-solid fa-gamepad"></i> {{ elapsedFormatted }}</span></template>
+                    </span>
+                    <span class="marquee-part" v-if="needsMarquee">
+                      {{ combinedActivityText }}<template v-if="!currentActivity.timestamps?.end && elapsedFormatted"><span v-if="combinedActivityText"> - </span><span class="elapsed-green"><i class="fa-solid fa-gamepad"></i> {{ elapsedFormatted }}</span></template>
+                    </span>
                   </div>
                 </div>
                 <div class="activity-progress" v-if="currentActivity.timestamps?.end">
@@ -412,6 +427,10 @@ onUnmounted(() => {
   overflow: hidden;
   white-space: nowrap;
   width: 100%;
+}
+
+.elapsed-green {
+  color: #23a559;
 }
 
 .marquee-wrapper {
