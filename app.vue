@@ -136,6 +136,9 @@ onMounted(() => {
 
   const interval = setInterval(() => {
     if (!isWindowLoaded.value && loadingProgress.value >= 85) {
+      if (loadingProgress.value < 99 && Math.random() < 0.05) {
+        loadingProgress.value += 1
+      }
       return
     }
 
