@@ -89,7 +89,7 @@ const jiggleIcon = (event: MouseEvent) => {
     </div>
     <footer class="footer">
       <p class="footer-logo" v-reveal>yexe.net</p>
-      <p class="footer-copyright" v-reveal>Copyright © 2025 yexe</p>
+      <p class="footer-copyright" v-reveal>Copyright © 2026 yexe</p>
     </footer>
   </section>
 </template>
