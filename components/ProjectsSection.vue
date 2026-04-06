@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { inject, onMounted } from 'vue'
+import { langColors } from '~/utils/lang-colors'
 
 const props = defineProps<{ projects: any[] | null; status: string }>()
 
 const getLangColor = (lang: string) => {
-  const colors: Record<string, string> = {'JavaScript':'#f1e05a','TypeScript':'#3178c6','HTML':'#e34c26','CSS':'#563d7c','Python':'#3572A5','Java':'#b07219','C++':'#f34b7d','Go':'#00ADD8','Rust':'#dea5-84','Shell':'#89e051'};
-  return colors[lang] || '#ccc';
+  return langColors[lang] || '#ccc';
 }
 
 const themeTriggerRef = ref<HTMLElement | null>(null)

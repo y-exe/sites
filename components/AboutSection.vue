@@ -79,8 +79,10 @@ const jiggleIcon = (event: MouseEvent) => {
           <div class="tech-pills">
             <span><i class="devicon-nodejs-plain"></i> Node.js</span>
             <span><i class="devicon-python-plain"></i> Python</span>
+            <span><i class="devicon-go-plain"></i> Go</span>
             <span><i class="devicon-java-plain"></i> Java</span>
             <span><i class="devicon-kotlin-plain"></i> Kotlin</span>
+            <span><i class="devicon-postgresql-plain"></i> PostgreSQL</span>
           </div>
         </div>
       </div>
