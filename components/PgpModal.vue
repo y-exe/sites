@@ -5,46 +5,47 @@ const emit = defineEmits(['update:modelValue'])
 const otherContacts = [
   {
     label: 'matrix.org',
-    icon: 'fa-solid fa-hashtag',
-    value: '@yexe:matrix.org',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=element.io&sz=64',
+    value: 'yexe',
+    copyValue: '@yexe:matrix.org',
     href: 'https://matrix.to/#/@yexe:matrix.org'
   },
   {
     label: 'Session',
-    icon: 'fa-solid fa-message',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=getsession.org&sz=64',
     value: "(*'▽')",
     copyValue: '05d6d19b6ec3dcf64d14ad12cc25a804eae2b23c2bec371defae034b1f6a32936f'
   },
   {
     label: 'Spotify',
-    icon: 'fa-brands fa-spotify',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=open.spotify.com&sz=64',
     value: "(*'▽')",
     href: 'https://open.spotify.com/user/31n5nex7qn7xy3of33wft4dl5ine'
   },
   {
     label: 'VRchat',
-    icon: 'fa-solid fa-vr-cardboard',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=vrchat.com&sz=64',
     value: 'y_exe',
     href: 'https://vrchat.com/home/user/usr_ed7337f3-110d-4669-87a3-2d2c4b734e4a'
   },
   {
     label: 'Genshin',
-    icon: 'fa-solid fa-gamepad',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=genshin.hoyoverse.com&sz=64',
     value: '886013262'
   },
   {
     label: 'Honkai: Star Rail',
-    icon: 'fa-solid fa-train',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=hsr.hoyoverse.com&sz=64',
     value: '830445659'
   },
   {
     label: 'Blue archive',
-    icon: 'fa-solid fa-book',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=bluearchive.nexon.com&sz=64',
     value: '76515340'
   },
   {
-    label: 'しずかなインターネット',
-    icon: 'fa-solid fa-pen-nib',
+    label: 'sizu.me',
+    logoUrl: 'https://www.google.com/s2/favicons?domain=sizu.me&sz=64',
     value: 'yexe',
     href: 'https://sizu.me/yexe'
   }
@@ -105,7 +106,7 @@ const copyValue = (value: string) => {
           @click="contact.href ? undefined : copyValue(contact.copyValue || contact.value)"
         >
           <div class="contact-info-left">
-            <i :class="contact.icon"></i>
+            <img :src="contact.logoUrl" :alt="`${contact.label} logo`" class="contact-logo-img">
             <span class="contact-name">{{ contact.label }}</span>
           </div>
           <span class="contact-username-pill">{{ contact.value }}</span>
