@@ -88,7 +88,7 @@ const connectLanyard = () => {
         }
       }, d.heartbeat_interval)
 
-      ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: '1438769007636385914' } }))
+      ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: '1457705424022274235' } }))
     }
 
     if (op === 0 && (t === 'INIT_STATE' || t === 'PRESENCE_UPDATE')) {
@@ -223,7 +223,7 @@ onUnmounted(() => {
     
     <div class="contact-section">
       <div class="contact-links">
-        <a href="https://discord.com/users/1438769007636385914" target="_blank" class="contact-item discord intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="https://discord.com/users/1457705424022274235" target="_blank" class="contact-item discord intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="discord-banner"><video autoplay loop muted playsinline src="/Discord.webm"></video></div>
           <div class="discord-pfp">
             <div class="discord-pfp-wrapper">
