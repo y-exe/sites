@@ -118,9 +118,16 @@ watch(themeTriggerEl, (newEl) => {
   }
 })
 
+watch(showPgpModal, (isOpen) => {
+  if (!import.meta.client || !lenis) return
+  if (isOpen) lenis.stop()
+  else lenis.start()
+})
+
 onMounted(() => {
   if (localStorage.getItem('theme') === 'dark') toggleDarkMode(null, true)
   lenis = new Lenis()
+  if (showPgpModal.value) lenis.stop()
   const raf = (time: number) => { lenis?.raf(time); requestAnimationFrame(raf); }
   requestAnimationFrame(raf)
 

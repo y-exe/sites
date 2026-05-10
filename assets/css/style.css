@@ -994,6 +994,7 @@ body.dark-mode #top-nav {
     opacity: 0;
     visibility: hidden;
     padding: 2rem;
+    overscroll-behavior: contain;
     transition: opacity var(--transition-medium), visibility var(--transition-medium);
 }
 
@@ -1012,6 +1013,7 @@ body.dark-mode #top-nav {
     width: min(1040px, 100%);
     max-height: min(86vh, 860px);
     overflow-y: auto;
+    overscroll-behavior: contain;
     transform: scale(0.95);
     transition: transform var(--transition-medium);
 }
@@ -1079,7 +1081,32 @@ body.dark-mode #top-nav {
 .modal-close-btn:hover {
     background-color: var(--text-color-dark);
     color: var(--bg-color-dark);
-    transform: rotate(90deg);
+}
+
+.pgp-key-wrap {
+    position: relative;
+}
+
+.pgp-copy-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 1.75rem;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--card-border-color-dark);
+    border-radius: 8px;
+    background-color: var(--pill-bg-color-dark);
+    color: var(--text-color-dark);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.pgp-copy-btn:hover {
+    background-color: var(--text-color-dark);
+    color: var(--bg-color-dark);
 }
 
 .pgp-key-block {
@@ -1096,6 +1123,26 @@ body.dark-mode #top-nav {
     color: #adb5bd;
     max-height: 220px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #6f737a transparent;
+}
+
+.pgp-key-block::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pgp-key-block::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pgp-key-block::-webkit-scrollbar-thumb {
+    background-color: #6f737a;
+    border: 2px solid #101010;
+    border-radius: 999px;
+}
+
+.pgp-key-block::-webkit-scrollbar-thumb:hover {
+    background-color: #8a8f98;
 }
 
 .pgp-fingerprint {
