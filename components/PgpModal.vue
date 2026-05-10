@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ modelValue: boolean }>()
+const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits(['update:modelValue'])
 
 const otherContacts = [
@@ -34,12 +34,12 @@ const otherContacts = [
     value: '886013262'
   },
   {
-    label: 'Honkai: Star Rail',
+    label: 'StarRail',
     logoUrl: 'https://www.google.com/s2/favicons?domain=hsr.hoyoverse.com&sz=64',
     value: '830445659'
   },
   {
-    label: 'Blue archive',
+    label: 'BlueArchive',
     logoUrl: 'https://www.google.com/s2/favicons?domain=bluearchive.nexon.com&sz=64',
     value: '76515340'
   },
@@ -77,20 +77,62 @@ const copyKey = () => {
 const copyValue = (value: string) => {
   navigator.clipboard.writeText(value).then(() => alert('コピーしました'))
 }
+
+let isPageScrollLocked = false
+let lockedScrollY = 0
+
+const lockPageScroll = () => {
+  if (isPageScrollLocked) return
+  lockedScrollY = window.scrollY
+  isPageScrollLocked = true
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.position = 'fixed'
+  document.body.style.top = `-${lockedScrollY}px`
+  document.body.style.left = '0'
+  document.body.style.right = '0'
+  document.body.style.width = '100%'
+  document.body.style.overflow = 'hidden'
+}
+
+const unlockPageScroll = () => {
+  if (!isPageScrollLocked) return
+  isPageScrollLocked = false
+  document.documentElement.style.overflow = ''
+  document.body.style.position = ''
+  document.body.style.top = ''
+  document.body.style.left = ''
+  document.body.style.right = ''
+  document.body.style.width = ''
+  document.body.style.overflow = ''
+  window.scrollTo(0, lockedScrollY)
+}
+
+watch(() => props.modelValue, (isOpen) => {
+  if (!import.meta.client) return
+  if (isOpen) lockPageScroll()
+  else unlockPageScroll()
+}, { immediate: true })
+
+onUnmounted(() => {
+  if (!import.meta.client) return
+  unlockPageScroll()
+})
 </script>
 
 <template>
-  <div v-if="modelValue" id="pgp-modal" class="modal-overlay visible" @click.self="close">
+  <div v-if="modelValue" id="pgp-modal" class="modal-overlay visible" data-lenis-prevent @click.self="close">
     <button class="modal-close-btn" type="button" @click="close">&times;</button>
-    <div class="modal-content">
+    <div class="modal-content" data-lenis-prevent>
       <section class="modal-section">
         <h3>PGP Public Key</h3>
-        <pre class="pgp-key-block">{{ pgpKeyText }}</pre>
+        <div class="pgp-key-wrap">
+          <button type="button" class="pgp-copy-btn" aria-label="Copy PGP public key" @click="copyKey">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+          <pre class="pgp-key-block">{{ pgpKeyText }}</pre>
+        </div>
         <div class="pgp-fingerprint">
           <strong>Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
-        </div>
-        <div class="modal-actions">
-          <button type="button" @click="copyKey">クリップボードにコピー</button>
         </div>
       </section>
 
