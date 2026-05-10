@@ -8,6 +8,9 @@ const props = defineProps<{
 const emit = defineEmits(['open-pgp'])
 const { setIntroRef } = useIntro()
 
+const discordUserId = '1457705424022274235'
+const discordProfileUrl = `https://discord.com/users/${discordUserId}`
+
 const discordStatus = ref('offline')
 const customStatus = ref({ emoji: '', text: '', visible: false })
 const avatarUrl = ref('/icon.webp')
@@ -88,7 +91,7 @@ const connectLanyard = () => {
         }
       }, d.heartbeat_interval)
 
-      ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: '1457705424022274235' } }))
+      ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: discordUserId } }))
     }
 
     if (op === 0 && (t === 'INIT_STATE' || t === 'PRESENCE_UPDATE')) {
@@ -223,7 +226,7 @@ onUnmounted(() => {
     
     <div class="contact-section">
       <div class="contact-links">
-        <a href="https://discord.com/users/1457705424022274235" target="_blank" class="contact-item discord intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a :href="discordProfileUrl" target="_blank" class="contact-item discord intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="discord-banner"><video autoplay loop muted playsinline src="/Discord.webm"></video></div>
           <div class="discord-pfp">
             <div class="discord-pfp-wrapper">
@@ -294,8 +297,8 @@ onUnmounted(() => {
           <span class="contact-username-pill">y.exe.1201</span>
         </a>
         <a href="#" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up" @click.prevent="emit('open-pgp')">
-          <div class="contact-info-left"><i class="fa-solid fa-key"></i><span class="contact-name">PGP</span></div>
-          <span class="contact-username-pill">Public Key</span>
+          <div class="contact-info-left"><i class="fa-solid fa-ellipsis"></i><span class="contact-name">その他</span></div>
+          <span class="contact-username-pill">Links</span>
         </a>
         
         <div class="server-status intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">

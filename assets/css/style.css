@@ -993,6 +993,7 @@ body.dark-mode #top-nav {
     z-index: 2000;
     opacity: 0;
     visibility: hidden;
+    padding: 2rem;
     transition: opacity var(--transition-medium), visibility var(--transition-medium);
 }
 
@@ -1004,11 +1005,12 @@ body.dark-mode #top-nav {
 .modal-content {
     background-color: var(--card-bg-color-dark);
     color: var(--text-color-dark);
-    padding: 2em;
-    border-radius: 16px;
-    max-width: 90%;
-    width: 600px;
-    max-height: 80vh;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 2px solid var(--card-border-color-dark);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    width: min(1040px, 100%);
+    max-height: min(86vh, 860px);
     overflow-y: auto;
     transform: scale(0.95);
     transition: transform var(--transition-medium);
@@ -1022,57 +1024,97 @@ body.dark-mode #top-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5em;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--card-border-color-dark);
 }
 
 .modal-header h2 {
     margin: 0;
     font-family: var(--font-display);
-    color: #fff;
+    color: var(--text-color-dark);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    letter-spacing: 0;
+}
+
+.modal-section {
+    width: min(820px, 100%);
+    margin: 0 auto;
+    padding: 1.1rem;
+    border: 2px solid var(--card-border-color-dark);
+    border-radius: 8px;
+    background-color: var(--bg-alt-color-dark);
+}
+
+.modal-section h3 {
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    font-family: var(--font-display);
+    color: var(--text-color-dark);
+    font-size: 1.1rem;
+    letter-spacing: 0;
+    text-align: left;
+    border-bottom: 2px solid var(--card-border-color-dark);
 }
 
 .modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.8em;
-    color: #adb5bd;
-    transition: color var(--transition-fast), transform var(--transition-fast);
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 2001;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pill-bg-color-dark);
+    border: 2px solid var(--card-border-color-dark);
+    border-radius: 8px;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--text-color-dark);
+    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
 .modal-close-btn:hover {
-    color: #fff;
+    background-color: var(--text-color-dark);
+    color: var(--bg-color-dark);
     transform: rotate(90deg);
 }
 
 .pgp-key-block {
-    background-color: #2c2f33;
-    border: 1px solid var(--card-border-color-dark);
+    background-color: #101010;
+    border: 2px solid var(--card-border-color-dark);
     border-radius: 8px;
-    padding: 1em;
+    padding: 1rem;
     text-align: left;
     font-family: monospace;
-    font-size: 0.8em;
+    font-size: 0.78rem;
+    line-height: 1.55;
     white-space: pre-wrap;
     word-break: break-all;
     color: #adb5bd;
+    max-height: 220px;
+    overflow-y: auto;
 }
 
 .pgp-fingerprint {
-    margin-top: 1em;
-    font-size: 0.9em;
+    margin-top: 0.85rem;
+    font-size: 0.9rem;
     word-break: break-all;
-    color: #8e9297;
+    color: #adb5bd;
+    text-align: left;
 }
 
 .pgp-fingerprint strong {
     font-family: var(--font-display);
-    color: #e9ecef;
+    color: var(--text-color-dark);
 }
 
 .modal-actions {
     display: flex;
-    gap: 1em;
-    margin-top: 1.5em;
+    gap: 1rem;
+    margin-top: 1rem;
     flex-wrap: wrap;
 }
 
@@ -1083,18 +1125,100 @@ body.dark-mode #top-nav {
     font-size: 1rem;
     padding: 0.8em 1em;
     border-radius: 8px;
-    border: none;
-    background-color: #40444b;
+    border: 2px solid var(--card-border-color-dark);
+    background-color: var(--pill-bg-color-dark);
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color-dark);
     font-weight: 500;
-    transition: background-color var(--transition-fast), transform var(--transition-fast);
+    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
 .modal-actions button:hover,
 .modal-actions a:hover {
-    background-color: #5865f2;
+    background-color: var(--text-color-dark);
+    color: var(--bg-color-dark);
     transform: translateY(-2px);
+}
+
+.other-links {
+    display: grid;
+    grid-template-columns: repeat(2, 300px);
+    justify-content: center;
+    gap: 1em 1.5em;
+    margin-top: 1.5rem;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.other-link-item {
+    width: 100%;
+    min-height: 41px;
+    height: 41px;
+    font: inherit;
+    text-align: left;
+    appearance: none;
+    border-width: 2px;
+}
+
+.modal-content .contact-item {
+    background-color: var(--card-bg-color-dark);
+    border-color: var(--card-border-color-dark);
+    color: #adb5bd;
+}
+
+.modal-content .contact-item:not(.discord):hover {
+    background-color: var(--pill-bg-color-dark);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content .contact-info-left i {
+    color: #adb5bd;
+}
+
+.modal-content .contact-info-left .contact-name {
+    color: var(--text-color-dark);
+}
+
+.modal-content .contact-username-pill {
+    background-color: var(--pill-bg-color-dark);
+    color: #adb5bd;
+}
+
+.other-link-item .contact-info-left {
+    min-width: 0;
+}
+
+.other-link-item .contact-name,
+.other-link-item .contact-username-pill {
+    white-space: nowrap;
+}
+
+.other-link-item .contact-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
+    .modal-overlay {
+        padding: 1rem;
+        align-items: flex-start;
+    }
+
+    .modal-close-btn {
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .modal-content {
+        padding: 1.25rem;
+        max-height: calc(100vh - 2rem);
+    }
+
+    .other-links {
+        grid-template-columns: 1fr;
+        width: min(360px, 100%);
+    }
 }
 
 #toast-notification {

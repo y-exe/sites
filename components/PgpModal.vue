@@ -1,6 +1,54 @@
 <script setup lang="ts">
-const props = defineProps<{ modelValue: boolean }>()
+defineProps<{ modelValue: boolean }>()
 const emit = defineEmits(['update:modelValue'])
+
+const otherContacts = [
+  {
+    label: 'matrix.org',
+    icon: 'fa-solid fa-hashtag',
+    value: '@yexe:matrix.org',
+    href: 'https://matrix.to/#/@yexe:matrix.org'
+  },
+  {
+    label: 'Session',
+    icon: 'fa-solid fa-message',
+    value: "(*'▽')",
+    copyValue: '05d6d19b6ec3dcf64d14ad12cc25a804eae2b23c2bec371defae034b1f6a32936f'
+  },
+  {
+    label: 'Spotify',
+    icon: 'fa-brands fa-spotify',
+    value: "(*'▽')",
+    href: 'https://open.spotify.com/user/31n5nex7qn7xy3of33wft4dl5ine'
+  },
+  {
+    label: 'VRchat',
+    icon: 'fa-solid fa-vr-cardboard',
+    value: 'y_exe',
+    href: 'https://vrchat.com/home/user/usr_ed7337f3-110d-4669-87a3-2d2c4b734e4a'
+  },
+  {
+    label: 'Genshin',
+    icon: 'fa-solid fa-gamepad',
+    value: '886013262'
+  },
+  {
+    label: 'Honkai: Star Rail',
+    icon: 'fa-solid fa-train',
+    value: '830445659'
+  },
+  {
+    label: 'Blue archive',
+    icon: 'fa-solid fa-book',
+    value: '76515340'
+  },
+  {
+    label: 'しずかなインターネット',
+    icon: 'fa-solid fa-pen-nib',
+    value: 'yexe',
+    href: 'https://sizu.me/yexe'
+  }
+]
 
 const pgpKeyText = `-----BEGIN PGP PUBLIC KEY BLOCK-----
 xjMEaGdxTRYJKwYBBAHaRw8BAQdAmdRPek5wM0eBSZtgyL88XDlUZYT+HEh8
@@ -24,21 +72,44 @@ const close = () => emit('update:modelValue', false)
 const copyKey = () => {
   navigator.clipboard.writeText(pgpKeyText).then(() => alert('コピーしました'))
 }
+
+const copyValue = (value: string) => {
+  navigator.clipboard.writeText(value).then(() => alert('コピーしました'))
+}
 </script>
 
 <template>
-  <div id="pgp-modal" class="modal-overlay" :class="{ visible: modelValue }" @click.self="close">
+  <div v-if="modelValue" id="pgp-modal" class="modal-overlay visible" @click.self="close">
+    <button class="modal-close-btn" type="button" @click="close">&times;</button>
     <div class="modal-content">
-      <div class="modal-header">
-        <h2>PGP Public Key</h2>
-        <button class="modal-close-btn" @click="close">×</button>
-      </div>
-      <pre class="pgp-key-block">{{ pgpKeyText }}</pre>
-      <div class="pgp-fingerprint">
-        <strong>Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
-      </div>
-      <div class="modal-actions">
-        <button @click="copyKey">クリップボードにコピー</button>
+      <section class="modal-section">
+        <h3>PGP Public Key</h3>
+        <pre class="pgp-key-block">{{ pgpKeyText }}</pre>
+        <div class="pgp-fingerprint">
+          <strong>Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
+        </div>
+        <div class="modal-actions">
+          <button type="button" @click="copyKey">クリップボードにコピー</button>
+        </div>
+      </section>
+
+      <div class="other-links">
+        <component
+          :is="contact.href ? 'a' : 'button'"
+          v-for="contact in otherContacts"
+          :key="contact.label"
+          class="contact-item other-link-item"
+          :href="contact.href"
+          :target="contact.href ? '_blank' : undefined"
+          :rel="contact.href ? 'noopener noreferrer' : undefined"
+          @click="contact.href ? undefined : copyValue(contact.copyValue || contact.value)"
+        >
+          <div class="contact-info-left">
+            <i :class="contact.icon"></i>
+            <span class="contact-name">{{ contact.label }}</span>
+          </div>
+          <span class="contact-username-pill">{{ contact.value }}</span>
+        </component>
       </div>
     </div>
   </div>
