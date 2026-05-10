@@ -1006,7 +1006,7 @@ body.dark-mode #top-nav {
     background-color: var(--card-bg-color-dark);
     color: var(--text-color-dark);
     padding: 2rem;
-    border-radius: 8px;
+    border-radius: 14px;
     border: 2px solid var(--card-border-color-dark);
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
     width: min(1040px, 100%);
@@ -1042,7 +1042,7 @@ body.dark-mode #top-nav {
     margin: 0 auto;
     padding: 1.1rem;
     border: 2px solid var(--card-border-color-dark);
-    border-radius: 8px;
+    border-radius: 12px;
     background-color: var(--bg-alt-color-dark);
 }
 
@@ -1085,7 +1085,7 @@ body.dark-mode #top-nav {
 .pgp-key-block {
     background-color: #101010;
     border: 2px solid var(--card-border-color-dark);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 1rem;
     text-align: left;
     font-family: monospace;
@@ -1124,7 +1124,7 @@ body.dark-mode #top-nav {
     text-align: center;
     font-size: 1rem;
     padding: 0.8em 1em;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 2px solid var(--card-border-color-dark);
     background-color: var(--pill-bg-color-dark);
     text-decoration: none;
@@ -1161,6 +1161,14 @@ body.dark-mode #top-nav {
     border-width: 2px;
 }
 
+.contact-logo-img {
+    width: 1.65em;
+    height: 1.65em;
+    object-fit: contain;
+    flex: 0 0 1.65em;
+    border-radius: 5px;
+}
+
 .modal-content .contact-item {
     background-color: var(--card-bg-color-dark);
     border-color: var(--card-border-color-dark);
@@ -1170,10 +1178,6 @@ body.dark-mode #top-nav {
 .modal-content .contact-item:not(.discord):hover {
     background-color: var(--pill-bg-color-dark);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.modal-content .contact-info-left i {
-    color: #adb5bd;
 }
 
 .modal-content .contact-info-left .contact-name {
