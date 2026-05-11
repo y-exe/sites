@@ -120,40 +120,42 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="modelValue" id="pgp-modal" class="modal-overlay visible" data-lenis-prevent @click.self="close">
-    <button class="modal-close-btn" type="button" @click="close">&times;</button>
-    <div class="modal-content" data-lenis-prevent>
-      <section class="modal-section">
-        <h3>PGP Public Key</h3>
-        <div class="pgp-key-wrap">
-          <button type="button" class="pgp-copy-btn" aria-label="Copy PGP public key" @click="copyKey">
-            <i class="fa-regular fa-copy"></i>
-          </button>
-          <pre class="pgp-key-block">{{ pgpKeyText }}</pre>
-        </div>
-        <div class="pgp-fingerprint">
-          <strong>Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
-        </div>
-      </section>
-
-      <div class="other-links">
-        <component
-          :is="contact.href ? 'a' : 'button'"
-          v-for="contact in otherContacts"
-          :key="contact.label"
-          class="contact-item other-link-item"
-          :href="contact.href"
-          :target="contact.href ? '_blank' : undefined"
-          :rel="contact.href ? 'noopener noreferrer' : undefined"
-          @click="contact.href ? undefined : copyValue(contact.copyValue || contact.value)"
-        >
-          <div class="contact-info-left">
-            <img :src="contact.logoUrl" :alt="`${contact.label} logo`" class="contact-logo-img">
-            <span class="contact-name">{{ contact.label }}</span>
+  <Transition name="modal-pop">
+    <div v-if="modelValue" id="pgp-modal" class="modal-overlay visible" data-lenis-prevent @click.self="close">
+      <button class="modal-close-btn" type="button" @click="close">&times;</button>
+      <div class="modal-content" data-lenis-prevent>
+        <section class="modal-section">
+          <h3>PGP Public Key</h3>
+          <div class="pgp-key-wrap">
+            <button type="button" class="pgp-copy-btn" aria-label="Copy PGP public key" @click="copyKey">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+            <pre class="pgp-key-block">{{ pgpKeyText }}</pre>
           </div>
-          <span class="contact-username-pill">{{ contact.value }}</span>
-        </component>
+          <div class="pgp-fingerprint">
+            <strong>Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
+          </div>
+        </section>
+
+        <div class="other-links">
+          <component
+            :is="contact.href ? 'a' : 'button'"
+            v-for="contact in otherContacts"
+            :key="contact.label"
+            class="contact-item other-link-item"
+            :href="contact.href"
+            :target="contact.href ? '_blank' : undefined"
+            :rel="contact.href ? 'noopener noreferrer' : undefined"
+            @click="contact.href ? undefined : copyValue(contact.copyValue || contact.value)"
+          >
+            <div class="contact-info-left">
+              <img :src="contact.logoUrl" :alt="`${contact.label} logo`" class="contact-logo-img">
+              <span class="contact-name">{{ contact.label }}</span>
+            </div>
+            <span class="contact-username-pill">{{ contact.value }}</span>
+          </component>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>

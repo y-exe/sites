@@ -1014,11 +1014,44 @@ body.dark-mode #top-nav {
     max-height: min(86vh, 860px);
     overflow-y: auto;
     overscroll-behavior: contain;
-    transform: scale(0.95);
+    transform: scale(1);
     transition: transform var(--transition-medium);
 }
 
 .modal-overlay.visible .modal-content {
+    transform: scale(1);
+}
+
+.modal-pop-enter-active,
+.modal-pop-leave-active {
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-pop-enter-from,
+.modal-pop-leave-to {
+    opacity: 0;
+}
+
+.modal-pop-enter-to,
+.modal-pop-leave-from {
+    opacity: 1;
+}
+
+.modal-pop-enter-active .modal-content,
+.modal-pop-leave-active .modal-content {
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-pop-enter-from.visible .modal-content,
+.modal-pop-leave-to.visible .modal-content {
+    opacity: 0;
+    transform: scale(0.88);
+}
+
+.modal-pop-enter-to.visible .modal-content,
+.modal-pop-leave-from.visible .modal-content {
+    opacity: 1;
     transform: scale(1);
 }
 
