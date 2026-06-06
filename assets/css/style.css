@@ -1361,6 +1361,11 @@ body.dark-mode #top-nav {
         padding: 5rem 1rem;
     }
 
+    .main {
+        justify-content: flex-start;
+        padding-top: 7.5rem;
+    }
+
     #getloli-counter {
         transform: scale(0.7);
         top: 0.5rem;

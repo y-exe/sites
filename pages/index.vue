@@ -2,6 +2,7 @@
 import Lenis from 'lenis'
 import { useIntro } from '~/composables/useIntro'
 import { useSharedObserver } from '~/composables/useSharedObserver'
+import { otherContactLogoUrls } from '~/utils/preload-assets'
 import { provide, watch } from 'vue'
 
 useSeoMeta({
@@ -49,6 +50,23 @@ const { introElements, isHeaderIntroDone } = useIntro()
 const { y: scrollY } = useWindowScroll()
 const isScrolledEnough = computed(() => scrollY.value > 300)
 let lenis: Lenis | null = null
+
+const preloadImages = (urls: string[], timeoutMs = 5000) => {
+  const uniqueUrls = [...new Set(urls)]
+
+  return Promise.allSettled(uniqueUrls.map(url => new Promise<void>((resolve) => {
+    const image = new Image()
+    const timeout = window.setTimeout(resolve, timeoutMs)
+    const finish = () => {
+      window.clearTimeout(timeout)
+      resolve()
+    }
+
+    image.onload = finish
+    image.onerror = finish
+    image.src = url
+  })))
+}
 
 const themeTriggerEl = ref<HTMLElement | null>(null)
 const registerThemeTrigger = (el: HTMLElement) => {
@@ -130,6 +148,11 @@ onMounted(() => {
   if (showPgpModal.value) lenis.stop()
   const raf = (time: number) => { lenis?.raf(time); requestAnimationFrame(raf); }
   requestAnimationFrame(raf)
+  let modalIconsLoaded = false
+
+  preloadImages(otherContactLogoUrls).then(() => {
+    modalIconsLoaded = true
+  })
 
   const onWindowLoad = () => {
     isWindowLoaded.value = true
@@ -142,7 +165,7 @@ onMounted(() => {
   }
 
   const interval = setInterval(() => {
-    if (!isWindowLoaded.value && loadingProgress.value >= 85) {
+    if ((!isWindowLoaded.value || !modalIconsLoaded) && loadingProgress.value >= 85) {
       if (loadingProgress.value < 99 && Math.random() < 0.05) {
         loadingProgress.value += 1
       }
