@@ -8,7 +8,7 @@ const props = defineProps<{
 const emit = defineEmits(['open-pgp'])
 const { setIntroRef } = useIntro()
 
-const discordUserId = '1457705424022274235'
+const discordUserId = '483307286513582090'
 const discordProfileUrl = `https://discord.com/users/${discordUserId}`
 
 const discordStatus = ref('offline')
