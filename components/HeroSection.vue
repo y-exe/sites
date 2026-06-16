@@ -17,6 +17,14 @@ const avatarUrl = ref('/icon.webp')
 const discordName = ref("(*'▽')")
 const discordUsername = ref("@y_xyz")
 
+const getTextDisplayLength = (text: string) => {
+  let len = 0
+  for (let i = 0; i < text.length; i++) {
+    len += text.charCodeAt(i) > 255 ? 2 : 1
+  }
+  return len
+}
+
 const combinedActivityText = computed(() => {
   let text = ''
   if (currentActivity.value?.details) text += currentActivity.value.details
@@ -26,16 +34,21 @@ const combinedActivityText = computed(() => {
 })
 
 const needsMarquee = computed(() => {
-  let len = 0
   const txt = combinedActivityText.value
-  for (let i = 0; i < txt.length; i++) {
-    len += txt.charCodeAt(i) > 255 ? 2 : 1
-  }
+  let len = getTextDisplayLength(txt)
   if (!currentActivity.value?.timestamps?.end && elapsedFormatted.value) {
     if (txt) len += 3
     len += elapsedFormatted.value.length + 2
   }
   return len > 28
+})
+
+const customStatusNeedsMarquee = computed(() => getTextDisplayLength(customStatus.value.text) > 28)
+
+const customStatusMarqueeStyle = computed(() => {
+  const len = getTextDisplayLength(customStatus.value.text)
+  const duration = Math.min(36, Math.max(12, len * 0.45))
+  return { '--marquee-duration': `${duration}s` }
 })
 
 const formatTime = (ms: number) => {
@@ -235,9 +248,6 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="discord-text">
-            <div v-if="customStatus.visible" class="custom-status-bubble visible">
-              <span class="custom-status-text" v-html="`${customStatus.emoji} ${customStatus.text}`"></span>
-            </div>
             <div v-if="currentActivity" class="discord-activity-bubble" :class="{ 'spotify-bubble': currentActivity.name === 'Spotify' }">
               <img v-if="currentActivity.iconUrl" :src="currentActivity.iconUrl" class="activity-icon" />
               <div class="activity-text-info">
@@ -261,6 +271,21 @@ onUnmounted(() => {
                     <div class="progress-fill" :class="{ 'spotify': currentActivity.name === 'Spotify' }" :style="{ width: playbackProgressPercent + '%' }"></div>
                   </div>
                   <span class="progress-time right">{{ totalFormatted }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="customStatus.visible" class="discord-activity-bubble custom-status-activity-bubble">
+              <span v-if="customStatus.emoji" class="activity-icon custom-status-activity-icon" v-html="customStatus.emoji"></span>
+              <div class="activity-text-info">
+                <div class="activity-name">
+                  <i class="fa-solid fa-comment" style="color: #b5bac1; margin-right: 4px;"></i>
+                  Message
+                </div>
+                <div v-if="customStatus.text" class="activity-details-combined">
+                  <div class="marquee-wrapper" :class="{ 'is-marquee': customStatusNeedsMarquee }" :style="customStatusMarqueeStyle">
+                    <span class="marquee-part">{{ customStatus.text }}</span>
+                    <span class="marquee-part" v-if="customStatusNeedsMarquee">{{ customStatus.text }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -403,6 +428,21 @@ onUnmounted(() => {
   object-fit: cover;
 }
 
+.custom-status-activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #232428;
+  color: #f2f3f5;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.custom-status-activity-icon :deep(.custom-status-emoji) {
+  width: 22px;
+  height: 22px;
+}
+
 .activity-text-info {
   display: flex;
   flex-direction: column;
@@ -442,7 +482,7 @@ onUnmounted(() => {
 }
 
 .marquee-wrapper.is-marquee {
-  animation: marquee-scroll 10s linear infinite;
+  animation: marquee-scroll var(--marquee-duration, 10s) linear infinite;
 }
 
 .marquee-part {
