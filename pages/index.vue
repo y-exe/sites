@@ -74,9 +74,29 @@ const registerThemeTrigger = (el: HTMLElement) => {
 }
 provide('registerThemeTrigger', registerThemeTrigger)
 
+// Keep the Projects section usable when GitHub's unauthenticated API is rate-limited.
+// The browser still refreshes this list when the public API is available.
+const fallbackProjects = [
+  'DiscordWebAnalytics',
+  'votesites',
+  'tokumei-bot',
+  'DiscordWebBotClient',
+  'games-bot',
+  'sites',
+  'image-to-url',
+  'ymkw-mad'
+].map(name => ({
+  id: name,
+  name,
+  html_url: `https://github.com/y-exe/${name}`,
+  owner: { login: 'y-exe' },
+  default_branch: 'main'
+}))
+
 const { data: projects, status: projectStatus } = await useFetch('https://api.github.com/users/y-exe/repos', {
   query: { sort: 'updated', per_page: 9 },
-  transform: (repos: any[]) => repos.filter(repo => !repo.fork),
+  transform: (repos: any[]) => Array.isArray(repos) ? repos.filter(repo => !repo.fork) : [],
+  default: () => fallbackProjects,
   lazy: true,
   server: false
 })
@@ -202,9 +222,7 @@ onMounted(() => {
       <main>
         <HeroSection :on-scroll-to="scrollToAnchor" @open-pgp="showPgpModal = true" />
 
-        <ClientOnly>
-          <ProjectsSection :projects="projects" :status="projectStatus" />
-        </ClientOnly>
+        <ProjectsSection :projects="projects" :status="projectStatus" />
 
         <AboutSection />
       </main>

@@ -265,7 +265,7 @@ onUnmounted(() => {
       </Transition>
     </div>
     <div class="projects-grid">
-      <p v-if="status === 'pending'">プロジェクトを読み込んでいます...</p>
+      <p v-if="status === 'pending' && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
       <a v-else v-for="repo in projects" :key="repo.id" :href="repo.html_url" target="_blank" class="project-card">
         <div class="project-image">
