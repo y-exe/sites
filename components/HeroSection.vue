@@ -16,6 +16,16 @@ const customStatus = ref({ emoji: '', text: '', visible: false })
 const avatarUrl = ref('/icon.webp')
 const discordName = ref("(*'▽')")
 const discordUsername = ref("@y_xyz")
+const isHistoryOpen = ref(false)
+const historyPopover = ref<HTMLElement | null>(null)
+
+const closeHistoryOnOutsideClick = (event: MouseEvent) => {
+  if (!historyPopover.value?.contains(event.target as Node)) isHistoryOpen.value = false
+}
+
+const closeHistoryOnEscape = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') isHistoryOpen.value = false
+}
 
 const getTextDisplayLength = (text: string) => {
   let len = 0
@@ -204,12 +214,16 @@ const copyEmail = () => {
 onMounted(() => {
   connectLanyard()
   timeInterval = setInterval(() => { nowMs.value = Date.now() }, 1000)
+  document.addEventListener('click', closeHistoryOnOutsideClick)
+  document.addEventListener('keydown', closeHistoryOnEscape)
 })
 
 onUnmounted(() => {
   if (ws) ws.close()
   if (heartbeatInterval) clearInterval(heartbeatInterval)
   if (timeInterval) clearInterval(timeInterval)
+  document.removeEventListener('click', closeHistoryOnOutsideClick)
+  document.removeEventListener('keydown', closeHistoryOnEscape)
 })
 </script>
 
@@ -228,7 +242,13 @@ onUnmounted(() => {
       </p>
       
       <p class="text-line-3 intro-sequence" :ref="setIntroRef" v-split-text>
-        <span v-for="(char, i) in `適当にコードいじいじします。詳しいことわかんない。`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+        <span v-for="(char, i) in `自分で書いてなさ過ぎてバイブコーダー`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+        <span ref="historyPopover" class="history-popover">
+          <button type="button" class="history-trigger" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="isHistoryOpen = !isHistoryOpen"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+          <Transition name="history-pop">
+            <div v-if="isHistoryOpen" class="history-menu" role="status"><span class="history-menu-label">過去のひとこと</span><span>現在活動停止中かもしれない。</span></div>
+          </Transition>
+        </span>
       </p>
     </header>
 

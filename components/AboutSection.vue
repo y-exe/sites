@@ -25,6 +25,10 @@ const jiggleIcon = (event: MouseEvent) => {
 
 <template>
   <section id="about" class="section about-section">
+    <h2 class="section-title hover-highlight" v-split-text>
+      <span v-for="(char, i) in `About`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+    </h2>
+    <p class="about-subtitle" v-reveal>なんかいろいろ</p>
     <div class="about-container">
       <div class="about-card">
         <NuxtImg 
@@ -47,7 +51,7 @@ const jiggleIcon = (event: MouseEvent) => {
         <div class="info-pills" v-reveal>
           <span><i class="fa-solid fa-user"></i> He/Him</span>
           <span id="about-time"><i class="fa-solid fa-clock"></i> JST - {{ currentJstTime }}</span>
-          <span><i class="fa-solid fa-location-dot"></i> JAPAN</span>
+          <span><i class="fa-solid fa-location-dot"></i> FUKUOKA</span>
         </div>
       </div>
       
