@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
-import { marked } from 'marked'
 
 const props = defineProps<{ projects: any[] | null; status: string }>()
 
 const themeTriggerRef = ref<HTMLElement | null>(null)
 const registerThemeTrigger = inject<(el: HTMLElement) => void>('registerThemeTrigger')
-type ProjectDetails = { image: string | null; shields: string[]; commitTrend: string; readme: string; renderedReadme: string }
+type ProjectDetails = { description: string; images: string[]; shields: string[]; commitTrend: string }
 const projectDetails = ref<Record<string | number, ProjectDetails>>({})
 const githubPopoverRef = ref<HTMLElement | null>(null)
 const isGithubProfileOpen = ref(false)
@@ -18,6 +17,8 @@ const githubEvents = ref<any[]>([])
 const githubContributions = ref<{ date: string; count: number; level: number }[]>([])
 const githubContributionTotal = ref<number | null>(null)
 const selectedProject = ref<any | null>(null)
+const currentProjectImageIndex = ref(0)
+let projectCarouselTimer: ReturnType<typeof setInterval> | undefined
 
 const githubRequest = async (resource: string, repo?: string) => {
   const query = new URLSearchParams({ resource })
@@ -39,6 +40,23 @@ const relativeUpdate = (date: string) => {
   const months = Math.floor(days / 30)
   if (months < 12) return `${months}か月前`
   return `${Math.floor(months / 12)}年前`
+}
+
+const linkLabel = (url: string) => {
+  try {
+    const { host, pathname } = new URL(url)
+    return `${host}${pathname === '/' ? '' : pathname}`
+  } catch {
+    return url
+  }
+}
+
+const faviconUrl = (url: string) => {
+  try {
+    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`
+  } catch {
+    return ''
+  }
 }
 
 const contributionWeeks = computed(() => {
@@ -154,38 +172,62 @@ const closeGithubProfileOnEscape = (event: KeyboardEvent) => {
 
 const openProject = (repo: any) => {
   selectedProject.value = repo
-  void renderGithubReadme(repo)
 }
 
 const closeProject = () => {
   selectedProject.value = null
 }
 
+const projectAssetBase = (repo: any) => `/project/${encodeURIComponent(repo.name)}`
+const projectImageCounts: Record<string, number> = {
+  DiscordWebAnalytics: 4,
+  DiscordWebBotClient: 2,
+  'games-bot': 4,
+  'image-to-url': 0,
+  sites: 4,
+  'tokumei-bot': 2,
+  votesites: 5,
+  'ymkw-mad': 1
+}
+
+const projectImages = (repo: any) => Array.from(
+  { length: projectImageCounts[repo.name] || 0 },
+  (_, index) => `${projectAssetBase(repo)}/${index + 1}.png`
+)
+
+const projectThumbnail = (repo: any) => projectImages(repo)[0] || '/notfrond.png'
+const fallbackCommitTrend = '0,22 8,21 16,22 24,17 32,20 40,13 48,21 56,18 64,22 72,15 80,19 88,11 96,20 100,16'
+
 const decodeReadme = (content: string) => {
   const bytes = Uint8Array.from(atob(content.replace(/\s/g, '')), char => char.charCodeAt(0))
   return new TextDecoder().decode(bytes)
 }
 
-const getReadmeImages = (readme: string, repo: any) => {
-  const matches = [
-    ...readme.matchAll(/<img[^>]+src=["']([^"']+)["']/gi),
-    ...readme.matchAll(/!\[[^\]]*\]\(([^\s)]+)/g)
-  ]
-  const resolve = (source: string) => {
-    if (/^https?:\/\//i.test(source)) return source.replace('github.com/', 'raw.githubusercontent.com/').replace('/blob/', '/')
-    return new URL(source.replace(/^\//, ''), `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${repo.default_branch}/`).href
-  }
-  const sources = matches.map(match => match[1])
-  return {
-    image: sources.find(url => !/shields\.io|badge|github-readme-stats/i.test(url)) ? resolve(sources.find(url => !/shields\.io|badge|github-readme-stats/i.test(url))!) : null,
-    shields: sources.filter(url => /img\.shields\.io/i.test(url)).slice(0, 4).map(resolve)
-  }
+const getReadmeShields = (readme: string, repo: any) => [...readme.matchAll(/<img[^>]+src=["']([^"']+)["']/gi), ...readme.matchAll(/!\[[^\]]*\]\(([^\s)]+)/g)]
+  .map(match => match[1])
+  .filter(url => /img\.shields\.io/i.test(url))
+  .slice(0, 4)
+  .map((source) => /^https?:\/\//i.test(source)
+    ? source.replace('github.com/', 'raw.githubusercontent.com/').replace('/blob/', '/')
+    : new URL(source.replace(/^\//, ''), `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${repo.default_branch}/`).href)
+
+const selectedProjectImages = computed(() => selectedProject.value ? projectDetails.value[selectedProject.value.id]?.images || [] : [])
+const currentProjectImage = computed(() => selectedProjectImages.value[currentProjectImageIndex.value] || '')
+
+const changeProjectImage = (direction: number) => {
+  const images = selectedProjectImages.value
+  if (images.length < 2) return
+  currentProjectImageIndex.value = (currentProjectImageIndex.value + direction + images.length) % images.length
 }
 
-const renderGithubReadme = async (repo: any) => {
-  const details = projectDetails.value[repo.id]
-  if (!details?.readme || details.renderedReadme) return
-  details.renderedReadme = marked.parse(details.readme, { gfm: true, breaks: false }) as string
+const startProjectCarousel = () => {
+  if (projectCarouselTimer) clearInterval(projectCarouselTimer)
+  projectCarouselTimer = setInterval(() => changeProjectImage(1), 1_500)
+}
+
+const stopProjectCarousel = () => {
+  if (projectCarouselTimer) clearInterval(projectCarouselTimer)
+  projectCarouselTimer = undefined
 }
 
 const getCommitTrend = async (repo: any, retry = 0): Promise<string> => {
@@ -211,16 +253,18 @@ const getCommitTrend = async (repo: any, retry = 0): Promise<string> => {
 }
 
 const loadProjectDetails = async (repo: any) => {
-  try {
-    const readmeResponse = await fetch(`/api/github?${new URLSearchParams({ resource: 'readme', repo: repo.name })}`)
-    const readme = readmeResponse.ok ? await readmeResponse.json() : null
-    const readmeContent = readme?.content ? decodeReadme(readme.content) : ''
-    const readmeDetails = readmeContent ? getReadmeImages(readmeContent, repo) : { image: null, shields: [] }
-    projectDetails.value[repo.id] = { ...readmeDetails, readme: readmeContent, renderedReadme: '', commitTrend: await getCommitTrend(repo) }
-    if (selectedProject.value?.id === repo.id) void renderGithubReadme(repo)
-  } catch {
-    projectDetails.value[repo.id] = { image: null, shields: [], readme: '', renderedReadme: '', commitTrend: await getCommitTrend(repo) }
-  }
+  const base = projectAssetBase(repo)
+  const descriptionResponse = await fetch(`${base}/describe.txt`).catch(() => null)
+  const description = descriptionResponse?.ok ? (await descriptionResponse.text()).trim() : ''
+  projectDetails.value[repo.id] = { description, images: projectImages(repo), shields: [], commitTrend: fallbackCommitTrend }
+  void githubRequest('readme', repo.name).then((readme) => {
+    const details = projectDetails.value[repo.id]
+    if (details?.shields && readme?.content) details.shields = getReadmeShields(decodeReadme(readme.content), repo)
+  }).catch(() => {})
+  void getCommitTrend(repo).then((commitTrend) => {
+    const details = projectDetails.value[repo.id]
+    if (details && commitTrend) projectDetails.value[repo.id] = { ...details, commitTrend }
+  })
 }
 
 onMounted(() => {
@@ -236,11 +280,18 @@ onMounted(() => {
 
 watch(selectedProject, (project) => {
   if (import.meta.client) document.body.classList.toggle('project-modal-open', Boolean(project))
+  if (project) {
+    currentProjectImageIndex.value = 0
+    startProjectCarousel()
+  } else {
+    stopProjectCarousel()
+  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', closeGithubProfileOnOutsideClick)
   document.removeEventListener('keydown', closeGithubProfileOnEscape)
+  stopProjectCarousel()
   if (import.meta.client) document.body.classList.remove('project-modal-open')
 })
 </script>
@@ -333,7 +384,7 @@ onUnmounted(() => {
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
       <button v-else v-for="repo in projects" :key="repo.id" type="button" class="project-card" :aria-label="`${repo.name} の詳細を開く`" @click="openProject(repo)">
         <div class="project-image">
-          <div class="project-image-media" :style="projectDetails[repo.id]?.image ? { backgroundImage: `url(${projectDetails[repo.id].image})` } : {}"></div>
+          <div class="project-image-media" :style="{ backgroundImage: `url(${projectThumbnail(repo)})` }"></div>
           <div class="project-image-overlay"></div>
           <svg v-if="projectDetails[repo.id]?.commitTrend" class="project-commit-trend" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><polyline :points="projectDetails[repo.id].commitTrend" /></svg>
           <div class="project-heading">
@@ -353,7 +404,9 @@ onUnmounted(() => {
         <div v-if="selectedProject" class="project-modal-overlay" data-lenis-prevent @click.self="closeProject">
           <article class="project-modal" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
             <button class="project-modal-close" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-            <div class="project-modal-hero" :style="projectDetails[selectedProject.id]?.image ? { backgroundImage: `url(${projectDetails[selectedProject.id].image})` } : {}">
+            <div class="project-modal-hero">
+              <div class="project-modal-hero-blur" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
+              <div class="project-modal-hero-image" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
               <div class="project-modal-hero-overlay"></div>
               <div class="project-modal-title">
                 <p v-if="selectedProject.updated_at"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
@@ -362,18 +415,19 @@ onUnmounted(() => {
             </div>
             <div class="project-modal-body">
               <main class="project-modal-readme">
-                <div v-if="projectDetails[selectedProject.id]?.shields.length" class="project-modal-shields"><img v-for="shield in projectDetails[selectedProject.id].shields" :key="shield" :src="shield" alt="" /></div>
-                <div v-if="projectDetails[selectedProject.id]?.renderedReadme" class="project-readme-content markdown-body" v-html="projectDetails[selectedProject.id].renderedReadme"></div>
-                <p v-else class="project-readme-loading">README をGitHub形式で読み込み中…</p>
+                <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description">{{ projectDetails[selectedProject.id].description }}</p>
+                <div v-if="currentProjectImage" class="project-gallery" aria-label="プロジェクト画像">
+                  <img :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" />
+                  <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-prev" type="button" aria-label="前の画像" @click="changeProjectImage(-1)"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                  <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-next" type="button" aria-label="次の画像" @click="changeProjectImage(1)"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                  <div v-if="selectedProjectImages.length > 1" class="project-gallery-dots"><button v-for="(_image, index) in selectedProjectImages" :key="index" type="button" :class="{ 'is-active': currentProjectImageIndex === index }" :aria-label="`${index + 1} 枚目を表示`" @click="currentProjectImageIndex = index"></button></div>
+                </div>
+                <p v-else class="project-readme-loading">プロジェクト画像を読み込み中…</p>
               </main>
               <aside class="project-modal-sidebar" aria-label="プロジェクト情報">
-                <a class="project-modal-url" :href="selectedProject.homepage || selectedProject.html_url" target="_blank" rel="noopener"><i class="fa-solid fa-link"></i> {{ selectedProject.homepage || selectedProject.html_url }} <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                <h3>About</h3>
-                <a class="project-modal-sidebar-link" :href="selectedProject.html_url" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>
-                <a class="project-modal-sidebar-link" :href="`${selectedProject.html_url}/blob/${selectedProject.default_branch}/README.md`" target="_blank" rel="noopener"><i class="fa-regular fa-book-open"></i> README</a>
-                <p class="project-modal-sidebar-meta"><i class="fa-solid fa-clock-rotate-left"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
-                <p v-if="selectedProject.language" class="project-modal-sidebar-meta"><i class="fa-solid fa-code"></i> {{ selectedProject.language }}</p>
-                <a class="project-modal-sidebar-link" :href="`${selectedProject.html_url}/activity`" target="_blank" rel="noopener"><i class="fa-solid fa-chart-line"></i> Activity</a>
+                <h3>リンク</h3>
+                <a v-if="selectedProject.homepage" class="project-modal-link-chip" :href="selectedProject.homepage" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.homepage)" alt="" /> <span>{{ linkLabel(selectedProject.homepage) }}</span></a>
+                <a class="project-modal-link-chip" :href="selectedProject.html_url" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.html_url)" alt="" /> <span>{{ linkLabel(selectedProject.html_url) }}</span></a>
               </aside>
             </div>
           </article>
