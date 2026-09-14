@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
+import { marked } from 'marked'
 
 const props = defineProps<{ projects: any[] | null; status: string }>()
 
 const themeTriggerRef = ref<HTMLElement | null>(null)
 const registerThemeTrigger = inject<(el: HTMLElement) => void>('registerThemeTrigger')
-const projectDetails = ref<Record<number, { image: string | null; shields: string[]; commitTrend: string }>>({})
+type ProjectDetails = { image: string | null; shields: string[]; commitTrend: string; readme: string; renderedReadme: string }
+const projectDetails = ref<Record<string | number, ProjectDetails>>({})
 const githubPopoverRef = ref<HTMLElement | null>(null)
 const isGithubProfileOpen = ref(false)
 const isGithubProfilePinned = ref(false)
@@ -15,6 +17,15 @@ const githubProfile = ref<any | null>(null)
 const githubEvents = ref<any[]>([])
 const githubContributions = ref<{ date: string; count: number; level: number }[]>([])
 const githubContributionTotal = ref<number | null>(null)
+const selectedProject = ref<any | null>(null)
+
+const githubRequest = async (resource: string, repo?: string) => {
+  const query = new URLSearchParams({ resource })
+  if (repo) query.set('repo', repo)
+  const response = await fetch(`/api/github?${query}`)
+  if (!response.ok) throw new Error('GitHub request failed')
+  return response.json()
+}
 
 const relativeUpdate = (date: string) => {
   const elapsed = Math.max(0, Date.now() - new Date(date).getTime())
@@ -91,14 +102,12 @@ const loadGithubProfile = async () => {
   isGithubProfileLoading.value = true
   githubProfileError.value = false
   try {
-    const headers = { Accept: 'application/vnd.github+json' }
     const [profileResponse, eventsResponse] = await Promise.all([
-      fetch('https://api.github.com/users/y-exe', { headers }),
-      fetch('https://api.github.com/users/y-exe/events/public?per_page=6', { headers })
+      githubRequest('profile'),
+      githubRequest('events')
     ])
-    if (!profileResponse.ok || !eventsResponse.ok) throw new Error('GitHub request failed')
-    githubProfile.value = await profileResponse.json()
-    githubEvents.value = await eventsResponse.json()
+    githubProfile.value = profileResponse
+    githubEvents.value = eventsResponse
     void loadGithubContributions()
   } catch {
     githubProfileError.value = true
@@ -139,7 +148,17 @@ const closeGithubProfileOnEscape = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
     isGithubProfileOpen.value = false
     isGithubProfilePinned.value = false
+    selectedProject.value = null
   }
+}
+
+const openProject = (repo: any) => {
+  selectedProject.value = repo
+  void renderGithubReadme(repo)
+}
+
+const closeProject = () => {
+  selectedProject.value = null
 }
 
 const decodeReadme = (content: string) => {
@@ -163,9 +182,15 @@ const getReadmeImages = (readme: string, repo: any) => {
   }
 }
 
+const renderGithubReadme = async (repo: any) => {
+  const details = projectDetails.value[repo.id]
+  if (!details?.readme || details.renderedReadme) return
+  details.renderedReadme = marked.parse(details.readme, { gfm: true, breaks: false }) as string
+}
+
 const getCommitTrend = async (repo: any, retry = 0): Promise<string> => {
   try {
-    const response = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/stats/commit_activity`, { headers: { Accept: 'application/vnd.github+json' } })
+    const response = await fetch(`/api/github?${new URLSearchParams({ resource: 'commit-activity', repo: repo.name })}`)
     if (response.status === 202 && retry < 2) {
       await new Promise(resolve => setTimeout(resolve, 1_000))
       return getCommitTrend(repo, retry + 1)
@@ -187,12 +212,14 @@ const getCommitTrend = async (repo: any, retry = 0): Promise<string> => {
 
 const loadProjectDetails = async (repo: any) => {
   try {
-    const readmeResponse = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/readme`, { headers: { Accept: 'application/vnd.github+json' } })
+    const readmeResponse = await fetch(`/api/github?${new URLSearchParams({ resource: 'readme', repo: repo.name })}`)
     const readme = readmeResponse.ok ? await readmeResponse.json() : null
-    const readmeDetails = readme?.content ? getReadmeImages(decodeReadme(readme.content), repo) : { image: null, shields: [] }
-    projectDetails.value[repo.id] = { ...readmeDetails, commitTrend: await getCommitTrend(repo) }
+    const readmeContent = readme?.content ? decodeReadme(readme.content) : ''
+    const readmeDetails = readmeContent ? getReadmeImages(readmeContent, repo) : { image: null, shields: [] }
+    projectDetails.value[repo.id] = { ...readmeDetails, readme: readmeContent, renderedReadme: '', commitTrend: await getCommitTrend(repo) }
+    if (selectedProject.value?.id === repo.id) void renderGithubReadme(repo)
   } catch {
-    projectDetails.value[repo.id] = { image: null, shields: [], commitTrend: await getCommitTrend(repo) }
+    projectDetails.value[repo.id] = { image: null, shields: [], readme: '', renderedReadme: '', commitTrend: await getCommitTrend(repo) }
   }
 }
 
@@ -207,9 +234,14 @@ onMounted(() => {
   document.addEventListener('keydown', closeGithubProfileOnEscape)
 })
 
+watch(selectedProject, (project) => {
+  if (import.meta.client) document.body.classList.toggle('project-modal-open', Boolean(project))
+})
+
 onUnmounted(() => {
   document.removeEventListener('click', closeGithubProfileOnOutsideClick)
   document.removeEventListener('keydown', closeGithubProfileOnEscape)
+  if (import.meta.client) document.body.classList.remove('project-modal-open')
 })
 </script>
 
@@ -299,7 +331,7 @@ onUnmounted(() => {
     <div class="projects-grid">
       <p v-if="status === 'pending' && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
-      <a v-else v-for="repo in projects" :key="repo.id" :href="repo.html_url" target="_blank" class="project-card">
+      <button v-else v-for="repo in projects" :key="repo.id" type="button" class="project-card" :aria-label="`${repo.name} の詳細を開く`" @click="openProject(repo)">
         <div class="project-image">
           <div class="project-image-media" :style="projectDetails[repo.id]?.image ? { backgroundImage: `url(${projectDetails[repo.id].image})` } : {}"></div>
           <div class="project-image-overlay"></div>
@@ -312,9 +344,41 @@ onUnmounted(() => {
           </div>
           <div class="project-shields" v-if="projectDetails[repo.id]?.shields.length"><img v-for="shield in projectDetails[repo.id].shields" :key="shield" :src="shield" alt="" /></div>
           <div class="project-view-label"><i class="fa-solid fa-eye" aria-hidden="true"></i> 見る</div>
-          <i class="fa-solid fa-arrow-up-right-from-square project-link-icon" aria-hidden="true"></i>
+          <i class="fa-solid fa-expand project-link-icon" aria-hidden="true"></i>
         </div>
-      </a>
+      </button>
     </div>
+    <Teleport to="body">
+      <Transition name="project-modal-pop">
+        <div v-if="selectedProject" class="project-modal-overlay" data-lenis-prevent @click.self="closeProject">
+          <article class="project-modal" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
+            <button class="project-modal-close" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <div class="project-modal-hero" :style="projectDetails[selectedProject.id]?.image ? { backgroundImage: `url(${projectDetails[selectedProject.id].image})` } : {}">
+              <div class="project-modal-hero-overlay"></div>
+              <div class="project-modal-title">
+                <p v-if="selectedProject.updated_at"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
+                <h2>{{ selectedProject.name }}</h2>
+              </div>
+            </div>
+            <div class="project-modal-body">
+              <main class="project-modal-readme">
+                <div v-if="projectDetails[selectedProject.id]?.shields.length" class="project-modal-shields"><img v-for="shield in projectDetails[selectedProject.id].shields" :key="shield" :src="shield" alt="" /></div>
+                <div v-if="projectDetails[selectedProject.id]?.renderedReadme" class="project-readme-content markdown-body" v-html="projectDetails[selectedProject.id].renderedReadme"></div>
+                <p v-else class="project-readme-loading">README をGitHub形式で読み込み中…</p>
+              </main>
+              <aside class="project-modal-sidebar" aria-label="プロジェクト情報">
+                <a class="project-modal-url" :href="selectedProject.homepage || selectedProject.html_url" target="_blank" rel="noopener"><i class="fa-solid fa-link"></i> {{ selectedProject.homepage || selectedProject.html_url }} <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                <h3>About</h3>
+                <a class="project-modal-sidebar-link" :href="selectedProject.html_url" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>
+                <a class="project-modal-sidebar-link" :href="`${selectedProject.html_url}/blob/${selectedProject.default_branch}/README.md`" target="_blank" rel="noopener"><i class="fa-regular fa-book-open"></i> README</a>
+                <p class="project-modal-sidebar-meta"><i class="fa-solid fa-clock-rotate-left"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
+                <p v-if="selectedProject.language" class="project-modal-sidebar-meta"><i class="fa-solid fa-code"></i> {{ selectedProject.language }}</p>
+                <a class="project-modal-sidebar-link" :href="`${selectedProject.html_url}/activity`" target="_blank" rel="noopener"><i class="fa-solid fa-chart-line"></i> Activity</a>
+              </aside>
+            </div>
+          </article>
+        </div>
+      </Transition>
+    </Teleport>
   </section>
 </template>
