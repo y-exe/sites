@@ -1337,7 +1337,38 @@ body.dark-mode .projects-source .github-lockup {
 .project-heading h3 {
     margin: 0;
     font-size: clamp(0.95rem, 1.5vw, 1.18rem);
+    text-shadow: 0 0 6px rgba(0, 0, 0, 1), 0 0 14px rgba(0, 0, 0, 0.98), 0 3px 22px rgba(0, 0, 0, 0.95);
 }
+
+.project-heading .project-updated {
+    position: relative;
+    margin: 0.35rem 0 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.72rem;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.98), 0 3px 19px rgba(0, 0, 0, 0.95);
+}
+
+.project-commit-trend {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 3.1rem;
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.project-commit-trend polyline {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.8;
+    vector-effect: non-scaling-stroke;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.65));
+}
+
+.project-updated i { margin-right: 0.2rem; }
 
 .project-language-overlay {
     position: absolute;
