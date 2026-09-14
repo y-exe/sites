@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     githubToken: process.env.GITHUB_TOKEN
   },
+  nitro: {
+    output: {
+      publicDir: 'dist'
+    }
+  },
   devtools: { enabled: true },
   experimental: {
     appManifest: false
