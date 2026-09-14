@@ -1,5 +1,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
+  runtimeConfig: {
+    githubToken: process.env.GITHUB_TOKEN
+  },
   devtools: { enabled: true },
   experimental: {
     appManifest: false

@@ -92,8 +92,8 @@ const fallbackProjects = [
   updated_at
 }))
 
-const { data: projects, status: projectStatus } = await useFetch('https://api.github.com/users/y-exe/repos', {
-  query: { sort: 'updated', per_page: 9 },
+const { data: projects, status: projectStatus } = await useFetch('/api/github', {
+  query: { resource: 'repos' },
   transform: (repos: any[]) => Array.isArray(repos) ? repos.filter(repo => !repo.fork) : [],
   default: () => fallbackProjects,
   lazy: true,
