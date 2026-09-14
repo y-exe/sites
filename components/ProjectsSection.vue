@@ -5,7 +5,7 @@ const props = defineProps<{ projects: any[] | null; status: string }>()
 
 const themeTriggerRef = ref<HTMLElement | null>(null)
 const registerThemeTrigger = inject<(el: HTMLElement) => void>('registerThemeTrigger')
-const projectDetails = ref<Record<number, { image: string | null; shields: string[] }>>({})
+const projectDetails = ref<Record<number, { image: string | null; shields: string[]; commitTrend: string }>>({})
 const githubPopoverRef = ref<HTMLElement | null>(null)
 const isGithubProfileOpen = ref(false)
 const isGithubProfilePinned = ref(false)
@@ -15,6 +15,20 @@ const githubProfile = ref<any | null>(null)
 const githubEvents = ref<any[]>([])
 const githubContributions = ref<{ date: string; count: number; level: number }[]>([])
 const githubContributionTotal = ref<number | null>(null)
+
+const relativeUpdate = (date: string) => {
+  const elapsed = Math.max(0, Date.now() - new Date(date).getTime())
+  const minutes = Math.floor(elapsed / 60_000)
+  if (minutes < 1) return 'たった今'
+  if (minutes < 60) return `${minutes}分前`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}時間前`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}日前`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months}か月前`
+  return `${Math.floor(months / 12)}年前`
+}
 
 const contributionWeeks = computed(() => {
   if (!githubContributions.value.length) return []
@@ -149,13 +163,36 @@ const getReadmeImages = (readme: string, repo: any) => {
   }
 }
 
+const getCommitTrend = async (repo: any, retry = 0): Promise<string> => {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/stats/commit_activity`, { headers: { Accept: 'application/vnd.github+json' } })
+    if (response.status === 202 && retry < 2) {
+      await new Promise(resolve => setTimeout(resolve, 1_000))
+      return getCommitTrend(repo, retry + 1)
+    }
+    if (!response.ok) return ''
+    const activity = await response.json()
+    if (!Array.isArray(activity) || !activity.length) return ''
+    const weeklyCounts = activity.map((week: any) => week.total || 0)
+    const maxCount = Math.max(1, ...weeklyCounts)
+    return weeklyCounts.map((count, index) => {
+      const x = (index / (weeklyCounts.length - 1)) * 100
+      const y = 22 - (count / maxCount) * 19
+      return `${x.toFixed(2)},${y.toFixed(2)}`
+    }).join(' ')
+  } catch {
+    return ''
+  }
+}
+
 const loadProjectDetails = async (repo: any) => {
   try {
     const readmeResponse = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/readme`, { headers: { Accept: 'application/vnd.github+json' } })
     const readme = readmeResponse.ok ? await readmeResponse.json() : null
-    projectDetails.value[repo.id] = readme?.content ? getReadmeImages(decodeReadme(readme.content), repo) : { image: null, shields: [] }
+    const readmeDetails = readme?.content ? getReadmeImages(decodeReadme(readme.content), repo) : { image: null, shields: [] }
+    projectDetails.value[repo.id] = { ...readmeDetails, commitTrend: await getCommitTrend(repo) }
   } catch {
-    projectDetails.value[repo.id] = { image: null, shields: [] }
+    projectDetails.value[repo.id] = { image: null, shields: [], commitTrend: await getCommitTrend(repo) }
   }
 }
 
@@ -222,11 +259,6 @@ onUnmounted(() => {
               </div>
             </div>
             <p v-if="githubProfile.bio" class="github-profile-bio">{{ githubProfile.bio }}</p>
-            <div class="github-profile-stats">
-              <span><b>{{ githubProfile.public_repos }}</b> Repos</span>
-              <span><b>{{ githubProfile.followers }}</b> Followers</span>
-              <span><b>{{ githubProfile.following }}</b> Following</span>
-            </div>
             <div class="github-profile-details">
               <div class="github-activity">
                 <p class="github-activity-title">アクティビティー履歴</p>
@@ -271,7 +303,13 @@ onUnmounted(() => {
         <div class="project-image">
           <div class="project-image-media" :style="projectDetails[repo.id]?.image ? { backgroundImage: `url(${projectDetails[repo.id].image})` } : {}"></div>
           <div class="project-image-overlay"></div>
-          <div class="project-heading"><h3>{{ repo.name }}</h3></div>
+          <svg v-if="projectDetails[repo.id]?.commitTrend" class="project-commit-trend" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><polyline :points="projectDetails[repo.id].commitTrend" /></svg>
+          <div class="project-heading">
+            <h3>{{ repo.name }}</h3>
+            <p v-if="repo.updated_at" class="project-updated">
+              <span><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(repo.updated_at) }}</span>
+            </p>
+          </div>
           <div class="project-shields" v-if="projectDetails[repo.id]?.shields.length"><img v-for="shield in projectDetails[repo.id].shields" :key="shield" :src="shield" alt="" /></div>
           <div class="project-view-label"><i class="fa-solid fa-eye" aria-hidden="true"></i> 見る</div>
           <i class="fa-solid fa-arrow-up-right-from-square project-link-icon" aria-hidden="true"></i>
