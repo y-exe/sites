@@ -1,3 +1,5 @@
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   runtimeConfig: {
@@ -42,6 +44,7 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    plugins: [tailwindcss()],
     server: {
       allowedHosts: [
         'home.yexe.xyz'

@@ -203,7 +203,7 @@ onMounted(() => {
           isLoading.value = false
           isLoaded.value = true
           nextTick(() => startIntroSequence())
-        }, 800)
+        }, 1000)
       }, 200)
     }
   }, 20)
