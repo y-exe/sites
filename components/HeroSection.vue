@@ -234,20 +234,20 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="section main" id="top">
-    <header class="hero-text">
-      <p class="text-line-1 intro-sequence" :ref="setIntroRef" v-split-text>
+  <section class="section main tw:relative tw:flex tw:min-h-screen tw:w-full tw:-translate-y-12 tw:flex-col tw:items-center tw:justify-center tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20" id="top">
+    <header class="hero-text tw:relative tw:z-20 tw:mb-[1.2rem]">
+      <p class="text-line-1 intro-sequence tw:mb-[0.2rem] tw:text-[clamp(2.5rem,8vw,3rem)] tw:font-black! tw:[font-family:var(--font-display)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `(*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
       </p>
       
-      <p class="text-line-2 intro-sequence" :ref="setIntroRef" v-split-text>
+      <p class="text-line-2 intro-sequence tw:mt-0 tw:mb-[0.5rem] tw:text-[clamp(1.8rem,6vw,2.2rem)] tw:font-medium tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `I'm `.split('')" :key="`im-${i}`" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '&nbsp;' : char }}</span>
         <span class="char" :style="`--char-delay: ${4*50}ms`">
-          <span class="gradient-text">Hentai</span>
+          <span class="gradient-text tw:inline-block tw:bg-clip-text tw:text-transparent tw:font-bold! tw:[background-image:var(--gradient)]">Hentai</span>
         </span>
       </p>
       
-      <p class="text-line-3 intro-sequence" :ref="setIntroRef" v-split-text>
+      <p class="text-line-3 intro-sequence tw:m-0 tw:text-[clamp(0.9rem,2.5vw,1rem)] tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `自分で書いてなさ過ぎてバイブコーダー`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
         <span ref="historyPopover" class="history-popover">
           <button type="button" class="history-trigger" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="isHistoryOpen = !isHistoryOpen"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
@@ -265,9 +265,9 @@ onUnmounted(() => {
       </p>
     </header>
 
-    <div class="quick-nav-buttons intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
-      <a href="#projects" class="quick-nav-btn btn-primary" @click="onScrollTo($event, '#projects')">Projects <i class="fa-solid fa-arrow-right"></i></a>
-      <a href="#about" class="quick-nav-btn btn-secondary" @click="onScrollTo($event, '#about')">About <i class="fa-solid fa-arrow-right"></i></a>
+    <div class="quick-nav-buttons intro-sequence tw:mt-6 tw:flex tw:gap-[0.8rem]" :ref="setIntroRef" v-reveal data-reveal="up">
+      <a href="#projects" class="quick-nav-btn btn-primary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:bg-[var(--btn-primary-bg)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--btn-primary-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#projects')">Projects <i class="fa-solid fa-arrow-right"></i></a>
+      <a href="#about" class="quick-nav-btn btn-secondary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:border-2 tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--active-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#about')">About <i class="fa-solid fa-arrow-right"></i></a>
     </div>
     
     <div class="contact-section">
@@ -371,9 +371,9 @@ onUnmounted(() => {
       </div>
     </div>
     
-    <a href="#projects" id="scroll-down-container" class="intro-sequence" :ref="setIntroRef" aria-label="Scroll to Projects" v-reveal data-reveal="up" @click="onScrollTo($event, '#projects')">
-      <span class="scroll-down-text">Projects</span>
-      <i class="fa-solid fa-chevron-down scroll-down-icon"></i>
+    <a href="#projects" id="scroll-down-container" class="intro-sequence tw:absolute tw:bottom-12 tw:flex tw:flex-col tw:items-center tw:text-[var(--text-muted-color)] tw:no-underline tw:animate-[bounce_2s_infinite] tw:hover:text-[var(--active-text)]" :ref="setIntroRef" aria-label="Scroll to Projects" v-reveal data-reveal="up" @click="onScrollTo($event, '#projects')">
+      <span class="scroll-down-text tw:mb-[0.5em] tw:text-[0.9em] tw:font-bold tw:[font-family:var(--font-display)]">Projects</span>
+      <i class="fa-solid fa-chevron-down scroll-down-icon tw:text-[1.5em]"></i>
     </a>
   </section>
 </template>

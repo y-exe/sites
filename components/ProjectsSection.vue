@@ -18,6 +18,7 @@ const githubContributions = ref<{ date: string; count: number; level: number }[]
 const githubContributionTotal = ref<number | null>(null)
 const selectedProject = ref<any | null>(null)
 const currentProjectImageIndex = ref(0)
+const projectHeroParallax = ref({ x: 0, y: 0 })
 let projectCarouselTimer: ReturnType<typeof setInterval> | undefined
 
 const githubRequest = async (resource: string, repo?: string) => {
@@ -178,6 +179,21 @@ const closeProject = () => {
   selectedProject.value = null
 }
 
+const projectHeroParallaxStyle = computed(() => ({
+  transform: `translate3d(${projectHeroParallax.value.x}px, ${projectHeroParallax.value.y}px, 0)`
+}))
+
+const updateProjectHeroParallax = (event: PointerEvent) => {
+  if (event.pointerType !== 'mouse' || !selectedProject.value) return
+  const x = event.clientX / window.innerWidth - 0.5
+  const y = event.clientY / window.innerHeight - 0.5
+  projectHeroParallax.value = { x: x * 10, y: y * 8 }
+}
+
+const resetProjectHeroParallax = () => {
+  projectHeroParallax.value = { x: 0, y: 0 }
+}
+
 const projectAssetBase = (repo: any) => `/project/${encodeURIComponent(repo.name)}`
 const projectImageCounts: Record<string, number> = {
   DiscordWebAnalytics: 4,
@@ -212,7 +228,7 @@ const getReadmeShields = (readme: string, repo: any) => [...readme.matchAll(/<im
     : new URL(source.replace(/^\//, ''), `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${repo.default_branch}/`).href)
 
 const selectedProjectImages = computed(() => selectedProject.value ? projectDetails.value[selectedProject.value.id]?.images || [] : [])
-const currentProjectImage = computed(() => selectedProjectImages.value[currentProjectImageIndex.value] || '')
+const currentProjectImage = computed(() => selectedProjectImages.value[currentProjectImageIndex.value] || '/notfrond.png')
 
 const changeProjectImage = (direction: number, restartTimer = true) => {
   const images = selectedProjectImages.value
@@ -283,14 +299,17 @@ onMounted(() => {
   }, { immediate: true })
   document.addEventListener('click', closeGithubProfileOnOutsideClick)
   document.addEventListener('keydown', closeGithubProfileOnEscape)
+  window.addEventListener('pointermove', updateProjectHeroParallax)
 })
 
 watch(selectedProject, (project) => {
   if (import.meta.client) document.body.classList.toggle('project-modal-open', Boolean(project))
   if (project) {
     currentProjectImageIndex.value = 0
+    resetProjectHeroParallax()
     startProjectCarousel()
   } else {
+    resetProjectHeroParallax()
     stopProjectCarousel()
   }
 })
@@ -298,20 +317,21 @@ watch(selectedProject, (project) => {
 onUnmounted(() => {
   document.removeEventListener('click', closeGithubProfileOnOutsideClick)
   document.removeEventListener('keydown', closeGithubProfileOnEscape)
+  window.removeEventListener('pointermove', updateProjectHeroParallax)
   stopProjectCarousel()
   if (import.meta.client) document.body.classList.remove('project-modal-open')
 })
 </script>
 
 <template>
-  <section id="projects" class="section projects-section">
+  <section id="projects" class="section projects-section tw:relative tw:flex tw:min-h-screen tw:w-full tw:max-w-[1200px] tw:flex-col tw:items-center tw:justify-center tw:bg-transparent tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20">
     <div ref="themeTriggerRef" style="position: absolute; top: 0; height: 1px; width: 100%; pointer-events: none;"></div>
 
     <h2 class="section-title hover-highlight" v-split-text>
       <span v-for="(char, i) in `Projects`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
     </h2>
     <div ref="githubPopoverRef" class="projects-source-wrap" v-reveal>
-      <p class="projects-source">
+      <p class="projects-source tw:inline-flex tw:items-center">
         <span
           class="github-lockup-frame"
           role="button"
@@ -386,16 +406,16 @@ onUnmounted(() => {
         </aside>
       </Transition>
     </div>
-    <div class="projects-grid">
+    <div class="projects-grid tw:grid tw:w-full tw:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] tw:gap-6">
       <p v-if="status === 'pending' && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
-      <button v-else v-for="(repo, index) in projects" :key="repo.id" type="button" class="project-card" :style="{ '--project-reveal-delay': `${index * 85}ms` }" :aria-label="`${repo.name} の詳細を開く`" v-reveal @click="openProject(repo)">
+      <button v-else v-for="(repo, index) in projects" :key="repo.id" type="button" class="project-card tw:flex tw:flex-col tw:text-left tw:no-underline tw:bg-[var(--card-bg-color)] tw:border tw:border-[var(--card-border-color)] tw:text-inherit tw:shadow-[0_4px_15px_var(--shadow-color)] tw:hover:shadow-[0_12px_25px_var(--shadow-hover-color)]" :style="{ '--project-reveal-delay': `${index * 85}ms` }" :aria-label="`${repo.name} の詳細を開く`" v-reveal @click="openProject(repo)">
         <div class="project-image">
           <div class="project-image-media" :style="{ backgroundImage: `url(${projectThumbnail(repo)})` }"></div>
           <div class="project-image-overlay"></div>
           <svg v-if="projectDetails[repo.id]?.commitTrend" class="project-commit-trend" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><polyline :points="projectDetails[repo.id].commitTrend" /></svg>
           <div class="project-heading">
-            <h3>{{ repo.name }}</h3>
+            <h3 class="tw:[font-family:var(--font-display)]">{{ repo.name }}</h3>
             <p v-if="repo.updated_at" class="project-updated">
               <span><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(repo.updated_at) }}</span>
             </p>
@@ -408,34 +428,35 @@ onUnmounted(() => {
     </div>
     <Teleport to="body">
       <Transition name="project-modal-pop">
-        <div v-if="selectedProject" class="project-modal-overlay" data-lenis-prevent @click.self="closeProject">
-          <article class="project-modal project-modal-content-in" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
-            <button class="project-modal-close project-modal-close-in" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-            <div class="project-modal-hero">
-              <div class="project-modal-hero-blur" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
-              <div class="project-modal-hero-image project-modal-hero-image-in" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
+        <div v-if="selectedProject" class="project-modal-overlay tw:fixed tw:inset-0 tw:z-[3000] tw:grid tw:place-items-center tw:overflow-y-auto tw:p-[clamp(1rem,4vw,3.5rem)] tw:bg-[rgba(9,12,20,0.72)] tw:backdrop-blur-[14px]" data-lenis-prevent @click.self="closeProject">
+          <article class="project-modal project-modal-content-in tw:relative tw:w-[min(72rem,100%)] tw:max-h-[min(94vh,66rem)] tw:overflow-hidden tw:rounded-[1.25rem] tw:bg-[var(--card-bg-color)] tw:text-[var(--active-text)] tw:shadow-[0_1.5rem_5rem_rgba(0,0,0,0.42)] tw:[transform-origin:center]" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
+            <button class="project-modal-close project-modal-close-in tw:absolute tw:top-4 tw:right-4 tw:z-[2] tw:grid tw:size-[2.4rem] tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border-0 tw:bg-[rgba(15,23,42,0.54)] tw:p-0 tw:text-base tw:text-white tw:transition-[transform,background] tw:duration-300 tw:hover:rotate-90 tw:hover:scale-[1.08] tw:hover:bg-[rgba(15,23,42,0.82)]" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <div class="project-modal-hero tw:relative tw:min-h-[clamp(8rem,20vh,12rem)] tw:overflow-hidden tw:bg-[url('/notfrond.png')] tw:bg-center tw:bg-cover">
+              <div class="project-modal-parallax tw:absolute tw:-inset-4 tw:will-change-transform tw:transition-transform tw:duration-300 tw:ease-out" :style="projectHeroParallaxStyle">
+                <div class="project-modal-hero-blur" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
+                <div class="project-modal-hero-image project-modal-hero-image-in" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
+              </div>
               <div class="project-modal-hero-overlay"></div>
-              <div class="project-modal-title project-modal-title-in">
+              <div class="project-modal-title project-modal-title-in tw:absolute tw:right-[clamp(1.25rem,4vw,3rem)] tw:bottom-[clamp(1.25rem,4vw,2.5rem)] tw:left-[clamp(1.25rem,4vw,3rem)] tw:text-white">
                 <p v-if="selectedProject.updated_at"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
                 <h2>{{ selectedProject.name }}</h2>
               </div>
             </div>
-            <div class="project-modal-body">
-              <main class="project-modal-readme">
-                <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description project-modal-description-in">{{ projectDetails[selectedProject.id].description }}</p>
-                <div v-if="currentProjectImage" class="project-gallery project-gallery-in" aria-label="プロジェクト画像">
-                  <img :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" />
+            <div class="project-modal-body tw:grid tw:max-h-[min(66vh,40rem)] tw:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] tw:overflow-hidden tw:bg-[var(--card-bg-color)]">
+              <main class="project-modal-readme tw:min-h-0 tw:overflow-y-auto tw:px-[clamp(1.35rem,5vw,3rem)] tw:py-[clamp(1.35rem,4vw,2.4rem)]">
+                <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description project-modal-description-in tw:mt-0 tw:mb-5 tw:text-[0.96rem] tw:leading-[1.7] tw:text-[var(--text-muted-color)] tw:whitespace-pre-wrap">{{ projectDetails[selectedProject.id].description }}</p>
+                <div class="project-gallery project-gallery-in tw:relative tw:grid tw:h-[min(52vh,26rem)] tw:place-items-center tw:overflow-hidden tw:rounded-[0.8rem] tw:bg-[var(--pill-bg-color)] tw:max-sm:h-auto tw:max-sm:aspect-video" aria-label="プロジェクト画像">
+                  <img class="project-gallery-image-in tw:block tw:h-full tw:w-full tw:object-contain tw:object-center" :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" />
                   <span v-if="selectedProjectImages.length > 1" :key="currentProjectImageIndex" class="project-gallery-progress" aria-hidden="true"></span>
                   <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-prev" type="button" aria-label="前の画像" @click="changeProjectImage(-1)"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
                   <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-next" type="button" aria-label="次の画像" @click="changeProjectImage(1)"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
                   <div v-if="selectedProjectImages.length > 1" class="project-gallery-dots"><button v-for="(_image, index) in selectedProjectImages" :key="index" type="button" :class="{ 'is-active': currentProjectImageIndex === index }" :aria-label="`${index + 1} 枚目を表示`" @click="selectProjectImage(index)"></button></div>
                 </div>
-                <p v-else class="project-readme-loading project-gallery-in">プロジェクト画像を読み込み中…</p>
               </main>
-              <aside class="project-modal-sidebar project-modal-sidebar-in" aria-label="プロジェクト情報">
-                <h3 class="project-modal-sidebar-heading-in">関連サイト</h3>
-                <a v-if="selectedProject.homepage" class="project-modal-link-chip project-modal-link-in" :href="selectedProject.homepage" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.homepage)" alt="" /> <span>{{ linkLabel(selectedProject.homepage) }}</span></a>
-                <a class="project-modal-link-chip project-modal-link-in" :href="selectedProject.html_url" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.html_url)" alt="" /> <span>{{ linkLabel(selectedProject.html_url) }}</span></a>
+              <aside class="project-modal-sidebar project-modal-sidebar-in tw:min-h-0 tw:overflow-y-auto tw:bg-[color-mix(in_srgb,var(--pill-bg-color)_48%,transparent)] tw:p-[clamp(1.35rem,3vw,2rem)]" aria-label="プロジェクト情報">
+                <h3 class="project-modal-sidebar-heading-in tw:mt-0 tw:mb-[0.9rem] tw:text-[1.35rem] tw:leading-normal tw:text-[var(--active-text)]">関連サイト</h3>
+                <a v-if="selectedProject.homepage" class="project-modal-link-chip project-modal-link-in tw:my-[0.6rem] tw:flex tw:w-fit tw:max-w-full tw:min-w-0 tw:items-center tw:gap-2 tw:overflow-hidden tw:rounded-full tw:bg-[#cecfd9] tw:px-[0.72rem] tw:py-[0.42rem] tw:text-left tw:text-[0.76rem] tw:font-bold tw:leading-[1.35] tw:text-[#4f4e69] tw:no-underline tw:transition-[color,background,transform] tw:duration-300 tw:hover:translate-x-[0.18rem] tw:hover:bg-[#bfc0cc]" :href="selectedProject.homepage" target="_blank" rel="noopener"><img class="tw:size-4 tw:shrink-0 tw:rounded-full" :src="faviconUrl(selectedProject.homepage)" alt="" /> <span class="tw:min-w-0 tw:flex-1 tw:truncate tw:whitespace-nowrap tw:text-left">{{ linkLabel(selectedProject.homepage) }}</span></a>
+                <a class="project-modal-link-chip project-modal-link-in tw:my-[0.6rem] tw:flex tw:w-fit tw:max-w-full tw:min-w-0 tw:items-center tw:gap-2 tw:overflow-hidden tw:rounded-full tw:bg-[#cecfd9] tw:px-[0.72rem] tw:py-[0.42rem] tw:text-left tw:text-[0.76rem] tw:font-bold tw:leading-[1.35] tw:text-[#4f4e69] tw:no-underline tw:transition-[color,background,transform] tw:duration-300 tw:hover:translate-x-[0.18rem] tw:hover:bg-[#bfc0cc]" :href="selectedProject.html_url" target="_blank" rel="noopener"><img class="tw:size-4 tw:shrink-0 tw:rounded-full" :src="faviconUrl(selectedProject.html_url)" alt="" /> <span class="tw:min-w-0 tw:flex-1 tw:truncate tw:whitespace-nowrap tw:text-left">{{ linkLabel(selectedProject.html_url) }}</span></a>
               </aside>
             </div>
           </article>
