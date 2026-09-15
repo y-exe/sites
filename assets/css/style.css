@@ -234,7 +234,7 @@ main {
 
 .history-popover { position: relative; display: inline-flex; vertical-align: middle; margin-left: 0.35rem; z-index: 20; opacity: 0; transition: opacity 0.25s ease 0.75s; }
 .text-line-3.is-visible .history-popover { opacity: 1; }
-.history-trigger { width: 1.7rem; height: 1.7rem; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; color: var(--text-muted-color); background: transparent; font-size: 0.72rem; transition: transform 0.36s cubic-bezier(0.22, 1.45, 0.36, 1), background-color 0.2s ease, color 0.2s ease; }
+.history-trigger { width: 1.7rem; height: 1.7rem; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; color: var(--text-muted-color); background: transparent; font-size: 0.72rem; -webkit-tap-highlight-color: transparent; transition: transform 0.36s cubic-bezier(0.22, 1.45, 0.36, 1), background-color 0.2s ease, color 0.2s ease; }
 .history-trigger:hover, .history-trigger:focus-visible { color: var(--active-text); background-color: var(--pill-bg-color); outline: none; }
 .history-trigger[aria-expanded="true"] { transform: rotate(180deg); }
 .history-menu { position: absolute; top: calc(100% + 0.6rem); left: 50%; z-index: 10; width: max-content; max-width: min(29rem, calc(100vw - 2rem)); padding: 0.8rem 1rem; border: 1px solid var(--card-border-color); border-radius: 12px; background: var(--card-bg-color); box-shadow: 0 14px 34px var(--shadow-hover-color); backdrop-filter: blur(8px); color: var(--active-text); font-size: 0.85rem; line-height: 1.5; text-align: left; transform: translateX(-50%); transform-origin: top center; }
@@ -248,7 +248,7 @@ main {
 .history-pop-enter-to, .history-pop-leave-from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 
 @media screen and (max-width: 600px) {
-    .history-menu { right: -0.5rem; left: auto; width: calc(100vw - 1.5rem); max-width: none; max-height: min(55vh, 20rem); overflow-y: auto; transform: none; }
+    .history-menu { position: absolute; top: calc(100% + 0.6rem); right: auto; left: var(--history-menu-left); width: var(--history-menu-width); max-width: none; max-height: min(55vh, 20rem); overflow-y: auto; transform: none; }
     .history-list li { grid-template-columns: 3.8rem minmax(0, 1fr); gap: 0.35rem; }
     .history-pop-enter-from, .history-pop-leave-to { transform: translateY(-0.55rem) scale(0.94); }
     .history-pop-enter-to, .history-pop-leave-from { transform: translateY(0) scale(1); }
@@ -1252,6 +1252,7 @@ body.project-modal-open {
     .project-modal-overlay { padding: 0.8rem; }
     .project-modal { border-radius: 1rem; }
     .project-modal-hero { min-height: 11rem; }
+    .project-modal-hero-image { background-size: cover; }
     .project-modal { max-height: 92vh; }
     .project-modal-body { grid-template-columns: 1fr; max-height: 60vh; overflow-y: auto; }
     .project-modal-readme { overflow: visible; }
@@ -1447,6 +1448,11 @@ body.project-modal-open {
         top: 0.5rem;
         right: 0.5rem;
         transform-origin: top right;
+    }
+
+    #getloli-counter img {
+        opacity: 1;
+        filter: none;
     }
 
     #getloli-counter.hidden {

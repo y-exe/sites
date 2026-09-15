@@ -18,6 +18,7 @@ const discordName = ref("(*'▽')")
 const discordUsername = ref("@y_xyz")
 const isHistoryOpen = ref(false)
 const historyPopover = ref<HTMLElement | null>(null)
+const historyMenuStyle = ref<Record<string, string>>({})
 const pastMessages = [
   { date: '2026.06', text: '適当にコードいじいじします。詳しいことわかんない。' },
   { date: '2025.12', text: '現在活動停止中かもしれない。' },
@@ -31,6 +32,32 @@ const closeHistoryOnOutsideClick = (event: MouseEvent) => {
 
 const closeHistoryOnEscape = (event: KeyboardEvent) => {
   if (event.key === 'Escape') isHistoryOpen.value = false
+}
+
+const updateHistoryMenuPosition = () => {
+  if (!isHistoryOpen.value || !historyPopover.value || window.innerWidth > 600) {
+    historyMenuStyle.value = {}
+    return
+  }
+
+  const triggerRect = historyPopover.value.getBoundingClientRect()
+  const gutter = 12
+  const menuWidth = Math.min(window.innerWidth - gutter * 2, 464)
+  const preferredLeft = triggerRect.left + triggerRect.width / 2 - menuWidth / 2
+  const left = Math.min(Math.max(gutter, preferredLeft), window.innerWidth - menuWidth - gutter)
+
+  historyMenuStyle.value = {
+    '--history-menu-left': `${left - triggerRect.left}px`,
+    '--history-menu-width': `${menuWidth}px`,
+  }
+}
+
+const toggleHistory = async () => {
+  isHistoryOpen.value = !isHistoryOpen.value
+  if (isHistoryOpen.value) {
+    await nextTick()
+    updateHistoryMenuPosition()
+  }
 }
 
 const getTextDisplayLength = (text: string) => {
@@ -222,6 +249,7 @@ onMounted(() => {
   timeInterval = setInterval(() => { nowMs.value = Date.now() }, 1000)
   document.addEventListener('click', closeHistoryOnOutsideClick)
   document.addEventListener('keydown', closeHistoryOnEscape)
+  window.addEventListener('resize', updateHistoryMenuPosition)
 })
 
 onUnmounted(() => {
@@ -230,6 +258,7 @@ onUnmounted(() => {
   if (timeInterval) clearInterval(timeInterval)
   document.removeEventListener('click', closeHistoryOnOutsideClick)
   document.removeEventListener('keydown', closeHistoryOnEscape)
+  window.removeEventListener('resize', updateHistoryMenuPosition)
 })
 </script>
 
@@ -250,9 +279,9 @@ onUnmounted(() => {
       <p class="text-line-3 intro-sequence tw:m-0 tw:text-[clamp(0.9rem,2.5vw,1rem)] tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `自分で書いてなさ過ぎてバイブコーダー`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
         <span ref="historyPopover" class="history-popover">
-          <button type="button" class="history-trigger" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="isHistoryOpen = !isHistoryOpen"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+          <button type="button" class="history-trigger" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="toggleHistory"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
           <Transition name="history-pop">
-            <div v-if="isHistoryOpen" class="history-menu" role="status">
+            <div v-if="isHistoryOpen" class="history-menu" :style="historyMenuStyle" role="status">
               <span class="history-menu-label">過去のひとこと</span>
               <ul class="history-list">
                 <li v-for="entry in pastMessages" :key="`${entry.date}-${entry.text}`">
