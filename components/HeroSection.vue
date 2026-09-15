@@ -18,6 +18,12 @@ const discordName = ref("(*'▽')")
 const discordUsername = ref("@y_xyz")
 const isHistoryOpen = ref(false)
 const historyPopover = ref<HTMLElement | null>(null)
+const pastMessages = [
+  { date: '2026.06', text: '適当にコードいじいじします。詳しいことわかんない。' },
+  { date: '2025.12', text: '現在活動停止中かもしれない。' },
+  { date: '2025.07', text: 'なんかやってます 詳しいことは全然わかりませーん' },
+  { date: '2025.05', text: 'こっち見んな童貞' },
+]
 
 const closeHistoryOnOutsideClick = (event: MouseEvent) => {
   if (!historyPopover.value?.contains(event.target as Node)) isHistoryOpen.value = false
@@ -246,7 +252,14 @@ onUnmounted(() => {
         <span ref="historyPopover" class="history-popover">
           <button type="button" class="history-trigger" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="isHistoryOpen = !isHistoryOpen"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
           <Transition name="history-pop">
-            <div v-if="isHistoryOpen" class="history-menu" role="status"><span class="history-menu-label">過去のひとこと</span><span>現在活動停止中かもしれない。</span></div>
+            <div v-if="isHistoryOpen" class="history-menu" role="status">
+              <span class="history-menu-label">過去のひとこと</span>
+              <ul class="history-list">
+                <li v-for="entry in pastMessages" :key="`${entry.date}-${entry.text}`">
+                  <time>{{ entry.date }}</time><span>{{ entry.text }}</span>
+                </li>
+              </ul>
+            </div>
           </Transition>
         </span>
       </p>
