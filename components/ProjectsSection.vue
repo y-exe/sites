@@ -214,15 +214,22 @@ const getReadmeShields = (readme: string, repo: any) => [...readme.matchAll(/<im
 const selectedProjectImages = computed(() => selectedProject.value ? projectDetails.value[selectedProject.value.id]?.images || [] : [])
 const currentProjectImage = computed(() => selectedProjectImages.value[currentProjectImageIndex.value] || '')
 
-const changeProjectImage = (direction: number) => {
+const changeProjectImage = (direction: number, restartTimer = true) => {
   const images = selectedProjectImages.value
   if (images.length < 2) return
   currentProjectImageIndex.value = (currentProjectImageIndex.value + direction + images.length) % images.length
+  if (restartTimer) startProjectCarousel()
+}
+
+const selectProjectImage = (index: number) => {
+  if (currentProjectImageIndex.value === index) return
+  currentProjectImageIndex.value = index
+  startProjectCarousel()
 }
 
 const startProjectCarousel = () => {
   if (projectCarouselTimer) clearInterval(projectCarouselTimer)
-  projectCarouselTimer = setInterval(() => changeProjectImage(1), 1_500)
+  projectCarouselTimer = setInterval(() => changeProjectImage(1, false), 4_000)
 }
 
 const stopProjectCarousel = () => {
@@ -303,7 +310,7 @@ onUnmounted(() => {
     <h2 class="section-title hover-highlight" v-split-text>
       <span v-for="(char, i) in `Projects`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
     </h2>
-    <div ref="githubPopoverRef" class="projects-source-wrap">
+    <div ref="githubPopoverRef" class="projects-source-wrap" v-reveal>
       <p class="projects-source">
         <span
           class="github-lockup-frame"
@@ -382,7 +389,7 @@ onUnmounted(() => {
     <div class="projects-grid">
       <p v-if="status === 'pending' && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
-      <button v-else v-for="repo in projects" :key="repo.id" type="button" class="project-card" :aria-label="`${repo.name} の詳細を開く`" @click="openProject(repo)">
+      <button v-else v-for="(repo, index) in projects" :key="repo.id" type="button" class="project-card" :style="{ '--project-reveal-delay': `${index * 85}ms` }" :aria-label="`${repo.name} の詳細を開く`" v-reveal @click="openProject(repo)">
         <div class="project-image">
           <div class="project-image-media" :style="{ backgroundImage: `url(${projectThumbnail(repo)})` }"></div>
           <div class="project-image-overlay"></div>
@@ -402,32 +409,33 @@ onUnmounted(() => {
     <Teleport to="body">
       <Transition name="project-modal-pop">
         <div v-if="selectedProject" class="project-modal-overlay" data-lenis-prevent @click.self="closeProject">
-          <article class="project-modal" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
-            <button class="project-modal-close" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          <article class="project-modal project-modal-content-in" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
+            <button class="project-modal-close project-modal-close-in" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             <div class="project-modal-hero">
               <div class="project-modal-hero-blur" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
-              <div class="project-modal-hero-image" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
+              <div class="project-modal-hero-image project-modal-hero-image-in" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
               <div class="project-modal-hero-overlay"></div>
-              <div class="project-modal-title">
+              <div class="project-modal-title project-modal-title-in">
                 <p v-if="selectedProject.updated_at"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
                 <h2>{{ selectedProject.name }}</h2>
               </div>
             </div>
             <div class="project-modal-body">
               <main class="project-modal-readme">
-                <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description">{{ projectDetails[selectedProject.id].description }}</p>
-                <div v-if="currentProjectImage" class="project-gallery" aria-label="プロジェクト画像">
+                <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description project-modal-description-in">{{ projectDetails[selectedProject.id].description }}</p>
+                <div v-if="currentProjectImage" class="project-gallery project-gallery-in" aria-label="プロジェクト画像">
                   <img :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" />
+                  <span v-if="selectedProjectImages.length > 1" :key="currentProjectImageIndex" class="project-gallery-progress" aria-hidden="true"></span>
                   <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-prev" type="button" aria-label="前の画像" @click="changeProjectImage(-1)"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
                   <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-next" type="button" aria-label="次の画像" @click="changeProjectImage(1)"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
-                  <div v-if="selectedProjectImages.length > 1" class="project-gallery-dots"><button v-for="(_image, index) in selectedProjectImages" :key="index" type="button" :class="{ 'is-active': currentProjectImageIndex === index }" :aria-label="`${index + 1} 枚目を表示`" @click="currentProjectImageIndex = index"></button></div>
+                  <div v-if="selectedProjectImages.length > 1" class="project-gallery-dots"><button v-for="(_image, index) in selectedProjectImages" :key="index" type="button" :class="{ 'is-active': currentProjectImageIndex === index }" :aria-label="`${index + 1} 枚目を表示`" @click="selectProjectImage(index)"></button></div>
                 </div>
-                <p v-else class="project-readme-loading">プロジェクト画像を読み込み中…</p>
+                <p v-else class="project-readme-loading project-gallery-in">プロジェクト画像を読み込み中…</p>
               </main>
-              <aside class="project-modal-sidebar" aria-label="プロジェクト情報">
-                <h3>リンク</h3>
-                <a v-if="selectedProject.homepage" class="project-modal-link-chip" :href="selectedProject.homepage" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.homepage)" alt="" /> <span>{{ linkLabel(selectedProject.homepage) }}</span></a>
-                <a class="project-modal-link-chip" :href="selectedProject.html_url" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.html_url)" alt="" /> <span>{{ linkLabel(selectedProject.html_url) }}</span></a>
+              <aside class="project-modal-sidebar project-modal-sidebar-in" aria-label="プロジェクト情報">
+                <h3 class="project-modal-sidebar-heading-in">関連サイト</h3>
+                <a v-if="selectedProject.homepage" class="project-modal-link-chip project-modal-link-in" :href="selectedProject.homepage" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.homepage)" alt="" /> <span>{{ linkLabel(selectedProject.homepage) }}</span></a>
+                <a class="project-modal-link-chip project-modal-link-in" :href="selectedProject.html_url" target="_blank" rel="noopener"><img :src="faviconUrl(selectedProject.html_url)" alt="" /> <span>{{ linkLabel(selectedProject.html_url) }}</span></a>
               </aside>
             </div>
           </article>
