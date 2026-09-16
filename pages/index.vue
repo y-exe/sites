@@ -74,28 +74,10 @@ const registerThemeTrigger = (el: HTMLElement) => {
 }
 provide('registerThemeTrigger', registerThemeTrigger)
 
-const fallbackProjects = [
-  ['DiscordWebAnalytics', '2026-09-09T17:56:45Z'],
-  ['votesites', '2026-09-06T07:55:52Z'],
-  ['tokumei-bot', '2026-08-11T00:32:58Z'],
-  ['DiscordWebBotClient', '2026-08-10T06:05:24Z'],
-  ['games-bot', '2026-06-21T13:11:08Z'],
-  ['sites', '2026-09-13T17:40:24Z'],
-  ['image-to-url', '2025-09-25T13:49:50Z'],
-  ['ymkw-mad', '2026-03-13T09:10:04Z']
-].map(([name, updated_at]) => ({
-  id: name,
-  name,
-  html_url: `https://github.com/y-exe/${name}`,
-  owner: { login: 'y-exe' },
-  default_branch: 'main',
-  updated_at
-}))
-
 const { data: projects, status: projectStatus } = await useFetch('/api/github', {
   query: { resource: 'repos' },
   transform: (repos: any[]) => Array.isArray(repos) ? repos.filter(repo => !repo.fork) : [],
-  default: () => fallbackProjects,
+  default: () => [],
   lazy: true,
   server: false
 })

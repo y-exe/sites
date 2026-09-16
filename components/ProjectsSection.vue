@@ -408,6 +408,7 @@ onUnmounted(() => {
     </div>
     <div class="projects-grid tw:grid tw:w-full tw:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] tw:gap-6">
       <p v-if="status === 'pending' && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
+      <p v-else-if="status === 'error'">プロジェクトを取得できませんでした。時間をおいて再度お試しください。</p>
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
       <button v-else v-for="(repo, index) in projects" :key="repo.id" type="button" class="project-card tw:flex tw:flex-col tw:text-left tw:no-underline tw:bg-[var(--card-bg-color)] tw:border tw:border-[var(--card-border-color)] tw:text-inherit tw:shadow-[0_4px_15px_var(--shadow-color)] tw:hover:shadow-[0_12px_25px_var(--shadow-hover-color)]" :style="{ '--project-reveal-delay': `${index * 85}ms` }" :aria-label="`${repo.name} の詳細を開く`" v-reveal @click="openProject(repo)">
         <div class="project-image">
