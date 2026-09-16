@@ -19,6 +19,7 @@ const discordUsername = ref("@y_xyz")
 const isHistoryOpen = ref(false)
 const historyPopover = ref<HTMLElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
+const discordVideo = ref<HTMLVideoElement | null>(null)
 const pastMessages = [
   { date: '2026.06', text: '適当にコードいじいじします。詳しいことわかんない。' },
   { date: '2025.12', text: '現在活動停止中かもしれない。' },
@@ -58,6 +59,20 @@ const toggleHistory = async () => {
     await nextTick()
     updateHistoryMenuPosition()
   }
+}
+
+const resumeDiscordVideo = () => {
+  const video = discordVideo.value
+  if (!video) return
+
+  video.muted = true
+  video.defaultMuted = true
+  video.playsInline = true
+  void video.play().catch(() => {})
+}
+
+const resumeDiscordVideoOnVisibilityChange = () => {
+  if (!document.hidden) resumeDiscordVideo()
 }
 
 const getTextDisplayLength = (text: string) => {
@@ -250,6 +265,8 @@ onMounted(() => {
   document.addEventListener('click', closeHistoryOnOutsideClick)
   document.addEventListener('keydown', closeHistoryOnEscape)
   window.addEventListener('resize', updateHistoryMenuPosition)
+  document.addEventListener('visibilitychange', resumeDiscordVideoOnVisibilityChange)
+  nextTick(resumeDiscordVideo)
 })
 
 onUnmounted(() => {
@@ -259,6 +276,7 @@ onUnmounted(() => {
   document.removeEventListener('click', closeHistoryOnOutsideClick)
   document.removeEventListener('keydown', closeHistoryOnEscape)
   window.removeEventListener('resize', updateHistoryMenuPosition)
+  document.removeEventListener('visibilitychange', resumeDiscordVideoOnVisibilityChange)
 })
 </script>
 
@@ -302,7 +320,7 @@ onUnmounted(() => {
     <div class="contact-section">
       <div class="contact-links">
         <a :href="discordProfileUrl" target="_blank" class="contact-item discord intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
-          <div class="discord-banner"><video autoplay loop muted playsinline src="/Discord.webm"></video></div>
+          <div class="discord-banner"><video ref="discordVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" @canplay="resumeDiscordVideo"><source src="/Discord.mp4" type="video/mp4" /><source src="/Discord.webm" type="video/webm" /></video></div>
           <div class="discord-pfp">
             <div class="discord-pfp-wrapper">
               <img :key="avatarUrl" :src="avatarUrl" width="65" height="65" class="discord-avatar-img" />

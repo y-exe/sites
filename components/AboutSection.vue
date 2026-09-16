@@ -28,7 +28,7 @@ const jiggleIcon = (event: MouseEvent) => {
     <h2 class="section-title hover-highlight tw:mb-[0.35rem]!" v-split-text>
       <span v-for="(char, i) in `About`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
     </h2>
-    <p class="about-subtitle tw:mt-0 tw:mb-8 tw:text-base tw:text-[var(--text-muted-color)]" v-reveal>なんかいろいろ</p>
+    <p class="about-subtitle hover-highlight tw:mt-0 tw:mb-8 tw:text-base tw:text-[var(--text-muted-color)]" v-reveal>なんかいろいろ</p>
     <div class="about-container tw:grid tw:w-full tw:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] tw:gap-8">
       <div class="about-card tw:flex tw:flex-col tw:justify-center tw:rounded-2xl tw:border tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:p-8 tw:text-center tw:shadow-[0_4px_15px_var(--shadow-color)]">
         <NuxtImg 
@@ -43,10 +43,10 @@ const jiggleIcon = (event: MouseEvent) => {
           loading="eager"
           @click="jiggleIcon" 
         />
-        <h2 class="section-title hover-highlight tw:mt-0! tw:mb-[0.35rem]! tw:text-[2em]! tw:leading-[1.05]!" v-split-text>
+        <h2 class="section-title hover-highlight tw:mt-0! tw:mb-[0.35rem]! tw:w-fit tw:max-w-full tw:self-center tw:text-[2em]! tw:leading-[1.05]!" v-split-text>
           <span v-for="(char, i) in `Hello, I'm (*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '&nbsp;' : char }}</span>
         </h2>
-        <p class="hover-highlight tw:mt-0 tw:mb-[1.25em] tw:text-[1.1em] tw:leading-[1.35] tw:text-[var(--text-muted-color)]" v-split-text>
+        <p class="hover-highlight tw:mt-0 tw:mb-[1.25em] tw:w-fit tw:max-w-full tw:self-center tw:text-[1.1em] tw:leading-[1.35] tw:text-[var(--text-muted-color)]" v-split-text>
           <span v-for="(char, i) in `I am a 16 year old developer-wannabe.`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '&nbsp;' : char }}</span>
         </p>
         <div class="info-pills tw:flex tw:flex-wrap tw:justify-center tw:gap-[0.8em]" v-reveal>
