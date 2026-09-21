@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     githubToken: process.env.GITHUB_TOKEN,
     public: {
-      gaId: process.env.NUXT_PUBLIC_GA_ID || ''
+      gaId: process.env.GA_ID || process.env.NUXT_PUBLIC_GA_ID || ''
     }
   },
   nitro: {
