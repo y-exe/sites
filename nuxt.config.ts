@@ -3,7 +3,10 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   runtimeConfig: {
-    githubToken: process.env.GITHUB_TOKEN
+    githubToken: process.env.GITHUB_TOKEN,
+    public: {
+      gaId: process.env.NUXT_PUBLIC_GA_ID || ''
+    }
   },
   nitro: {
     output: {
