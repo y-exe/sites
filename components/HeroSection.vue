@@ -20,6 +20,11 @@ const isHistoryOpen = ref(false)
 const historyPopover = ref<HTMLElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
 const discordVideo = ref<HTMLVideoElement | null>(null)
+const avatarDecorationUrl = ref('')
+const nameplateBaseUrl = ref('')
+const discordNameplateStyle = computed(() => nameplateBaseUrl.value
+  ? { backgroundImage: `url("${nameplateBaseUrl.value}static.png")` }
+  : {})
 const pastMessages = [
   { date: '2026.06', text: '適当にコードいじいじします。詳しいことわかんない。' },
   { date: '2025.12', text: '現在活動停止中かもしれない。' },
@@ -180,12 +185,19 @@ const updateDiscordData = (data: any) => {
   if (data.discord_status) discordStatus.value = data.discord_status
 
   if (data.discord_user) {
-    discordName.value = data.discord_user.display_name || data.discord_user.global_name || data.discord_user.username || "(*'▽')"
-    discordUsername.value = `@${data.discord_user.username || 'y_xyz'}`
-    if (data.discord_user.avatar) {
-      const ext = data.discord_user.avatar.startsWith('a_') ? 'gif' : 'webp'
-      avatarUrl.value = `https://cdn.discordapp.com/avatars/${data.discord_user.id}/${data.discord_user.avatar}.${ext}?size=128`
+    const user = data.discord_user
+    discordName.value = user.display_name || user.global_name || user.username || "(*'▽')"
+    discordUsername.value = `@${user.username || 'y_xyz'}`
+    if (user.avatar) {
+      const ext = user.avatar.startsWith('a_') ? 'gif' : 'webp'
+      avatarUrl.value = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=128`
     }
+    avatarDecorationUrl.value = user.avatar_decoration_data?.asset
+      ? `https://cdn.discordapp.com/avatar-decoration-presets/${user.avatar_decoration_data.asset}.png?size=160&passthrough=true`
+      : ''
+    nameplateBaseUrl.value = user.collectibles?.nameplate?.asset
+      ? `https://cdn.discordapp.com/assets/collectibles/${user.collectibles.nameplate.asset}`
+      : ''
   }
   
   if (data.discord_user.primary_guild) {
@@ -319,11 +331,13 @@ onUnmounted(() => {
     
     <div class="contact-section">
       <div class="contact-links">
-        <a :href="discordProfileUrl" target="_blank" class="contact-item discord intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a :href="discordProfileUrl" target="_blank" class="contact-item discord intro-sequence" :style="discordNameplateStyle" :class="{ 'has-nameplate': nameplateBaseUrl }" :ref="setIntroRef" v-reveal data-reveal="up">
+          <video v-if="nameplateBaseUrl" class="discord-nameplate-video" :src="`${nameplateBaseUrl}asset.webm`" autoplay loop muted playsinline aria-hidden="true"></video>
           <div class="discord-banner"><video ref="discordVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" @canplay="resumeDiscordVideo"><source src="/Discord.mp4" type="video/mp4" /><source src="/Discord.webm" type="video/webm" /></video></div>
           <div class="discord-pfp">
-            <div class="discord-pfp-wrapper">
+            <div class="discord-pfp-wrapper" :class="{ 'has-decoration': avatarDecorationUrl }">
               <img :key="avatarUrl" :src="avatarUrl" width="65" height="65" class="discord-avatar-img" />
+              <img v-if="avatarDecorationUrl" :src="avatarDecorationUrl" class="discord-avatar-decoration" alt="" />
               <span class="status-indicator" :class="discordStatus"></span>
             </div>
           </div>
@@ -437,6 +451,45 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.discord-avatar-decoration {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.discord-nameplate-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+  pointer-events: none;
+}
+
+.contact-item.discord.has-nameplate {
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: auto 100%;
+}
+
+.contact-item.discord.has-nameplate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(20, 18, 18, 0.22), rgba(20, 18, 18, 0.04));
+}
+
+.contact-item.discord.has-nameplate > :not(.discord-nameplate-video) {
+  z-index: 2;
 }
 
 .discord-guild-pill {

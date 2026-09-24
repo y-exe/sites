@@ -390,15 +390,15 @@ main {
 
 .discord-pfp-wrapper {
     position: relative;
-    width: 65px;
-    height: 65px;
+    width: 80px;
+    height: 80px;
 }
 
 .discord-pfp-wrapper img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 4px solid #37373e;
+    border: 5px solid #37373e;
     transition: border-color 0.2s;
 }
 
@@ -406,14 +406,29 @@ main {
     border-color: #4a4a55;
 }
 
+.discord-pfp-wrapper .discord-avatar-decoration,
+.contact-item.discord:not(:hover) .discord-pfp-wrapper .discord-avatar-decoration,
+.contact-item.discord:hover .discord-pfp-wrapper .discord-avatar-decoration {
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    width: 124%;
+    height: 124%;
+    border: 0;
+    border-radius: 0;
+    transform: translate(-50%, -50%);
+    transition: none;
+}
+
 .status-indicator {
     position: absolute;
-    right: 2px;
-    bottom: 2px;
-    width: 18px;
-    height: 18px;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    border: 3px solid #37373e;
+    border: 5px solid #37373e;
     background-color: #747f8d;
 }
 
@@ -429,9 +444,21 @@ main {
     background-color: #ed4245;
 }
 
+.status-indicator.dnd::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 4px;
+    border-radius: 2px;
+    background-color: #37373e;
+    transform: translate(-50%, -50%);
+}
+
 .discord-text {
     position: absolute;
-    left: 95px;
+    left: 110px;
     bottom: 8px;
     text-align: left;
 }
