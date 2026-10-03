@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { languageIcons } from '~/utils/language-icons'
 import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps<{ projects: any[] | null; status: string }>()
@@ -17,7 +18,15 @@ const githubEvents = ref<any[]>([])
 const githubContributions = ref<{ date: string; count: number; level: number }[]>([])
 const githubContributionTotal = ref<number | null>(null)
 const selectedProject = ref<any | null>(null)
+useDialogFocus(computed(() => Boolean(selectedProject.value)), '.project-modal-overlay', () => { selectedProject.value = null })
 const currentProjectImageIndex = ref(0)
+const carouselPlaying = ref(true)
+const reducedMotion = usePreferredReducedMotion()
+watch(reducedMotion, value => { if (value === 'reduce') { carouselPlaying.value = false; stopProjectCarousel() } })
+const carouselHovered = ref(false)
+const carouselFocused = ref(false)
+const carouselInteracting = computed(() => carouselHovered.value || carouselFocused.value)
+const carouselCycle = ref(0)
 const projectHeroParallax = ref({ x: 0, y: 0 })
 let projectCarouselTimer: ReturnType<typeof setInterval> | undefined
 
@@ -184,7 +193,7 @@ const projectHeroParallaxStyle = computed(() => ({
 }))
 
 const updateProjectHeroParallax = (event: PointerEvent) => {
-  if (event.pointerType !== 'mouse' || !selectedProject.value) return
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || event.pointerType !== 'mouse' || !selectedProject.value) return
   const x = event.clientX / window.innerWidth - 0.5
   const y = event.clientY / window.innerHeight - 0.5
   projectHeroParallax.value = { x: x * 10, y: y * 8 }
@@ -212,7 +221,7 @@ const projectImages = (repo: any) => Array.from(
 )
 
 const projectThumbnail = (repo: any) => projectImages(repo)[0] || '/notfrond.png'
-const fallbackCommitTrend = '0,22 8,21 16,22 24,17 32,20 40,13 48,21 56,18 64,22 72,15 80,19 88,11 96,20 100,16'
+const fallbackCommitTrend = ''
 
 const decodeReadme = (content: string) => {
   const bytes = Uint8Array.from(atob(content.replace(/\s/g, '')), char => char.charCodeAt(0))
@@ -232,6 +241,7 @@ const currentProjectImage = computed(() => selectedProjectImages.value[currentPr
 
 const changeProjectImage = (direction: number, restartTimer = true) => {
   const images = selectedProjectImages.value
+  if (document.hidden && !restartTimer) return
   if (images.length < 2) return
   currentProjectImageIndex.value = (currentProjectImageIndex.value + direction + images.length) % images.length
   if (restartTimer) startProjectCarousel()
@@ -244,7 +254,9 @@ const selectProjectImage = (index: number) => {
 }
 
 const startProjectCarousel = () => {
-  if (projectCarouselTimer) clearInterval(projectCarouselTimer)
+  stopProjectCarousel()
+  if (!carouselPlaying.value || carouselInteracting.value || selectedProjectImages.value.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  carouselCycle.value++
   projectCarouselTimer = setInterval(() => changeProjectImage(1, false), 4_000)
 }
 
@@ -252,6 +264,29 @@ const stopProjectCarousel = () => {
   if (projectCarouselTimer) clearInterval(projectCarouselTimer)
   projectCarouselTimer = undefined
 }
+
+const toggleCarousel = () => {
+  carouselPlaying.value = !carouselPlaying.value
+  startProjectCarousel()
+}
+const interactWithCarousel = (value: boolean) => {
+  carouselHovered.value = value
+  startProjectCarousel()
+}
+
+const focusCarousel = (event: FocusEvent) => {
+  const gallery = event.currentTarget as HTMLElement
+  carouselFocused.value = event.type === 'focusin' || gallery.contains(event.relatedTarget as Node)
+  startProjectCarousel()
+}
+const projectHomepage = computed(() => {
+  const raw = selectedProject.value?.homepage
+  if (!raw) return ''
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
+    return ['https:', 'http:'].includes(url.protocol) ? url.href : ''
+  } catch { return '' }
+})
 
 const getCommitTrend = async (repo: any, retry = 0): Promise<string> => {
   try {
@@ -306,6 +341,9 @@ watch(selectedProject, (project) => {
   if (import.meta.client) document.body.classList.toggle('project-modal-open', Boolean(project))
   if (project) {
     currentProjectImageIndex.value = 0
+    carouselPlaying.value = !matchMedia('(prefers-reduced-motion: reduce)').matches
+    carouselHovered.value = false
+    carouselFocused.value = false
     resetProjectHeroParallax()
     startProjectCarousel()
   } else {
@@ -350,7 +388,7 @@ onUnmounted(() => {
             :class="{ 'is-open': isGithubProfileOpen }"
             aria-hidden="true"
           >
-            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            <SiteIcon name="chevron" :size="16" :expanded="isGithubProfileOpen"/>
           </span>
         </span>
         <span>より</span>
@@ -407,7 +445,7 @@ onUnmounted(() => {
       </Transition>
     </div>
     <div class="projects-grid tw:grid tw:w-full tw:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] tw:gap-6">
-      <p v-if="status === 'pending' && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
+      <p v-if="(status === 'pending' || status === 'idle') && (!projects || projects.length === 0)">プロジェクトを読み込んでいます...</p>
       <p v-else-if="status === 'error'">プロジェクトを取得できませんでした。時間をおいて再度お試しください。</p>
       <p v-else-if="!projects || projects.length === 0">公開されているプロジェクトはありません。</p>
       <button v-else v-for="(repo, index) in projects" :key="repo.id" type="button" class="project-card tw:flex tw:flex-col tw:text-left tw:no-underline tw:bg-[var(--card-bg-color)] tw:border tw:border-[var(--card-border-color)] tw:text-inherit tw:shadow-[0_4px_15px_var(--shadow-color)] tw:hover:shadow-[0_12px_25px_var(--shadow-hover-color)]" :style="{ '--project-reveal-delay': `${index * 85}ms` }" :aria-label="`${repo.name} の詳細を開く`" v-reveal @click="openProject(repo)">
@@ -418,20 +456,18 @@ onUnmounted(() => {
           <div class="project-heading">
             <h3 class="tw:[font-family:var(--font-display)]">{{ repo.name }}</h3>
             <p v-if="repo.updated_at" class="project-updated">
-              <span><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(repo.updated_at) }}</span>
+              <span><SiteIcon name="clock" :size="13"/> 最終更新 {{ relativeUpdate(repo.updated_at) }}</span>
             </p>
           </div>
-          <div class="project-shields" v-if="projectDetails[repo.id]?.shields.length"><img v-for="shield in projectDetails[repo.id].shields" :key="shield" :src="shield" alt="" /></div>
           <div class="project-view-label"><i class="fa-solid fa-eye" aria-hidden="true"></i> 見る</div>
-          <i class="fa-solid fa-expand project-link-icon" aria-hidden="true"></i>
         </div>
       </button>
     </div>
     <Teleport to="body">
       <Transition name="project-modal-pop">
-        <div v-if="selectedProject" class="project-modal-overlay tw:fixed tw:inset-0 tw:z-[3000] tw:grid tw:place-items-center tw:overflow-y-auto tw:p-[clamp(1rem,4vw,3.5rem)] tw:bg-[rgba(9,12,20,0.72)] tw:backdrop-blur-[14px]" data-lenis-prevent @click.self="closeProject">
-          <article class="project-modal project-modal-content-in tw:relative tw:w-[min(72rem,100%)] tw:max-h-[min(94vh,66rem)] tw:overflow-hidden tw:rounded-[1.25rem] tw:bg-[var(--card-bg-color)] tw:text-[var(--active-text)] tw:shadow-[0_1.5rem_5rem_rgba(0,0,0,0.42)] tw:[transform-origin:center]" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent>
-            <button class="project-modal-close project-modal-close-in tw:absolute tw:top-4 tw:right-4 tw:z-[2] tw:grid tw:size-[2.4rem] tw:cursor-pointer tw:place-items-center tw:rounded-full tw:border-0 tw:bg-[rgba(15,23,42,0.54)] tw:p-0 tw:text-base tw:text-white tw:transition-[transform,background] tw:duration-300 tw:hover:rotate-90 tw:hover:scale-[1.08] tw:hover:bg-[rgba(15,23,42,0.82)]" type="button" aria-label="プロジェクト詳細を閉じる" @click="closeProject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <div v-if="selectedProject" class="project-modal-overlay tw:fixed tw:inset-0 tw:z-[3000] tw:grid tw:place-items-center tw:overflow-y-auto tw:p-[clamp(1rem,4vw,3.5rem)] tw:bg-[rgba(9,12,20,0.72)] tw:backdrop-blur-[14px]" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent @click.self="closeProject">
+          <button class="project-modal-close project-modal-close-in tw:fixed tw:top-6 tw:right-6 tw:z-[3001] tw:inline-flex tw:items-center tw:justify-center tw:cursor-pointer tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[var(--text-color-dark)] tw:transition-[background-color,color] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)] tw:max-[760px]:top-3 tw:max-[760px]:right-3" type="button" aria-label="プロジェクト詳細を閉じる" data-tooltip="閉じる（Esc）" @click="closeProject"><SiteIcon name="close" :size="24"/></button>
+          <article class="project-modal project-modal-content-in tw:relative tw:w-[min(72rem,100%)] tw:max-h-[min(94vh,66rem)] tw:overflow-hidden tw:rounded-[1.25rem] tw:bg-[var(--card-bg-color)] tw:text-[var(--active-text)] tw:shadow-[0_1.5rem_5rem_rgba(0,0,0,0.42)] tw:[transform-origin:center]" data-lenis-prevent>
             <div class="project-modal-hero tw:relative tw:min-h-[clamp(8rem,20vh,12rem)] tw:overflow-hidden tw:bg-[url('/notfrond.png')] tw:bg-center tw:bg-cover">
               <div class="project-modal-parallax tw:absolute tw:-inset-4 tw:will-change-transform tw:transition-transform tw:duration-300 tw:ease-out" :style="projectHeroParallaxStyle">
                 <div class="project-modal-hero-blur" :style="projectDetails[selectedProject.id]?.images[0] ? { backgroundImage: `url(${projectDetails[selectedProject.id].images[0]})` } : {}"></div>
@@ -439,25 +475,28 @@ onUnmounted(() => {
               </div>
               <div class="project-modal-hero-overlay"></div>
               <div class="project-modal-title project-modal-title-in tw:absolute tw:right-[clamp(1.25rem,4vw,3rem)] tw:bottom-[clamp(1.25rem,4vw,2.5rem)] tw:left-[clamp(1.25rem,4vw,3rem)] tw:text-white">
-                <p v-if="selectedProject.updated_at"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
+                <p v-if="selectedProject.updated_at"><SiteIcon name="clock" :size="13"/> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
                 <h2>{{ selectedProject.name }}</h2>
               </div>
             </div>
             <div class="project-modal-body tw:grid tw:max-h-[min(66vh,40rem)] tw:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] tw:overflow-hidden tw:bg-[var(--card-bg-color)]">
               <main class="project-modal-readme tw:min-h-0 tw:overflow-y-auto tw:px-[clamp(1.35rem,5vw,3rem)] tw:py-[clamp(1.35rem,4vw,2.4rem)]">
+                <div v-if="projectDetails[selectedProject.id]?.shields.length" class="project-modal-badges project-modal-description-in" aria-label="プロジェクトのバッジ"><img v-for="shield in projectDetails[selectedProject.id].shields" :key="shield" :src="shield" alt="" /></div>
                 <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description project-modal-description-in tw:mt-0 tw:mb-5 tw:text-[0.96rem] tw:leading-[1.7] tw:text-[var(--text-muted-color)] tw:whitespace-pre-wrap">{{ projectDetails[selectedProject.id].description }}</p>
-                <div class="project-gallery project-gallery-in tw:relative tw:grid tw:h-[min(52vh,26rem)] tw:place-items-center tw:overflow-hidden tw:rounded-[0.8rem] tw:bg-[var(--pill-bg-color)] tw:max-sm:h-auto tw:max-sm:aspect-video" aria-label="プロジェクト画像">
-                  <img class="project-gallery-image-in tw:block tw:h-full tw:w-full tw:object-contain tw:object-center" :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" />
-                  <span v-if="selectedProjectImages.length > 1" :key="currentProjectImageIndex" class="project-gallery-progress" aria-hidden="true"></span>
-                  <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-prev" type="button" aria-label="前の画像" @click="changeProjectImage(-1)"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
-                  <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-next" type="button" aria-label="次の画像" @click="changeProjectImage(1)"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
-                  <div v-if="selectedProjectImages.length > 1" class="project-gallery-dots"><button v-for="(_image, index) in selectedProjectImages" :key="index" type="button" :class="{ 'is-active': currentProjectImageIndex === index }" :aria-label="`${index + 1} 枚目を表示`" @click="selectProjectImage(index)"></button></div>
+                <div class="project-gallery project-gallery-in tw:relative tw:grid tw:h-[min(52vh,26rem)] tw:place-items-center tw:overflow-hidden tw:rounded-[0.8rem] tw:bg-[var(--pill-bg-color)] tw:max-sm:h-auto tw:max-sm:aspect-video" aria-label="プロジェクト画像" @pointerenter="interactWithCarousel(true)" @pointerleave="interactWithCarousel(false)" @focusin="focusCarousel" @focusout="focusCarousel">
+                  <Transition name="gallery-image" mode="out-in"><img :key="currentProjectImage" class="project-gallery-image-in tw:block tw:h-full tw:w-full tw:object-contain tw:object-center" :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" /></Transition>
+                  <span v-if="selectedProjectImages.length > 1 && carouselPlaying" :key="`${currentProjectImageIndex}-${carouselCycle}`" class="project-gallery-progress" :class="{ 'is-paused': carouselInteracting }" aria-hidden="true"></span>
+                  <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-prev" type="button" aria-label="前の画像" data-tooltip="前の画像" @click="changeProjectImage(-1)"><SiteIcon name="chevron" :size="20" class="chevron-prev"/></button>
+                  <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-next" type="button" aria-label="次の画像" data-tooltip="次の画像" @click="changeProjectImage(1)"><SiteIcon name="chevron" :size="20" class="chevron-next"/></button>
+                  <div v-if="selectedProjectImages.length > 1" class="gallery-controls"><span class="gallery-count" aria-live="polite">{{ currentProjectImageIndex + 1 }} / {{ selectedProjectImages.length }}</span><button type="button" class="icon-button gallery-play" :aria-label="carouselPlaying ? '自動再生を停止' : '自動再生を開始'" :data-tooltip="carouselPlaying ? '自動再生を停止' : '自動再生を開始'" :aria-pressed="carouselPlaying" @click="toggleCarousel"><SiteIcon :name="carouselPlaying ? 'pause' : 'play'" :size="16"/></button></div>
+                  <div v-if="selectedProjectImages.length > 1" class="project-gallery-dots"><button v-for="(_image, index) in selectedProjectImages" :key="index" type="button" :class="{ 'is-active': currentProjectImageIndex === index }" :aria-label="`${index + 1} 枚目を表示`" :aria-current="currentProjectImageIndex === index ? 'true' : undefined" @click="selectProjectImage(index)"></button></div>
                 </div>
               </main>
               <aside class="project-modal-sidebar project-modal-sidebar-in tw:min-h-0 tw:overflow-y-auto tw:bg-[color-mix(in_srgb,var(--pill-bg-color)_48%,transparent)] tw:p-[clamp(1.35rem,3vw,2rem)]" aria-label="プロジェクト情報">
                 <h3 class="project-modal-sidebar-heading-in tw:mt-0 tw:mb-[0.9rem] tw:text-[1.35rem] tw:leading-normal tw:text-[var(--active-text)]">関連サイト</h3>
-                <a v-if="selectedProject.homepage" class="project-modal-link-chip project-modal-link-in tw:my-[0.6rem] tw:flex tw:w-fit tw:max-w-full tw:min-w-0 tw:items-center tw:gap-2 tw:overflow-hidden tw:rounded-full tw:bg-[#cecfd9] tw:px-[0.72rem] tw:py-[0.42rem] tw:text-left tw:text-[0.76rem] tw:font-bold tw:leading-[1.35] tw:text-[#4f4e69] tw:no-underline tw:transition-[color,background,transform] tw:duration-300 tw:hover:translate-x-[0.18rem] tw:hover:bg-[#bfc0cc]" :href="selectedProject.homepage" target="_blank" rel="noopener"><img class="tw:size-4 tw:shrink-0 tw:rounded-full" :src="faviconUrl(selectedProject.homepage)" alt="" /> <span class="tw:min-w-0 tw:flex-1 tw:truncate tw:whitespace-nowrap tw:text-left">{{ linkLabel(selectedProject.homepage) }}</span></a>
-                <a class="project-modal-link-chip project-modal-link-in tw:my-[0.6rem] tw:flex tw:w-fit tw:max-w-full tw:min-w-0 tw:items-center tw:gap-2 tw:overflow-hidden tw:rounded-full tw:bg-[#cecfd9] tw:px-[0.72rem] tw:py-[0.42rem] tw:text-left tw:text-[0.76rem] tw:font-bold tw:leading-[1.35] tw:text-[#4f4e69] tw:no-underline tw:transition-[color,background,transform] tw:duration-300 tw:hover:translate-x-[0.18rem] tw:hover:bg-[#bfc0cc]" :href="selectedProject.html_url" target="_blank" rel="noopener"><img class="tw:size-4 tw:shrink-0 tw:rounded-full" :src="faviconUrl(selectedProject.html_url)" alt="" /> <span class="tw:min-w-0 tw:flex-1 tw:truncate tw:whitespace-nowrap tw:text-left">{{ linkLabel(selectedProject.html_url) }}</span></a>
+                <a v-if="projectHomepage" class="project-modal-link-chip project-modal-link-in tw:my-[0.6rem] tw:flex tw:w-fit tw:max-w-full tw:min-w-0 tw:items-center tw:gap-2 tw:overflow-hidden tw:rounded-full tw:bg-[#cecfd9] tw:px-[0.72rem] tw:py-[0.42rem] tw:text-left tw:text-[0.76rem] tw:font-bold tw:leading-[1.35] tw:text-[#4f4e69] tw:no-underline tw:transition-[color,background,transform] tw:duration-300 tw:hover:bg-[#bfc0cc]" :href="projectHomepage" target="_blank" rel="noopener"><img class="tw:size-4 tw:shrink-0 tw:rounded-full" :src="faviconUrl(projectHomepage)" alt="" /> <span class="tw:min-w-0 tw:flex-1 tw:truncate tw:whitespace-nowrap tw:text-left">{{ linkLabel(projectHomepage) }}</span></a>
+                <a class="project-modal-link-chip project-modal-link-in tw:my-[0.6rem] tw:flex tw:w-fit tw:max-w-full tw:min-w-0 tw:items-center tw:gap-2 tw:overflow-hidden tw:rounded-full tw:bg-[#cecfd9] tw:px-[0.72rem] tw:py-[0.42rem] tw:text-left tw:text-[0.76rem] tw:font-bold tw:leading-[1.35] tw:text-[#4f4e69] tw:no-underline tw:transition-[color,background,transform] tw:duration-300 tw:hover:bg-[#bfc0cc]" :href="selectedProject.html_url" target="_blank" rel="noopener"><img class="tw:size-4 tw:shrink-0 tw:rounded-full" :src="faviconUrl(selectedProject.html_url)" alt="" /> <span class="tw:min-w-0 tw:flex-1 tw:truncate tw:whitespace-nowrap tw:text-left">{{ linkLabel(selectedProject.html_url) }}</span></a>
+                <dl class="project-facts project-modal-sidebar-in"><template v-if="selectedProject.language"><dt>主な言語</dt><dd><img v-if="languageIcons[selectedProject.language]" class="project-language-icon" :src="`/icons/languages/${languageIcons[selectedProject.language]}.svg`" alt="" />{{ selectedProject.language }}</dd></template><template v-if="selectedProject.license"><dt>ライセンス</dt><dd>{{ selectedProject.license.spdx_id || selectedProject.license.name }}</dd></template><dt>GitHub</dt><dd><SiteIcon name="star" :size="15"/>{{ selectedProject.stargazers_count || 0 }}<SiteIcon name="fork" :size="15"/>{{ selectedProject.forks_count || 0 }}</dd></dl>
               </aside>
             </div>
           </article>

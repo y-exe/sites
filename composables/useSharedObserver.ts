@@ -8,8 +8,7 @@ export const useSharedObserver = () => {
 
     const callback = (entries: IntersectionObserverEntry[]) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('is-visible')
-        else entry.target.classList.remove('is-visible')
+        entry.target.classList.toggle('is-visible', entry.isIntersecting)
       })
     }
     

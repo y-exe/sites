@@ -334,7 +334,6 @@ onUnmounted(() => cleanup?.())
     <div class="content-wrap">
       <div class="game-container">
         <canvas ref="canvasEl" width="800" height="300" />
-        <!-- img は % 指定で JS から配置するため CSS の dino-sprite に size 指定なし -->
         <img ref="dinoEl" alt="" class="dino-sprite" />
       </div>
       <div class="err-body">
@@ -380,7 +379,6 @@ onUnmounted(() => cleanup?.())
   text-align: left;
 }
 
-/* CSS の max-width でゲーム画面全体サイズを制御 */
 .game-container {
   position: relative;
   width: 100%;
@@ -396,7 +394,6 @@ canvas {
   cursor: pointer;
 }
 
-/* サイズ・位置は JS が % で設定するため CSS では指定しない */
 .dino-sprite {
   position: absolute;
   image-rendering: auto;

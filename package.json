@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:motion": "node --experimental-strip-types --test tests/spring.test.ts",
     "build": "nuxt generate",
     "dev": "nuxt dev",
     "generate": "nuxt generate",

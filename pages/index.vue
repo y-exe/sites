@@ -43,13 +43,20 @@ const isFadeOut = ref(false)
 const loadingProgress = ref(0)
 const isLoaded = ref(false)
 const isWindowLoaded = ref(false)
-const isDarkMode = ref(false)
+const { isDarkMode, toggleDarkMode } = useSiteTheme()
 const showPgpModal = ref(false)
-const toastData = ref({ show: false, message: '' })
+const { toast: toastData } = useSiteToast()
 const { introElements, isHeaderIntroDone } = useIntro()
 const { y: scrollY } = useWindowScroll()
 const isScrolledEnough = computed(() => scrollY.value > 300)
-let lenis: Lenis | null = null
+const lenis = shallowRef<Lenis | null>(null)
+let frame = 0
+let sectionObserver: IntersectionObserver | undefined
+const timers: ReturnType<typeof setTimeout>[] = []
+let loadingInterval: ReturnType<typeof setInterval> | undefined
+let removeLoadListener: (() => void) | undefined
+const schedule = (callback: () => void, delay: number) => { timers.push(setTimeout(callback, delay)) }
+onUnmounted(() => { cancelAnimationFrame(frame); lenis.value?.destroy(); sectionObserver?.disconnect(); timers.forEach(clearTimeout); clearInterval(loadingInterval); removeLoadListener?.() })
 
 const preloadImages = (urls: string[], timeoutMs = 5000) => {
   const uniqueUrls = [...new Set(urls)]
@@ -83,73 +90,63 @@ const { data: projects, status: projectStatus } = await useFetch('/api/github', 
 })
 
 const startIntroSequence = () => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
   const { getObservers } = useSharedObserver()
   const { revealObserver, textObserver } = getObservers()
-  const sortedElements = introElements.value.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1)
+  const sortedElements = [...introElements.value].sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1)
   sortedElements.forEach((el, index) => {
     const isHeader = el.classList.contains('header-fixed-item')
-    setTimeout(() => {
+    schedule(() => {
       if (isHeader) {
         const headerCount = sortedElements.filter(e => e.classList.contains('header-fixed-item')).length
         const currentHeaderIndex = sortedElements.filter(e => e.classList.contains('header-fixed-item')).indexOf(el)
         if (currentHeaderIndex === headerCount - 1) isHeaderIntroDone.value = true
       } else {
         el.classList.add('is-visible')
-        setTimeout(() => {
+        schedule(() => {
           if (el.dataset.splitText !== undefined) textObserver?.observe(el)
           else revealObserver?.observe(el)
         }, 1000)
       }
-    }, index * 65)
+    }, reduced ? 0 : index * 55)
   })
-}
-
-const toggleDarkMode = (event: MouseEvent | null, forceDark?: boolean) => {
-  const nextState = forceDark !== undefined ? forceDark : !isDarkMode.value
-  const update = () => {
-    isDarkMode.value = nextState
-    if(import.meta.client) {
-      document.body.classList.toggle('dark-mode', nextState)
-      localStorage.setItem('theme', nextState ? 'dark' : 'light')
-    }
-  }
-  if (event && document.startViewTransition) {
-    document.documentElement.style.setProperty('--clip-x', event.clientX + 'px')
-    document.documentElement.style.setProperty('--clip-y', event.clientY + 'px')
-    document.startViewTransition(update)
-  } else { update() }
 }
 
 const scrollToAnchor = (e: Event, id: string) => {
   e.preventDefault()
-  if (!lenis) return
   const target = id === '#top' || id === '#' ? 0 : document.querySelector(id) as HTMLElement
-  if (target !== null) lenis.scrollTo(target, { duration: 1.5, easing: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t) })
+  if (target === null) return
+  if (lenis.value) lenis.value.scrollTo(target, { duration: 1.2 })
+  else if (target === 0) window.scrollTo({ top: 0, behavior: 'instant' })
+  else target.scrollIntoView({ behavior: 'instant' })
 }
 
 watch(themeTriggerEl, (newEl) => {
   if (newEl) {
-    new IntersectionObserver((entries) => {
+    sectionObserver?.disconnect()
+    sectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         document.body.classList.toggle('theme-2', entry.boundingClientRect.top < 0)
       })
-    }, { threshold: [0, 1] }).observe(newEl)
+    }, { threshold: [0, 1] })
+    sectionObserver.observe(newEl)
   }
 })
 
 watch(showPgpModal, (isOpen) => {
-  if (!import.meta.client || !lenis) return
-  if (isOpen) lenis.stop()
-  else lenis.start()
+  if (!import.meta.client || !lenis.value) return
+  if (isOpen) lenis.value?.stop()
+  else lenis.value?.start()
 })
 
 onMounted(() => {
-  if (localStorage.getItem('theme') === 'dark') toggleDarkMode(null, true)
-  lenis = new Lenis()
-  if (showPgpModal.value) lenis.stop()
-  const raf = (time: number) => { lenis?.raf(time); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf)
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!reduced) lenis.value = new Lenis()
+  if (showPgpModal.value) lenis.value?.stop()
+  const raf = (time: number) => { lenis.value?.raf(time); frame = requestAnimationFrame(raf) }
+  if (lenis.value) frame = requestAnimationFrame(raf)
   let modalIconsLoaded = false
+  const loadingStarted = performance.now()
 
   preloadImages(otherContactLogoUrls).then(() => {
     modalIconsLoaded = true
@@ -165,8 +162,9 @@ onMounted(() => {
     window.addEventListener('load', onWindowLoad)
   }
 
-  const interval = setInterval(() => {
-    if ((!isWindowLoaded.value || !modalIconsLoaded) && loadingProgress.value >= 85) {
+  removeLoadListener = () => window.removeEventListener('load', onWindowLoad)
+  loadingInterval = setInterval(() => {
+    if (performance.now() - loadingStarted < 2500 && (!isWindowLoaded.value || !modalIconsLoaded) && loadingProgress.value >= 85) {
       if (loadingProgress.value < 99 && Math.random() < 0.05) {
         loadingProgress.value += 1
       }
@@ -176,12 +174,12 @@ onMounted(() => {
     loadingProgress.value += 2
     if (loadingProgress.value >= 100) {
       loadingProgress.value = 100
-      clearInterval(interval)
+      clearInterval(loadingInterval)
       window.removeEventListener('load', onWindowLoad)
 
-      setTimeout(() => {
+      schedule(() => {
         isFadeOut.value = true
-        setTimeout(() => {
+        schedule(() => {
           isLoading.value = false
           isLoaded.value = true
           nextTick(() => startIntroSequence())
@@ -211,9 +209,10 @@ onMounted(() => {
 
     <PgpModal v-model="showPgpModal" />
     <TheToast :data="toastData" />
+    <SiteTooltip />
 
-    <a href="#top" id="back-to-top" :class="{ 'visible': isScrolledEnough }" @click="scrollToAnchor($event, '#top')">
-      <i class="fa-solid fa-arrow-up"></i>
+    <a href="#top" id="back-to-top" aria-label="トップに戻る" data-tooltip="トップに戻る" :tabindex="isScrolledEnough ? 0 : -1" :class="{ 'visible': isScrolledEnough }" @click="scrollToAnchor($event, '#top')">
+      <SiteIcon name="up" :size="22"/>
     </a>
   </div>
 </template>

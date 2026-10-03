@@ -13,7 +13,7 @@ const headerClasses = computed(() => ({
 </script>
 
 <template>
-  <div>
+  <div :inert="isScrolledDown">
     <div class="header-fixed-item shields-container intro-sequence tw:fixed tw:top-6 tw:left-6 tw:z-[1000] tw:flex tw:flex-col tw:items-start tw:gap-2" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
       <img class="shields-badge" src="https://img.shields.io/github/last-commit/y-exe/sites" alt="Last Commit" width="120" height="20" loading="eager">
       <a href="https://github.com/y-exe/sites"><img class="shields-badge" src="https://img.shields.io/badge/Github-y_exe-blue?style=flat-square" alt="Github" width="90" height="20" loading="eager"></a>
