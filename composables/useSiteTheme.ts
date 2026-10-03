@@ -1,3 +1,5 @@
+import { onMounted, onUnmounted, ref } from 'vue'
+
 export const useSiteTheme = () => {
   const isDarkMode = ref(false)
   const preference = ref<'system' | 'light' | 'dark'>('system')
@@ -7,6 +9,8 @@ export const useSiteTheme = () => {
     document.documentElement.classList.toggle('dark-mode', isDarkMode.value)
     document.body.classList.toggle('dark-mode', isDarkMode.value)
     document.documentElement.style.colorScheme = isDarkMode.value ? 'dark' : 'light'
+    const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if (themeColor) themeColor.content = isDarkMode.value ? '#121212' : '#ffffff'
   }
   const setPreference = (value: typeof preference.value) => {
     preference.value = value
@@ -17,7 +21,7 @@ export const useSiteTheme = () => {
   const resetTheme = () => setPreference('system')
   const systemChanged = () => { if (preference.value === 'system') apply() }
   const storageChanged = (event: StorageEvent) => {
-    if (event.key !== 'theme') return
+    if (event.key !== 'theme' && event.key !== null) return
     preference.value = event.newValue === 'dark' || event.newValue === 'light' ? event.newValue : 'system'
     apply()
   }

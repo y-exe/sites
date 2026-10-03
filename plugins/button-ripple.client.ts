@@ -1,13 +1,14 @@
 export default defineNuxtPlugin(() => {
   const selector = 'button:not(.elastic-face):not(.about-avatar-action), .icon-button, .nav-links a, .quick-nav-btn, .contact-item, .project-modal-link-chip, #back-to-top, [role="button"]'
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
-  const running = new Map<Animation, HTMLElement>()
+  const running = new Map<Animation, { layer: HTMLElement; pointerId?: number }>()
 
   const ripple = (event: PointerEvent | KeyboardEvent) => {
-    if (event instanceof PointerEvent && event.button !== 0) return
+    if (event instanceof PointerEvent && (event.button !== 0 || !event.isPrimary)) return
     if (event instanceof KeyboardEvent && (event.repeat || !['Enter', ' '].includes(event.key))) return
     const host = (event.target as Element)?.closest<HTMLElement>(selector)
     if (!host || host.closest('.nuxt-devtools-anchor, [inert]') || host.matches(':disabled, [aria-disabled="true"]')) return
+    if (event instanceof KeyboardEvent && event.key === ' ' && host.matches('a[href]:not([role="button"])')) return
     const rect = host.getBoundingClientRect()
     if (!rect.width || !rect.height) return
     const x = event instanceof PointerEvent ? event.clientX - rect.left : rect.width / 2
@@ -29,18 +30,29 @@ export default defineNuxtPlugin(() => {
       { transform: 'scale(1)', opacity: .14, offset: .7 },
       { transform: 'scale(1)', opacity: 0 },
     ], { duration: reducedMotion.matches ? 180 : 600, easing: 'cubic-bezier(.16, 1, .3, 1)', fill: 'forwards' })
-    running.set(animation, layer)
+    running.set(animation, { layer, pointerId: event instanceof PointerEvent ? event.pointerId : undefined })
     const remove = () => { layer.remove(); running.delete(animation) }
     animation.onfinish = remove
     animation.oncancel = remove
   }
 
+  const cancel = (event: PointerEvent) => {
+    running.forEach(({ layer, pointerId }, animation) => {
+      if (pointerId !== event.pointerId) return
+      animation.cancel()
+      layer.remove()
+      running.delete(animation)
+    })
+  }
+
   document.addEventListener('pointerdown', ripple)
+  document.addEventListener('pointercancel', cancel)
   document.addEventListener('keydown', ripple)
   if (import.meta.hot) import.meta.hot.dispose(() => {
     document.removeEventListener('pointerdown', ripple)
+    document.removeEventListener('pointercancel', cancel)
     document.removeEventListener('keydown', ripple)
-    running.forEach((layer, animation) => { animation.cancel(); layer.remove() })
+    running.forEach(({ layer }, animation) => { animation.cancel(); layer.remove() })
     running.clear()
   })
 })

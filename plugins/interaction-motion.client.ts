@@ -3,7 +3,8 @@ import { createSpring, springEasing } from '~/utils/spring'
 export default defineNuxtPlugin(() => {
   document.documentElement.style.setProperty('--spring-settle', springEasing({ stiffness: 280, damping: 20 }))
   document.documentElement.style.setProperty('--spring-pop', springEasing({ stiffness: 300, damping: 18 }))
-  const selector = '.icon-button, .quick-nav-btn, .contact-item, .project-card, .history-trigger, .github-profile-trigger, .modal-close-btn, .project-modal-close, .pgp-copy-btn, .project-gallery-arrow, #back-to-top, .tech-pills > span, .info-pills > span'
+  document.documentElement.style.setProperty('--spring-project-enter', springEasing({ stiffness: 320, damping: 17 }, .78))
+  const selector = '.icon-button, .quick-nav-btn, .contact-item, .project-card, .history-trigger, .modal-close-btn, .project-modal-close, .pgp-copy-btn, .project-gallery-arrow, #back-to-top, .tech-pills > span, .info-pills > span'
   const motions = new Map<HTMLElement, ReturnType<typeof createSpring<'scale' | 'lift' | 'hover'>>>()
   const find = (event: Event) => {
     const el = (event.target as Element)?.closest<HTMLElement>(selector)
@@ -29,7 +30,7 @@ export default defineNuxtPlugin(() => {
     const el = find(event)
     if (!el || el.contains(event.relatedTarget as Node) || (event instanceof PointerEvent && event.pointerType !== 'mouse')) return
     const tag = el.matches('.tech-pills > span, .info-pills > span')
-    motion(el).to({ hover: 1, lift: 0, scale: tag ? 1.08 : 1 })
+    motion(el).to({ hover: 1, lift: el.matches('#top .contact-item') ? -2 : 0, scale: tag ? 1.08 : 1 })
   }
   const out = (event: PointerEvent | FocusEvent) => {
     const el = find(event)

@@ -5,12 +5,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   const { introElements, isHeaderIntroDone } = useIntro()
   
   const { revealObserver, textObserver } = useSharedObserver().getObservers()
+  const isIntroElement = (el: HTMLElement) => el.classList.contains('intro-sequence') || introElements.value.includes(el)
 
   nuxtApp.vueApp.directive('reveal', {
     mounted: (el: HTMLElement, binding: any) => {
       el.dataset.reveal = binding.arg || 'up'
-      if (isHeaderIntroDone.value && introElements.value.includes(el)) el.classList.add('is-visible')
-      if (!introElements.value.includes(el)) {
+      if (isHeaderIntroDone.value && isIntroElement(el)) el.classList.add('is-visible')
+      if (!isIntroElement(el)) {
         revealObserver?.observe(el)
       }
     },
@@ -21,8 +22,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     mounted: (el: HTMLElement) => {
       el.dataset.splitText = ''
       el.classList.add('is-ready')
-      if (isHeaderIntroDone.value && introElements.value.includes(el)) el.classList.add('is-visible')
-      if (!introElements.value.includes(el)) {
+      if (isHeaderIntroDone.value && isIntroElement(el)) el.classList.add('is-visible')
+      if (!isIntroElement(el)) {
         textObserver?.observe(el)
       }
     },

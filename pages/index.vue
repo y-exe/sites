@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Lenis from 'lenis'
 import { useIntro } from '~/composables/useIntro'
+import { useProjectResults } from '~/composables/useProjectResults'
 import { useSharedObserver } from '~/composables/useSharedObserver'
 import { otherContactLogoUrls } from '~/utils/preload-assets'
 import { provide, watch } from 'vue'
@@ -37,6 +38,16 @@ useHead({
     }
   ]
 })
+
+const route = useRoute()
+const router = useRouter()
+const requestedProject = computed(() => typeof route.query.project === 'string' ? route.query.project : null)
+const clearProjectLink = () => {
+  if (route.query.project === undefined) return
+  const query = { ...route.query }
+  delete query.project
+  void router.replace({ query, hash: route.hash })
+}
 
 const isLoading = ref(true)
 const isFadeOut = ref(false)
@@ -81,13 +92,14 @@ const registerThemeTrigger = (el: HTMLElement) => {
 }
 provide('registerThemeTrigger', registerThemeTrigger)
 
-const { data: projects, status: projectStatus } = await useFetch('/api/github', {
+const { data: fetchedProjects, status: projectStatus, refresh: refreshProjects } = await useFetch('/api/github', {
   query: { resource: 'repos' },
   transform: (repos: any[]) => Array.isArray(repos) ? repos.filter(repo => !repo.fork) : [],
   default: () => [],
   lazy: true,
   server: false
 })
+const projects = useProjectResults(fetchedProjects, projectStatus)
 
 const startIntroSequence = () => {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -112,14 +124,7 @@ const startIntroSequence = () => {
   })
 }
 
-const scrollToAnchor = (e: Event, id: string) => {
-  e.preventDefault()
-  const target = id === '#top' || id === '#' ? 0 : document.querySelector(id) as HTMLElement
-  if (target === null) return
-  if (lenis.value) lenis.value.scrollTo(target, { duration: 1.2 })
-  else if (target === 0) window.scrollTo({ top: 0, behavior: 'instant' })
-  else target.scrollIntoView({ behavior: 'instant' })
-}
+const scrollToAnchor = useSectionNavigation(() => lenis.value)
 
 watch(themeTriggerEl, (newEl) => {
   if (newEl) {
@@ -180,10 +185,12 @@ onMounted(() => {
       schedule(() => {
         isFadeOut.value = true
         schedule(() => {
-          isLoading.value = false
           isLoaded.value = true
           nextTick(() => startIntroSequence())
-        }, 1000)
+        }, reduced ? 0 : 400)
+        schedule(() => {
+          isLoading.value = false
+        }, reduced ? 0 : 1000)
       }, 200)
     }
   }, 20)
@@ -201,7 +208,7 @@ onMounted(() => {
       <main>
         <HeroSection :on-scroll-to="scrollToAnchor" @open-pgp="showPgpModal = true" />
 
-        <ProjectsSection :projects="projects" :status="projectStatus" />
+        <ProjectsSection :projects="projects" :status="projectStatus" :requested-project="!isLoading ? requestedProject : null" @close-link="clearProjectLink" @retry="refreshProjects()" />
 
         <AboutSection />
       </main>

@@ -8,6 +8,7 @@ let anchor: HTMLElement | null = null
 let description: string | null = null
 let timer: ReturnType<typeof setTimeout> | undefined
 let anchorObserver: MutationObserver | undefined
+let keyboardNavigation = false
 const place = () => {
   if (!anchor) return
   const rect = anchor.getBoundingClientRect()
@@ -40,6 +41,7 @@ const hide = () => {
   text.value = ''
 }
 const show = (event: Event) => {
+  if (event.type === 'focusin' && !keyboardNavigation) return
   if (event instanceof PointerEvent && event.pointerType !== 'mouse') return
   const target = (event.target as HTMLElement)?.closest<HTMLElement>('[data-tooltip]')
   if (!target) return
@@ -61,22 +63,26 @@ const show = (event: Event) => {
     target.setAttribute('aria-describedby', [description, 'site-tooltip'].filter(Boolean).join(' '))
   }, event.type === 'focusin' ? 0 : 300)
 }
-const leave = (event: Event) => { if (!anchor?.contains((event as FocusEvent).relatedTarget as Node)) hide() }
-const key = (event: KeyboardEvent) => { if (event.key === 'Escape') hide() }
+const leave = (event: Event) => { if (anchor?.contains(event.target as Node) && !anchor.contains((event as FocusEvent).relatedTarget as Node)) hide() }
+const key = (event: KeyboardEvent) => {
+  keyboardNavigation = event.key === 'Tab'
+  if (['Escape', 'Enter', ' '].includes(event.key)) hide()
+}
+const pointerDown = () => { keyboardNavigation = false; hide() }
 onMounted(() => {
   document.addEventListener('pointerover', show); document.addEventListener('focusin', show)
   document.addEventListener('pointermove', move, { passive: true })
   document.addEventListener('pointerout', leave); document.addEventListener('focusout', leave)
-  document.addEventListener('pointerdown', hide); document.addEventListener('keydown', key)
-  window.addEventListener('scroll', hide, { passive: true }); window.addEventListener('resize', hide)
+  document.addEventListener('pointerdown', pointerDown); document.addEventListener('keydown', key)
+  window.addEventListener('scroll', hide, { capture: true, passive: true }); window.addEventListener('resize', hide)
 })
 onUnmounted(() => {
   hide()
   document.removeEventListener('pointerover', show); document.removeEventListener('focusin', show)
   document.removeEventListener('pointermove', move)
   document.removeEventListener('pointerout', leave); document.removeEventListener('focusout', leave)
-  document.removeEventListener('pointerdown', hide); document.removeEventListener('keydown', key)
-  window.removeEventListener('scroll', hide); window.removeEventListener('resize', hide)
+  document.removeEventListener('pointerdown', pointerDown); document.removeEventListener('keydown', key)
+  window.removeEventListener('scroll', hide, true); window.removeEventListener('resize', hide)
 })
 </script>
 <template><Teleport to="body"><Transition name="tooltip"><div v-if="text" ref="tooltipElement" id="site-tooltip" role="tooltip" class="site-tooltip" :class="{ 'is-below': below }" :style="position">{{ text }}</div></Transition></Teleport></template>

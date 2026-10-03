@@ -12,7 +12,7 @@ export const useSharedObserver = () => {
       })
     }
     
-    revealObserver = new IntersectionObserver(callback, { rootMargin: "0px 0px -50px 0px" })
+    revealObserver = new IntersectionObserver(callback)
     textObserver = new IntersectionObserver(callback, { threshold: 0.2 })
   }
 

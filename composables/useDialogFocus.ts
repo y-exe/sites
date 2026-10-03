@@ -1,11 +1,13 @@
 import type { Ref } from 'vue'
-export const useDialogFocus = (open: Ref<boolean>, selector: string, close: () => void) => {
+export const useDialogFocus = (open: Ref<boolean>, selector: string, close: () => void, returnFocus?: () => HTMLElement | null) => {
   let previous: HTMLElement | null = null
   const key = (event: KeyboardEvent) => {
     if (!open.value) return
+    const dialog = document.querySelector<HTMLElement>(selector)
+    const topDialog = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]')).filter(el => !el.closest('[inert]')).at(-1)
+    if (topDialog && topDialog !== dialog) return
     if (event.key === 'Escape') { event.preventDefault(); close() }
     if (event.key !== 'Tab') return
-    const dialog = document.querySelector<HTMLElement>(selector)
     const controls = Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex="0"]') || []).filter(el => el.getClientRects().length)
     const first = controls[0], last = controls.at(-1)
     if (!first) { event.preventDefault(); dialog?.focus(); return }
@@ -15,7 +17,7 @@ export const useDialogFocus = (open: Ref<boolean>, selector: string, close: () =
   watch(open, async value => {
     if (!import.meta.client) return
     if (value) { previous = document.activeElement as HTMLElement; await nextTick(); document.querySelector<HTMLElement>(`${selector} button`)?.focus({ preventScroll: true }) }
-    else previous?.focus({ preventScroll: true })
+    else { await nextTick(); (returnFocus?.() || previous)?.focus({ preventScroll: true }) }
   })
   onMounted(() => document.addEventListener('keydown', key))
   onUnmounted(() => document.removeEventListener('keydown', key))

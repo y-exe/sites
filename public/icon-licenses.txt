@@ -5,8 +5,10 @@ https://creativecommons.org/licenses/by/4.0/
 Modifications: envelope layers separated; hover animations added.
 
 System theme icon: based on Phosphor Icons monitor-bold.
+Sound controls: based on Phosphor Icons speaker-high-fill and speaker-x-fill.
 https://github.com/phosphor-icons/core
 Modification: a light/dark disk added inside the monitor.
+Sound icon layers separated for toggle and playback animations.
 MIT License
 
 Copyright (c) 2023 Phosphor Icons
