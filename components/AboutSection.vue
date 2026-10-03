@@ -5,8 +5,10 @@ const props = defineProps<{
 }>()
 
 const now = useNow()
+const clockReady = useMounted()
 
 const currentJstTime = computed(() => {
+  if (!clockReady.value) return '--:--'
   const timeString = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Tokyo',
     hour: 'numeric',  
@@ -19,6 +21,10 @@ const currentJstTime = computed(() => {
 
 const avatar = ref<HTMLElement | null>(null)
 const greeting = ref<HTMLElement | null>(null)
+const avatarVisible = useElementVisibility(avatar)
+const greetingVisible = useElementVisibility(greeting)
+const documentVisibility = useDocumentVisibility()
+const greetingWords = [{ text: 'Hello,', offset: 0 }, { text: "I'm", offset: 7 }, { text: "(*'▽')", offset: 11 }]
 const waveTimers: ReturnType<typeof setTimeout>[] = []
 const letterSprings = new Map<HTMLElement, ReturnType<typeof createSpring<'lift' | 'tilt'>>>()
 let avatarSpring: ReturnType<typeof createSpring<'lift' | 'tilt' | 'squash'>> | undefined
@@ -59,6 +65,18 @@ const followLetters = (event: PointerEvent) => {
   })
 }
 const resetLetters = () => letterSprings.forEach(spring => spring.to({ lift: 0, tilt: 0 }))
+watch([avatarVisible, documentVisibility], ([visible, visibility]) => {
+  if (!visible || visibility !== 'visible') {
+    avatarSpring?.jump({ lift: 0, tilt: 0, squash: 0 })
+    clickDirection = 1
+  }
+})
+watch([greetingVisible, documentVisibility], ([visible, visibility]) => {
+  if (!visible || visibility !== 'visible') {
+    waveTimers.forEach(clearTimeout); waveTimers.length = 0
+    letterSprings.forEach(spring => spring.jump({ lift: 0, tilt: 0 }))
+  }
+})
 const followAvatar = (event: PointerEvent) => {
   if (event.pointerType !== 'mouse' || !avatar.value || matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const bounds = avatar.value.getBoundingClientRect()
@@ -74,9 +92,9 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
 </script>
 
 <template>
-  <section id="about" class="section about-section tw:relative tw:flex tw:min-h-screen tw:w-full tw:max-w-[1200px] tw:flex-col tw:items-center tw:justify-center tw:bg-transparent tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20">
-    <h2 class="section-title hover-highlight tw:mb-[0.35rem]!" v-split-text>
-      <span v-for="(char, i) in `About`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+  <section id="about" tabindex="-1" aria-label="About" class="section about-section tw:relative tw:flex tw:min-h-screen tw:w-full tw:max-w-[1200px] tw:flex-col tw:items-center tw:justify-center tw:bg-transparent tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20">
+    <h2 aria-label="About" class="section-title hover-highlight tw:mb-[0.35rem]!" v-split-text>
+      <span v-for="(char, i) in `About`.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
     </h2>
     <p class="about-subtitle hover-highlight tw:mt-0 tw:mb-8 tw:text-base tw:text-[var(--text-muted-color)]" v-reveal>なんかいろいろ</p>
     <div class="about-container tw:grid tw:w-full tw:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] tw:gap-8">
@@ -95,8 +113,8 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
 
         />
         </button>
-        <h2 ref="greeting" class="about-greeting section-title hover-highlight tw:mt-0! tw:mb-[0.35rem]! tw:w-fit tw:max-w-full tw:self-center tw:text-[2em]! tw:leading-[1.05]!" @pointermove="followLetters" @pointerleave="resetLetters" v-split-text>
-          <span v-for="(char, i) in `Hello, I'm (*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`"><span class="greeting-letter">{{ char === ' ' ? '\u00a0' : char }}</span></span>
+        <h2 :aria-label="greetingWords.map(word => word.text).join(' ')" ref="greeting" class="about-greeting section-title hover-highlight tw:mt-0! tw:mb-[0.35rem]! tw:w-fit tw:max-w-full tw:self-center tw:text-[2em]! tw:leading-[1.05]!" @pointermove="followLetters" @pointerleave="resetLetters" v-split-text>
+          <template v-for="(word, wordIndex) in greetingWords" :key="word.text"><span class="greeting-word"><span v-for="(char, i) in word.text" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${(word.offset + i) * 50}ms`"><span class="greeting-letter">{{ char }}</span></span></span><span v-if="wordIndex < greetingWords.length - 1" aria-hidden="true" class="char greeting-space" :style="`--char-delay: ${(word.offset + word.text.length) * 50}ms`"><span class="greeting-letter">&nbsp;</span></span></template>
         </h2>
         <p class="about-description hover-highlight tw:mt-0 tw:mb-[1.25em] tw:max-w-full tw:self-center tw:text-base tw:leading-[1.5] tw:text-[var(--text-muted-color)]" v-reveal>I am a 16 year old developer-wannabe.</p>
         <div class="info-pills tw:flex tw:flex-wrap tw:justify-center tw:gap-[0.8em]">
@@ -108,7 +126,7 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
       
       <div class="about-card tw:rounded-2xl tw:border tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:p-8 tw:text-left tw:shadow-[0_4px_15px_var(--shadow-color)]">
         <div class="tech-category tw:mb-8 last:tw:mb-0">
-          <h3 class="hover-highlight tw:mt-0 tw:mb-[1em] tw:text-base tw:leading-normal tw:font-medium tw:tracking-[1px] tw:text-[var(--text-muted-color)] tw:uppercase" v-split-text><span v-for="(c,i) in 'IDEs'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
+          <h3 aria-label="IDEs" class="hover-highlight tw:mt-0 tw:mb-[1em] tw:text-base tw:leading-normal tw:font-medium tw:tracking-[1px] tw:text-[var(--text-muted-color)] tw:uppercase" v-split-text><span v-for="(c,i) in 'IDEs'.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
           <div class="tech-pills tw:flex tw:flex-wrap tw:gap-[0.8em]">
             <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="devicon-vscode-plain"></i> VSCode</span>
             <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="devicon-intellij-plain"></i> IntelliJ IDEA</span>
@@ -117,7 +135,7 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
         </div>
 
         <div class="tech-category tw:mb-8 last:tw:mb-0">
-          <h3 class="hover-highlight tw:mt-0 tw:mb-[1em] tw:text-base tw:leading-normal tw:font-medium tw:tracking-[1px] tw:text-[var(--text-muted-color)] tw:uppercase" v-split-text><span v-for="(c,i) in 'Frontend'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
+          <h3 aria-label="Frontend" class="hover-highlight tw:mt-0 tw:mb-[1em] tw:text-base tw:leading-normal tw:font-medium tw:tracking-[1px] tw:text-[var(--text-muted-color)] tw:uppercase" v-split-text><span v-for="(c,i) in 'Frontend'.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
           <div class="tech-pills tw:flex tw:flex-wrap tw:gap-[0.8em]">
             <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="devicon-typescript-plain"></i> TypeScript</span>
             <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="devicon-javascript-plain"></i> JavaScript</span>
@@ -130,7 +148,7 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
         </div>
 
         <div class="tech-category tw:mb-8 last:tw:mb-0">
-          <h3 class="hover-highlight tw:mt-0 tw:mb-[1em] tw:text-base tw:leading-normal tw:font-medium tw:tracking-[1px] tw:text-[var(--text-muted-color)] tw:uppercase" v-split-text><span v-for="(c,i) in 'Backend'.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
+          <h3 aria-label="Backend" class="hover-highlight tw:mt-0 tw:mb-[1em] tw:text-base tw:leading-normal tw:font-medium tw:tracking-[1px] tw:text-[var(--text-muted-color)] tw:uppercase" v-split-text><span v-for="(c,i) in 'Backend'.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{c}}</span></h3>
           <div class="tech-pills tw:flex tw:flex-wrap tw:gap-[0.8em]">
             <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="devicon-nodejs-plain"></i> Node.js</span>
             <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="devicon-python-plain"></i> Python</span>
@@ -142,9 +160,6 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
         </div>
       </div>
     </div>
-    <footer class="footer tw:mt-8 tw:pb-8 tw:text-center tw:[font-family:var(--font-display)] tw:text-[var(--text-muted-color)]">
-      <p class="footer-logo tw:m-0 tw:text-2xl tw:font-bold tw:text-[var(--active-text)]" v-reveal>yexe.net</p>
-      <p class="footer-copyright tw:mt-2 tw:mb-0 tw:text-[0.9em]" v-reveal>Copyright © 2026 yexe</p>
-    </footer>
+    <SiteFooter />
   </section>
 </template>

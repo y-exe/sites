@@ -28,10 +28,11 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'ja' },
-      script: [{ innerHTML: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark-mode',d);document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}})()` }],
+      script: [{ innerHTML: `(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark-mode',d);document.documentElement.style.colorScheme=d?'dark':'light';var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d?'#121212':'#ffffff'})()` }],
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'theme-color', content: '#ffffff' },
         { name: 'author', content: 'y_exe' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:site', content: '@y__exe' },

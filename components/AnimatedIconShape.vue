@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { createSpring } from '~/utils/spring'
 
-const props = defineProps<{ kind: 'copy' | 'playback' | 'chevron'; active: boolean }>()
+const props = defineProps<{ kind: 'copy' | 'link' | 'playback' | 'chevron'; active: boolean }>()
 const progress = ref(props.active ? 1 : 0)
 let spring: ReturnType<typeof createSpring<'progress'>> | undefined
 onMounted(() => {
-  if (props.kind === 'copy') return
+  if (props.kind === 'copy' || props.kind === 'link') return
   spring = createSpring({ progress: progress.value }, values => { progress.value = values.progress }, { stiffness: 185, damping: 19, mass: 1.1 })
 })
 watch(() => props.active, active => spring?.to({ progress: active ? 1 : 0 }))
@@ -18,10 +18,11 @@ const rightPlayback = computed(() => polygon([[13,8],[20,12],[20,12],[13,16]], [
 </script>
 
 <template>
-  <g v-if="kind === 'copy'" stroke-width="2.6">
+  <g v-if="kind === 'copy' || kind === 'link'" stroke-width="2.6">
     <Transition name="icon-swap" mode="out-in">
       <g :key="active ? 'check' : 'copy'" class="icon-swap-shape">
         <path v-if="active" d="m5 12 4 4 10-10" pathLength="1"/>
+        <path v-else-if="kind === 'link'" d="m10 8 3-3a5 5 0 0 1 7 7l-3 3M14 16l-3 3a5 5 0 0 1-7-7l3-3m2 6 6-6"/>
         <template v-else><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M15 4H6a2 2 0 0 0-2 2v9"/></template>
       </g>
     </Transition>

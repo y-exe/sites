@@ -79,6 +79,16 @@ export function createSpring<T extends string>(initial: Record<T, number>, rende
       for (const key of keys) states[key].velocity += velocity[key] || 0
       start()
     },
+    jump(values: Partial<Record<T, number>>) {
+      if (disposed) return
+      cancelAnimationFrame(frame)
+      frame = 0
+      for (const key of keys) {
+        states[key].value = states[key].target = values[key] ?? states[key].target
+        states[key].velocity = 0
+      }
+      paint()
+    },
     stop() { disposed = true; cancelAnimationFrame(frame) },
   }
 }

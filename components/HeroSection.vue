@@ -2,6 +2,7 @@
 import ElasticFace from '~/components/ElasticFace.vue'
 const { copy } = useSiteToast()
 import { useIntro } from '~/composables/useIntro'
+import { useVideoPlayback } from '~/composables/useVideoPlayback'
 
 const props = defineProps<{
   onScrollTo: (e: Event, id: string) => void
@@ -13,17 +14,31 @@ const { setIntroRef } = useIntro()
 const discordUserId = '483307286513582090'
 const discordProfileUrl = `https://discord.com/users/${discordUserId}`
 
-const discordStatus = ref('offline')
+const discordStatus = ref('unknown')
+const discordStatusLabels: Record<string, string> = { online: 'オンライン', idle: '退席中', dnd: '取り込み中', offline: 'オフライン', unknown: '状況を確認中' }
+const discordStatusLabel = computed(() => `Discord：${discordStatusLabels[discordStatus.value] || discordStatusLabels.unknown}`)
 const customStatus = ref({ emoji: '', text: '', visible: false })
 const avatarUrl = ref('/icon.webp')
 const discordName = ref("(*'▽')")
 const discordUsername = ref("@y_xyz")
 const isHistoryOpen = ref(false)
 const historyPopover = ref<HTMLElement | null>(null)
+const historyTrigger = ref<HTMLButtonElement | null>(null)
+const historyMenu = ref<HTMLElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
 const discordVideo = ref<HTMLVideoElement | null>(null)
 const nameplateVideo = ref<HTMLVideoElement | null>(null)
 const reducedMotion = usePreferredReducedMotion()
+const discordContact = ref<HTMLElement | null>(null)
+const discordVisible = useElementVisibility(discordContact)
+const documentVisibility = useDocumentVisibility()
+const discordMediaPlaying = computed(() => discordVisible.value && documentVisibility.value === 'visible' && reducedMotion.value !== 'reduce')
+const discordMediaRestart = computed(() => !discordVisible.value)
+const syncDiscordVideos = useVideoPlayback([discordVideo, nameplateVideo], discordMediaPlaying, discordMediaRestart)
+const setDiscordContact = (el: unknown) => {
+  setIntroRef(el)
+  discordContact.value = el instanceof HTMLElement ? el : null
+}
 const avatarDecorationUrl = ref('')
 const nameplateBaseUrl = ref('')
 const discordNameplateStyle = computed(() => nameplateBaseUrl.value
@@ -36,58 +51,60 @@ const pastMessages = [
   { date: '2025.05', text: 'こっち見んな童貞' },
 ]
 
+const isWithinHistory = (target: Node | null) => Boolean(target && (historyPopover.value?.contains(target) || historyMenu.value?.contains(target)))
 const closeHistoryOnOutsideClick = (event: MouseEvent) => {
-  if (!historyPopover.value?.contains(event.target as Node)) isHistoryOpen.value = false
+  if (!isWithinHistory(event.target as Node)) isHistoryOpen.value = false
+}
+
+const closeHistoryOnFocusOut = (event: FocusEvent) => {
+  if (!isWithinHistory(event.relatedTarget as Node)) isHistoryOpen.value = false
 }
 
 const closeHistoryOnEscape = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') isHistoryOpen.value = false
+  if (event.key === 'Escape' && isHistoryOpen.value) {
+    if (historyMenu.value?.contains(document.activeElement)) historyTrigger.value?.focus({ preventScroll: true })
+    isHistoryOpen.value = false
+  }
 }
 
 const updateHistoryMenuPosition = () => {
-  if (!isHistoryOpen.value || !historyPopover.value || window.innerWidth > 600) {
-    historyMenuStyle.value = {}
-    return
-  }
+  if (!isHistoryOpen.value || !historyTrigger.value || !historyMenu.value) return
 
-  const triggerRect = historyPopover.value.getBoundingClientRect()
+  const triggerRect = historyTrigger.value.getBoundingClientRect()
+  if (triggerRect.bottom < 0 || triggerRect.top > window.innerHeight) { isHistoryOpen.value = false; return }
   const gutter = 12
-  const menuWidth = Math.min(window.innerWidth - gutter * 2, 464)
+  const viewportWidth = document.documentElement.clientWidth
+  const menuWidth = Math.min(viewportWidth - gutter * 2, 464)
   const preferredLeft = triggerRect.left + triggerRect.width / 2 - menuWidth / 2
-  const left = Math.min(Math.max(gutter, preferredLeft), window.innerWidth - menuWidth - gutter)
+  const left = Math.min(Math.max(gutter, preferredLeft), viewportWidth - menuWidth - gutter)
+  const below = Math.max(0, window.innerHeight - triggerRect.bottom - gutter - 10)
+  const above = Math.max(0, triggerRect.top - gutter - 10)
+  const desiredHeight = Math.min(historyMenu.value.scrollHeight + historyMenu.value.offsetHeight - historyMenu.value.clientHeight, 320)
+  const useBelow = below >= desiredHeight || below >= above
+  const height = Math.min(desiredHeight, useBelow ? below : above)
 
   historyMenuStyle.value = {
-    '--history-menu-left': `${left - triggerRect.left}px`,
-    '--history-menu-width': `${menuWidth}px`,
+    left: `${left}px`,
+    top: `${useBelow ? triggerRect.bottom + 10 : triggerRect.top - height - 10}px`,
+    width: `${menuWidth}px`,
+    maxHeight: `${height}px`,
+    transformOrigin: `${Math.max(0, Math.min(menuWidth, triggerRect.left + triggerRect.width / 2 - left))}px ${useBelow ? 'top' : 'bottom'}`,
+    '--history-direction': useBelow ? '-1' : '1',
   }
 }
 
-const toggleHistory = async () => {
-  isHistoryOpen.value = !isHistoryOpen.value
-  if (isHistoryOpen.value) {
-    await nextTick()
-    updateHistoryMenuPosition()
-  }
-}
-
-const resumeDiscordVideo = () => {
-  const video = discordVideo.value
-  if (!video) return
-  if (reducedMotion.value === 'reduce') { video.pause(); return }
-
-  video.muted = true
-  video.defaultMuted = true
-  video.playsInline = true
-  void video.play().catch(() => {})
-}
-
-watch([reducedMotion, nameplateVideo], () => {
-  if (reducedMotion.value === 'reduce') { discordVideo.value?.pause(); nameplateVideo.value?.pause() }
-  else { resumeDiscordVideo(); void nameplateVideo.value?.play().catch(() => {}) }
+watch(isHistoryOpen, async open => {
+  if (open) { await nextTick(); updateHistoryMenuPosition() }
 })
+useResizeObserver(historyMenu, updateHistoryMenuPosition)
+useEventListener('resize', updateHistoryMenuPosition)
+useEventListener('scroll', updateHistoryMenuPosition, { capture: true, passive: true })
 
-const resumeDiscordVideoOnVisibilityChange = () => {
-  if (!document.hidden) resumeDiscordVideo()
+const focusHistory = async () => {
+  isHistoryOpen.value = true
+  await nextTick()
+  updateHistoryMenuPosition()
+  historyMenu.value?.focus({ preventScroll: true })
 }
 
 const getTextDisplayLength = (text: string) => {
@@ -189,13 +206,14 @@ const connectLanyard = () => {
   }
 
   ws.onclose = () => {
+    discordStatus.value = 'unknown'
     if (heartbeatInterval) clearInterval(heartbeatInterval)
     if (!disposed) reconnect = setTimeout(connectLanyard, 5000)
   }
 }
 
 const updateDiscordData = (data: any) => {
-  if (data.discord_status) discordStatus.value = data.discord_status
+  if (data.discord_status && discordStatusLabels[data.discord_status]) discordStatus.value = data.discord_status
 
   if (data.discord_user) {
     const user = data.discord_user
@@ -289,9 +307,6 @@ onMounted(() => {
   timeInterval = setInterval(() => { nowMs.value = Date.now() }, 1000)
   document.addEventListener('click', closeHistoryOnOutsideClick)
   document.addEventListener('keydown', closeHistoryOnEscape)
-  window.addEventListener('resize', updateHistoryMenuPosition)
-  document.addEventListener('visibilitychange', resumeDiscordVideoOnVisibilityChange)
-  nextTick(resumeDiscordVideo)
 })
 
 onUnmounted(() => {
@@ -302,13 +317,11 @@ onUnmounted(() => {
   if (timeInterval) clearInterval(timeInterval)
   document.removeEventListener('click', closeHistoryOnOutsideClick)
   document.removeEventListener('keydown', closeHistoryOnEscape)
-  window.removeEventListener('resize', updateHistoryMenuPosition)
-  document.removeEventListener('visibilitychange', resumeDiscordVideoOnVisibilityChange)
 })
 </script>
 
 <template>
-  <section class="section main tw:relative tw:flex tw:min-h-screen tw:w-full tw:-translate-y-12 tw:flex-col tw:items-center tw:justify-center tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20" id="top">
+  <section class="section main tw:relative tw:flex tw:min-h-screen tw:w-full tw:-translate-y-12 tw:flex-col tw:items-center tw:justify-center tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20" id="top" tabindex="-1" aria-label="Home">
     <header class="hero-text tw:relative tw:z-20 tw:mb-[0.6rem]">
       <p class="text-line-1 intro-sequence tw:mb-[0.2rem] tw:text-[clamp(2.5rem,8vw,3rem)] tw:font-black! tw:[font-family:var(--font-display)]" :ref="setIntroRef" v-split-text>
         <ElasticFace />
@@ -323,18 +336,20 @@ onUnmounted(() => {
       
       <p class="text-line-3 intro-sequence tw:m-0 tw:text-[clamp(0.9rem,2.5vw,1rem)] tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `自分で書いてなさ過ぎてバイブコーダー`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
-        <span ref="historyPopover" class="history-popover">
-          <button type="button" class="history-trigger" data-tooltip="過去のひとこと" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="toggleHistory"><SiteIcon name="chevron" :size="16"/></button>
+        <span ref="historyPopover" class="history-popover" @focusout="closeHistoryOnFocusOut">
+          <button ref="historyTrigger" type="button" class="history-trigger" data-tooltip="過去のひとこと" aria-label="過去のひとことを表示" aria-controls="message-history" :aria-expanded="isHistoryOpen" @click.stop="isHistoryOpen = !isHistoryOpen" @keydown.down.prevent="focusHistory"><SiteIcon name="chevron" :size="16"/></button>
+          <Teleport to="body">
           <Transition name="history-pop">
-            <div v-if="isHistoryOpen" class="history-menu" :style="historyMenuStyle" role="status">
+            <div v-if="isHistoryOpen" id="message-history" ref="historyMenu" class="history-menu" :style="historyMenuStyle" role="region" aria-label="過去のひとこと" tabindex="-1" data-lenis-prevent @focusout="closeHistoryOnFocusOut">
               <span class="history-menu-label">過去のひとこと</span>
               <ul class="history-list">
-                <li v-for="entry in pastMessages" :key="`${entry.date}-${entry.text}`">
-                  <time>{{ entry.date }}</time><span>{{ entry.text }}</span>
+                <li v-for="(entry, index) in pastMessages" :key="`${entry.date}-${entry.text}`" :style="{ '--history-entry-delay': `${50 + index * 45}ms` }">
+                  <time :datetime="entry.date.replace('.', '-')">{{ entry.date }}</time><span>{{ entry.text }}</span>
                 </li>
               </ul>
             </div>
           </Transition>
+          </Teleport>
         </span>
       </p>
     </header>
@@ -346,14 +361,14 @@ onUnmounted(() => {
     
     <div class="contact-section">
       <div class="contact-links">
-        <a :href="discordProfileUrl" target="_blank" rel="noopener noreferrer" class="contact-item discord intro-sequence" :style="discordNameplateStyle" :class="{ 'has-nameplate': nameplateBaseUrl }" :ref="setIntroRef" v-reveal data-reveal="up">
-          <video v-if="nameplateBaseUrl" ref="nameplateVideo" class="discord-nameplate-video" :src="`${nameplateBaseUrl}asset.webm`" :autoplay="reducedMotion !== 'reduce'" loop muted playsinline aria-hidden="true"></video>
-          <div class="discord-banner"><video ref="discordVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" @canplay="resumeDiscordVideo"><source src="/Discord.mp4" type="video/mp4" /><source src="/Discord.webm" type="video/webm" /></video></div>
+        <a :href="discordProfileUrl" target="_blank" rel="noopener noreferrer" class="contact-item discord intro-sequence" :style="discordNameplateStyle" :data-has-nameplate="nameplateBaseUrl ? '' : undefined" :data-media-paused="!discordMediaPlaying ? '' : undefined" :ref="setDiscordContact" v-reveal data-reveal="up">
+          <video v-if="nameplateBaseUrl" ref="nameplateVideo" class="discord-nameplate-video" :src="`${nameplateBaseUrl}asset.webm`" loop muted playsinline aria-hidden="true" @canplay="syncDiscordVideos"></video>
+          <div class="discord-banner"><video ref="discordVideo" loop muted playsinline webkit-playsinline preload="auto" @canplay="syncDiscordVideos"><source src="/Discord.mp4" type="video/mp4" /><source src="/Discord.webm" type="video/webm" /></video></div>
           <div class="discord-pfp">
             <div class="discord-pfp-wrapper" :class="{ 'has-decoration': avatarDecorationUrl }">
-              <img :key="avatarUrl" :src="avatarUrl" width="65" height="65" class="discord-avatar-img" />
+              <img :key="avatarUrl" :src="avatarUrl" width="65" height="65" class="discord-avatar-img" alt="" />
               <img v-if="avatarDecorationUrl" :src="avatarDecorationUrl" class="discord-avatar-decoration" alt="" />
-              <span class="status-indicator" :class="discordStatus"></span>
+              <span class="status-indicator" :class="discordStatus" role="img" :aria-label="discordStatusLabel" :data-tooltip="discordStatusLabel"></span>
             </div>
           </div>
           <div class="discord-text">
@@ -437,8 +452,8 @@ onUnmounted(() => {
         
         <div class="server-status intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <a class="icon-button server-status-link" href="https://status.yexe.xyz/status/all" target="_blank" rel="noopener noreferrer" aria-label="ステータスページを新しいタブで開く" data-tooltip="ステータスページを開く"><SiteIcon name="external" :size="18"/></a>
-          <h3 class="hover-highlight" v-split-text>
-            <span v-for="(char, i) in `起動状況`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+          <h3 aria-label="起動状況" class="hover-highlight" v-split-text>
+            <span v-for="(char, i) in `起動状況`.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
           </h3>
           <div class="shields-group">
             <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F1752f580-da82-41d6-9c7f-c5b1bef99679.shields" alt="Server1" width="100" height="20" loading="eager">
@@ -489,13 +504,13 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.contact-item.discord.has-nameplate {
+.contact-item.discord[data-has-nameplate] {
   background-repeat: no-repeat;
   background-position: right center;
   background-size: auto 100%;
 }
 
-.contact-item.discord.has-nameplate::after {
+.contact-item.discord[data-has-nameplate]::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -504,7 +519,7 @@ onUnmounted(() => {
   background: linear-gradient(90deg, rgba(20, 18, 18, 0.22), rgba(20, 18, 18, 0.04));
 }
 
-.contact-item.discord.has-nameplate > :not(.discord-nameplate-video) {
+.contact-item.discord[data-has-nameplate] > :not(.discord-nameplate-video) {
   z-index: 2;
 }
 

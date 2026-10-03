@@ -41,6 +41,13 @@ test('retargeting preserves momentum, reduced motion snaps, disposal cancels wor
   assert.equal(output, before)
   frame(now + 17)
   assert.ok(output > before, 'momentum continues briefly even after target changes')
+  spring.jump({ x: 0 })
+  assert.equal(output, 0)
+  assert.equal(callbacks.size, 0)
+  spring.kick({ x: 100 })
+  assert.equal(callbacks.size, 1)
+  frame(performance.now() + 16)
+  assert.ok(output > 0)
   reduce = true
   spring.to({ x: 3 })
   assert.equal(output, 3)

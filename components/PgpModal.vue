@@ -62,18 +62,22 @@ QHr8ZRR7z88MctdlkwAATvgBANKYeQXWaJyBNPwNC6BkY2v3exEJXQU4en/J
 yGTalTEDAQCSsYmdveGEHSW+KRk42wlj+AE6BUj6HXD7PA99R4TqDs44BGhn
 cU0SCisGAQQBl1UBBQEBB0D26VCAcdqoJ3jql5m/0IY+BlO+CnhIeGTvODbh
 WNUlOwMBCAfCvgQYFgoAcAWCaGdxTQmQe8/PDHLXZZNFFAAAAAAAHAAgc2Fs
-dEBub3RhdGlvbnMub3BlbnBncGpzLm9yZ84HzviMRoHCUnvpjmbRGJfpjfmt
-/FJ77rJLKbWt9dMSApsMFiEE1MPgQZDFHkB6/GUUe8/PDHLXZZMAAKQऽAP9A
+dEBub3RhdGlvbnMub3BlbnBncGpzLm9yZ84HzviMRoHCUnvpjmbRGJfp1fmt
+/FJ77rJLKbWt9dMSApsMFiEE1MPgQZDFHkB6/GUUe8/PDHLXZZMAAKQ9AP9A
 XQXIOtNybkLCm/6/ezbr1w2KyXXzmvkwo1Fbqy0xTAD7BN8nz8vDwVOXa+E8
 l3vt8HcNWaH+4Ob5YpDq7BzHIAI=
 =tWhX
 -----END PGP PUBLIC KEY BLOCK-----`
+const pgpFingerprint = 'd4c3e04190c51e407afc65147bcfcf0c72d76593'
+const fingerprintGroups = pgpFingerprint.toUpperCase().match(/.{4}/g) || []
 
 const close = () => emit('update:modelValue', false)
 useDialogFocus(toRef(props, 'modelValue'), '#pgp-modal', close)
 const { copy } = useSiteToast()
 const keyCopied = ref(false)
+const fingerprintCopied = ref(false)
 let copyTimer: ReturnType<typeof setTimeout> | undefined
+let fingerprintTimer: ReturnType<typeof setTimeout> | undefined
 
 const copyKey = async () => {
   keyCopied.value = await copy(pgpKeyText, 'PGP公開鍵をコピーしました')
@@ -83,6 +87,11 @@ const copyKey = async () => {
 
 const copyValue = (value: string) => {
   void copy(value)
+}
+const copyFingerprint = async () => {
+  fingerprintCopied.value = await copy(pgpFingerprint, 'Fingerprintをコピーしました')
+  clearTimeout(fingerprintTimer)
+  fingerprintTimer = setTimeout(() => { fingerprintCopied.value = false }, 2200)
 }
 
 let isPageScrollLocked = false
@@ -124,6 +133,7 @@ onUnmounted(() => {
   if (!import.meta.client) return
   unlockPageScroll()
   clearTimeout(copyTimer)
+  clearTimeout(fingerprintTimer)
 })
 </script>
 
@@ -140,8 +150,10 @@ onUnmounted(() => {
             </button>
             <pre class="pgp-key-block tw:max-h-[220px] tw:overflow-y-auto tw:rounded-[10px] tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[#101010] tw:p-4 tw:text-left tw:font-mono tw:text-[0.78rem] tw:leading-[1.55] tw:text-[#adb5bd] tw:whitespace-pre-wrap tw:break-all">{{ pgpKeyText }}</pre>
           </div>
-          <div class="pgp-fingerprint pgp-fingerprint-in tw:mt-[0.85rem] tw:text-left tw:text-[0.9rem] tw:text-[#adb5bd] tw:break-all">
-            <strong class="tw:text-[var(--text-color-dark)] tw:[font-family:var(--font-display)]">Fingerprint :</strong> d4c3e04190c51e407afc65147bcfcf0c72d76593
+          <div class="pgp-fingerprint pgp-fingerprint-in tw:mt-[0.85rem] tw:text-left tw:text-[0.9rem] tw:text-[#adb5bd]">
+            <strong class="tw:text-[var(--text-color-dark)] tw:[font-family:var(--font-display)]">Fingerprint :</strong>
+            <code class="pgp-fingerprint-value"><span v-for="(group, index) in fingerprintGroups" :key="index">{{ group }}</span></code>
+            <button type="button" class="pgp-fingerprint-copy icon-button" aria-label="Fingerprintをコピー" :data-tooltip="fingerprintCopied ? 'コピーしました' : 'Fingerprintをコピー'" @click="copyFingerprint"><SiteIcon :name="fingerprintCopied ? 'check' : 'copy'" :size="16"/></button>
           </div>
         </section>
 

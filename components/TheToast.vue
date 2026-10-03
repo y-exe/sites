@@ -1,16 +1,47 @@
 <script setup lang="ts">
-const props = defineProps<{ data: { show: boolean; message: string } }>()
+const props = defineProps<{ data: { show: boolean; message: string; kind?: 'success' | 'error' } }>()
 const { toast } = useSiteToast()
+const hovered = ref(false)
+const focused = ref(false)
+const paused = computed(() => hovered.value || focused.value)
+const dismissButton = ref<HTMLButtonElement | null>(null)
 let timer: ReturnType<typeof setTimeout> | undefined
-watch(() => props.data, data => {
+let remaining = 3000
+let started = 0
+let previousFocus: HTMLElement | null = null
+const stopTimer = () => {
+  if (timer !== undefined) remaining = Math.max(0, remaining - (Date.now() - started))
   clearTimeout(timer)
-  if (data.show) timer = setTimeout(() => { toast.value.show = false }, 3000)
-})
-onUnmounted(() => clearTimeout(timer))
+  timer = undefined
+}
+const dismiss = () => {
+  stopTimer()
+  if (document.activeElement === dismissButton.value && previousFocus?.isConnected) previousFocus.focus({ preventScroll: true })
+  toast.value = { ...toast.value, show: false }
+}
+const startTimer = () => {
+  if (!props.data.show || paused.value) return
+  started = Date.now()
+  timer = setTimeout(dismiss, remaining)
+}
+const focusOut = (event: FocusEvent) => { focused.value = (event.currentTarget as HTMLElement).contains(event.relatedTarget as Node) }
+watch(() => props.data, data => {
+  stopTimer()
+  if (!data.show) { hovered.value = false; focused.value = false; return }
+  if (!focused.value) previousFocus = document.activeElement as HTMLElement | null
+  remaining = data.kind === 'error' ? 6000 : 3000
+  startTimer()
+}, { immediate: true })
+watch(paused, value => { stopTimer(); if (!value) startTimer() })
+onUnmounted(stopTimer)
 </script>
 
 <template>
-  <div id="toast-notification" class="tw:fixed tw:bottom-[-100px] tw:left-1/2 tw:z-[3000] tw:-translate-x-1/2 tw:rounded-full tw:bg-[#222] tw:px-5 tw:py-3 tw:text-[0.95em] tw:text-white tw:shadow-[0_5px_15px_rgba(0,0,0,0.2)] tw:transition-[bottom] tw:duration-500 tw:[transition-timing-function:var(--ease-out-expo)]" :class="{ 'tw:bottom-[30px]': data.show, 'is-shown': data.show }">
-    <SiteIcon name="check" :size="17" v-if="!data.message.includes('できません')"/><span role="status" aria-live="polite">{{ data.message }}</span>
-  </div>
+  <Transition name="toast">
+    <div v-if="data.show" id="toast-notification" class="is-shown" @pointerenter="hovered = true" @pointerleave="hovered = false" @focusin="focused = true" @focusout="focusOut">
+      <SiteIcon v-if="data.kind === 'error'" name="alert" :size="18"/>
+      <span class="toast-message" role="status" aria-live="polite" aria-atomic="true">{{ data.message }}</span>
+      <button ref="dismissButton" class="icon-button toast-dismiss" type="button" aria-label="通知を閉じる" @click="dismiss" @keydown.esc.stop.prevent="dismiss"><SiteIcon name="close" :size="16"/></button>
+    </div>
+  </Transition>
 </template>

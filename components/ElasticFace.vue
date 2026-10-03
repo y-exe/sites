@@ -3,6 +3,8 @@ import { createSpring } from '~/utils/spring'
 const root = ref<HTMLElement | null>(null)
 const springs = new Map<HTMLElement, ReturnType<typeof createSpring<'lift' | 'tilt'>>>()
 const timers: ReturnType<typeof setTimeout>[] = []
+const visible = useElementVisibility(root)
+const documentVisibility = useDocumentVisibility()
 const springFor = (el: HTMLElement) => {
   let spring = springs.get(el)
   if (!spring) {
@@ -29,6 +31,12 @@ const wave = () => {
     timers.push(setTimeout(() => { springFor(el).to({ lift: 0, tilt: 0 }); springFor(el).kick({ lift: -320, tilt: index % 2 ? 100 : -100 }) }, index * 45))
   })
 }
+watch([visible, documentVisibility], ([inView, visibility]) => {
+  if (!inView || visibility !== 'visible') {
+    timers.forEach(clearTimeout); timers.length = 0
+    springs.forEach(spring => spring.jump({ lift: 0, tilt: 0 }))
+  }
+})
 onUnmounted(() => { timers.forEach(clearTimeout); springs.forEach(spring => spring.stop()) })
 </script>
 <template>
