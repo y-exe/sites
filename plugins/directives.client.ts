@@ -1,27 +1,15 @@
 import { useIntro } from '~/composables/useIntro'
+import { useSharedObserver } from '~/composables/useSharedObserver'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const { introElements } = useIntro()
+  const { introElements, isHeaderIntroDone } = useIntro()
   
-  let revealObserver: IntersectionObserver | null = null
-  let textObserver: IntersectionObserver | null = null
-
-  const initObservers = () => {
-    const callback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('is-visible')
-        else entry.target.classList.remove('is-visible')
-      })
-    }
-    revealObserver = new IntersectionObserver(callback, { rootMargin: "0px 0px -50px 0px" })
-    textObserver = new IntersectionObserver(callback, { threshold: 0.2 })
-  }
-
-  initObservers()
+  const { revealObserver, textObserver } = useSharedObserver().getObservers()
 
   nuxtApp.vueApp.directive('reveal', {
     mounted: (el: HTMLElement, binding: any) => {
       el.dataset.reveal = binding.arg || 'up'
+      if (isHeaderIntroDone.value && introElements.value.includes(el)) el.classList.add('is-visible')
       if (!introElements.value.includes(el)) {
         revealObserver?.observe(el)
       }
@@ -33,6 +21,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     mounted: (el: HTMLElement) => {
       el.dataset.splitText = ''
       el.classList.add('is-ready')
+      if (isHeaderIntroDone.value && introElements.value.includes(el)) el.classList.add('is-visible')
       if (!introElements.value.includes(el)) {
         textObserver?.observe(el)
       }

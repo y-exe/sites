@@ -386,6 +386,7 @@ main {
     position: absolute;
     left: 15px;
     bottom: 10px;
+    transform: translate(3px, 4px);
 }
 
 .discord-pfp-wrapper {

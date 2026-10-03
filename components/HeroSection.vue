@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ElasticFace from '~/components/ElasticFace.vue'
+const { copy } = useSiteToast()
 import { useIntro } from '~/composables/useIntro'
 
 const props = defineProps<{
@@ -20,6 +22,8 @@ const isHistoryOpen = ref(false)
 const historyPopover = ref<HTMLElement | null>(null)
 const historyMenuStyle = ref<Record<string, string>>({})
 const discordVideo = ref<HTMLVideoElement | null>(null)
+const nameplateVideo = ref<HTMLVideoElement | null>(null)
+const reducedMotion = usePreferredReducedMotion()
 const avatarDecorationUrl = ref('')
 const nameplateBaseUrl = ref('')
 const discordNameplateStyle = computed(() => nameplateBaseUrl.value
@@ -69,12 +73,18 @@ const toggleHistory = async () => {
 const resumeDiscordVideo = () => {
   const video = discordVideo.value
   if (!video) return
+  if (reducedMotion.value === 'reduce') { video.pause(); return }
 
   video.muted = true
   video.defaultMuted = true
   video.playsInline = true
   void video.play().catch(() => {})
 }
+
+watch([reducedMotion, nameplateVideo], () => {
+  if (reducedMotion.value === 'reduce') { discordVideo.value?.pause(); nameplateVideo.value?.pause() }
+  else { resumeDiscordVideo(); void nameplateVideo.value?.play().catch(() => {}) }
+})
 
 const resumeDiscordVideoOnVisibilityChange = () => {
   if (!document.hidden) resumeDiscordVideo()
@@ -147,12 +157,15 @@ const playbackProgressPercent = computed(() => {
 const primaryGuild = ref<{ tag: string, badgeUrl: string } | null>(null)
 const currentActivity = ref<{ name: string, details: string, state: string, iconUrl: string, timestamps?: { start?: number, end?: number } } | null>(null)
 
+let disposed = false
+let reconnect: ReturnType<typeof setTimeout> | undefined
 let ws: WebSocket | null = null
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null
 const nowMs = ref(Date.now())
 let timeInterval: ReturnType<typeof setInterval> | null = null
 
 const connectLanyard = () => {
+  if (disposed) return
   ws = new WebSocket('wss://api.lanyard.rest/socket')
 
   if (!ws) return
@@ -177,7 +190,7 @@ const connectLanyard = () => {
 
   ws.onclose = () => {
     if (heartbeatInterval) clearInterval(heartbeatInterval)
-    setTimeout(connectLanyard, 5000)
+    if (!disposed) reconnect = setTimeout(connectLanyard, 5000)
   }
 }
 
@@ -200,8 +213,8 @@ const updateDiscordData = (data: any) => {
       : ''
   }
   
-  if (data.discord_user.primary_guild) {
-    const guild = data.discord_user.primary_guild
+  if (data.discord_user?.primary_guild) {
+    const guild = data.discord_user?.primary_guild
     primaryGuild.value = {
       tag: guild.tag,
       badgeUrl: guild.badge ? `https://cdn.discordapp.com/clan-badges/${guild.identity_guild_id}/${guild.badge}.png` : ''
@@ -210,7 +223,7 @@ const updateDiscordData = (data: any) => {
     primaryGuild.value = null
   }
 
-  const customAct = data.activities.find((a: any) => a.type === 4)
+  const customAct = (data.activities || []).find((a: any) => a.type === 4)
   if (customAct && (customAct.state || customAct.emoji)) {
     let emojiHtml = ''
     if (customAct.emoji) {
@@ -223,7 +236,7 @@ const updateDiscordData = (data: any) => {
     customStatus.value = { emoji: '', text: '', visible: false }
   }
 
-  const otherAct = data.activities.find((a: any) => a.type !== 4)
+  const otherAct = (data.activities || []).find((a: any) => a.type !== 4)
   if (otherAct) {
     let iconUrl = ''
     if (otherAct.assets?.large_image) {
@@ -268,7 +281,7 @@ const updateDiscordData = (data: any) => {
 }
 
 const copyEmail = () => {
-  navigator.clipboard.writeText('y.exe.1201@proton.me').then(() => alert('メールアドレスをコピーしました'))
+  void copy('y.exe.1201@proton.me', 'メールアドレスをコピーしました')
 }
 
 onMounted(() => {
@@ -282,6 +295,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  disposed = true
+  clearTimeout(reconnect)
   if (ws) ws.close()
   if (heartbeatInterval) clearInterval(heartbeatInterval)
   if (timeInterval) clearInterval(timeInterval)
@@ -294,13 +309,13 @@ onUnmounted(() => {
 
 <template>
   <section class="section main tw:relative tw:flex tw:min-h-screen tw:w-full tw:-translate-y-12 tw:flex-col tw:items-center tw:justify-center tw:px-8 tw:py-24 tw:max-md:px-4 tw:max-md:py-20" id="top">
-    <header class="hero-text tw:relative tw:z-20 tw:mb-[1.2rem]">
+    <header class="hero-text tw:relative tw:z-20 tw:mb-[0.6rem]">
       <p class="text-line-1 intro-sequence tw:mb-[0.2rem] tw:text-[clamp(2.5rem,8vw,3rem)] tw:font-black! tw:[font-family:var(--font-display)]" :ref="setIntroRef" v-split-text>
-        <span v-for="(char, i) in `(*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
+        <ElasticFace />
       </p>
       
       <p class="text-line-2 intro-sequence tw:mt-0 tw:mb-[0.5rem] tw:text-[clamp(1.8rem,6vw,2.2rem)] tw:font-medium tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
-        <span v-for="(char, i) in `I'm `.split('')" :key="`im-${i}`" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '&nbsp;' : char }}</span>
+        <span v-for="(char, i) in `I'm `.split('')" :key="`im-${i}`" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '\u00a0' : char }}</span>
         <span class="char" :style="`--char-delay: ${4*50}ms`">
           <span class="gradient-text tw:inline-block tw:bg-clip-text tw:text-transparent tw:font-bold! tw:[background-image:var(--gradient)]">Hentai</span>
         </span>
@@ -309,7 +324,7 @@ onUnmounted(() => {
       <p class="text-line-3 intro-sequence tw:m-0 tw:text-[clamp(0.9rem,2.5vw,1rem)] tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `自分で書いてなさ過ぎてバイブコーダー`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
         <span ref="historyPopover" class="history-popover">
-          <button type="button" class="history-trigger" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="toggleHistory"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+          <button type="button" class="history-trigger" data-tooltip="過去のひとこと" aria-label="過去のひとことを表示" aria-haspopup="true" :aria-expanded="isHistoryOpen" @click.stop="toggleHistory"><SiteIcon name="chevron" :size="16"/></button>
           <Transition name="history-pop">
             <div v-if="isHistoryOpen" class="history-menu" :style="historyMenuStyle" role="status">
               <span class="history-menu-label">過去のひとこと</span>
@@ -324,15 +339,15 @@ onUnmounted(() => {
       </p>
     </header>
 
-    <div class="quick-nav-buttons intro-sequence tw:mt-6 tw:flex tw:gap-[0.8rem]" :ref="setIntroRef" v-reveal data-reveal="up">
-      <a href="#projects" class="quick-nav-btn btn-primary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:bg-[var(--btn-primary-bg)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--btn-primary-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#projects')">Projects <i class="fa-solid fa-arrow-right"></i></a>
-      <a href="#about" class="quick-nav-btn btn-secondary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:border-2 tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--active-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#about')">About <i class="fa-solid fa-arrow-right"></i></a>
+    <div class="quick-nav-buttons intro-sequence tw:mt-3 tw:flex tw:gap-[0.8rem]" :ref="setIntroRef" v-reveal data-reveal="up">
+      <a href="#projects" class="quick-nav-btn btn-primary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:bg-[var(--btn-primary-bg)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--btn-primary-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#projects')">Projects <SiteIcon name="arrow" :size="19"/></a>
+      <a href="#about" class="quick-nav-btn btn-secondary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:border-2 tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--active-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#about')">About <SiteIcon name="arrow" :size="19"/></a>
     </div>
     
     <div class="contact-section">
       <div class="contact-links">
-        <a :href="discordProfileUrl" target="_blank" class="contact-item discord intro-sequence" :style="discordNameplateStyle" :class="{ 'has-nameplate': nameplateBaseUrl }" :ref="setIntroRef" v-reveal data-reveal="up">
-          <video v-if="nameplateBaseUrl" class="discord-nameplate-video" :src="`${nameplateBaseUrl}asset.webm`" autoplay loop muted playsinline aria-hidden="true"></video>
+        <a :href="discordProfileUrl" target="_blank" rel="noopener noreferrer" class="contact-item discord intro-sequence" :style="discordNameplateStyle" :class="{ 'has-nameplate': nameplateBaseUrl }" :ref="setIntroRef" v-reveal data-reveal="up">
+          <video v-if="nameplateBaseUrl" ref="nameplateVideo" class="discord-nameplate-video" :src="`${nameplateBaseUrl}asset.webm`" :autoplay="reducedMotion !== 'reduce'" loop muted playsinline aria-hidden="true"></video>
           <div class="discord-banner"><video ref="discordVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" @canplay="resumeDiscordVideo"><source src="/Discord.mp4" type="video/mp4" /><source src="/Discord.webm" type="video/webm" /></video></div>
           <div class="discord-pfp">
             <div class="discord-pfp-wrapper" :class="{ 'has-decoration': avatarDecorationUrl }">
@@ -395,38 +410,39 @@ onUnmounted(() => {
           <i class="fa-brands fa-discord discord-icon"></i>
         </a>
         
-        <a href="https://x.com/y__exe" target="_blank" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="https://x.com/y__exe" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-twitter"></i><span class="contact-name">Twitter</span></div>
           <span class="contact-username-pill">@y__exe</span>
         </a>
-        <a href="https://github.com/y-exe" target="_blank" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="https://github.com/y-exe" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
           <span class="contact-username-pill">@y-exe</span>
         </a>
-        <a href="https://t.me/h_exe" target="_blank" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="https://t.me/h_exe" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
           <span class="contact-username-pill">@h_exe</span>
         </a>
-        <a href="https://signal.me/#eu/coWGpls-QtNkrqZ8-wohlyrkC35mfWNncnTFRuoU_q6P9mXTqnpDp4h1g05dWLTY" target="_blank" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="https://signal.me/#eu/coWGpls-QtNkrqZ8-wohlyrkC35mfWNncnTFRuoU_q6P9mXTqnpDp4h1g05dWLTY" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
           <span class="contact-username-pill">@yexe.77</span>
         </a>
-        <a href="#" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up" @click.prevent="copyEmail">
+        <button type="button" class="contact-item intro-sequence" data-original-look :ref="setIntroRef" v-reveal data-reveal="up" aria-label="メールアドレスをコピー" data-tooltip="メールアドレスをコピー" @click="copyEmail">
           <div class="contact-info-left"><i class="fa-solid fa-envelope"></i><span class="contact-name">Email</span></div>
           <span class="contact-username-pill">y.exe.1201</span>
-        </a>
-        <a href="#" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up" @click.prevent="emit('open-pgp')">
+        </button>
+        <button type="button" class="contact-item intro-sequence" data-original-look :ref="setIntroRef" v-reveal data-reveal="up" aria-haspopup="dialog" @click="emit('open-pgp')">
           <div class="contact-info-left"><i class="fa-solid fa-ellipsis"></i><span class="contact-name">その他</span></div>
           <span class="contact-username-pill">Links</span>
-        </a>
+        </button>
         
         <div class="server-status intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+          <a class="icon-button server-status-link" href="https://status.yexe.xyz/status/all" target="_blank" rel="noopener noreferrer" aria-label="ステータスページを新しいタブで開く" data-tooltip="ステータスページを開く"><SiteIcon name="external" :size="18"/></a>
           <h3 class="hover-highlight" v-split-text>
             <span v-for="(char, i) in `起動状況`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
           </h3>
           <div class="shields-group">
-            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F2511f393-7539-4092-9170-0f0c4d5809ac.shields" alt="Server1" width="100" height="20" loading="eager">
-            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F9dabb00b-609f-4519-9193-dac9575a3953.shields" alt="Server2" width="100" height="20" loading="eager">
+            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F1752f580-da82-41d6-9c7f-c5b1bef99679.shields" alt="Server1" width="100" height="20" loading="eager">
+            <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fb%2F3%2F4d231738-cb09-47c8-8c85-a3d763b750d0.shields" alt="Server2" width="100" height="20" loading="eager">
           </div>
         </div>
       </div>
@@ -434,7 +450,7 @@ onUnmounted(() => {
     
     <a href="#projects" id="scroll-down-container" class="intro-sequence tw:absolute tw:bottom-12 tw:flex tw:flex-col tw:items-center tw:text-[var(--text-muted-color)] tw:no-underline tw:animate-[bounce_2s_infinite] tw:hover:text-[var(--active-text)]" :ref="setIntroRef" aria-label="Scroll to Projects" v-reveal data-reveal="up" @click="onScrollTo($event, '#projects')">
       <span class="scroll-down-text tw:mb-[0.5em] tw:text-[0.9em] tw:font-bold tw:[font-family:var(--font-display)]">Projects</span>
-      <i class="fa-solid fa-chevron-down scroll-down-icon tw:text-[1.5em]"></i>
+      <SiteIcon name="chevron" :size="24" class="scroll-down-icon"/>
     </a>
   </section>
 </template>

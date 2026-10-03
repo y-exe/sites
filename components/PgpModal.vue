@@ -70,13 +70,19 @@ l3vt8HcNWaH+4Ob5YpDq7BzHIAI=
 -----END PGP PUBLIC KEY BLOCK-----`
 
 const close = () => emit('update:modelValue', false)
+useDialogFocus(toRef(props, 'modelValue'), '#pgp-modal', close)
+const { copy } = useSiteToast()
+const keyCopied = ref(false)
+let copyTimer: ReturnType<typeof setTimeout> | undefined
 
-const copyKey = () => {
-  navigator.clipboard.writeText(pgpKeyText).then(() => alert('コピーしました'))
+const copyKey = async () => {
+  keyCopied.value = await copy(pgpKeyText, 'PGP公開鍵をコピーしました')
+  clearTimeout(copyTimer)
+  copyTimer = setTimeout(() => { keyCopied.value = false }, 2200)
 }
 
 const copyValue = (value: string) => {
-  navigator.clipboard.writeText(value).then(() => alert('コピーしました'))
+  void copy(value)
 }
 
 let isPageScrollLocked = false
@@ -117,19 +123,20 @@ watch(() => props.modelValue, (isOpen) => {
 onUnmounted(() => {
   if (!import.meta.client) return
   unlockPageScroll()
+  clearTimeout(copyTimer)
 })
 </script>
 
 <template>
   <Transition name="modal-pop">
-    <div v-if="modelValue" id="pgp-modal" class="modal-overlay visible tw:fixed tw:inset-0 tw:z-[2000] tw:flex tw:items-center tw:justify-center tw:bg-[rgba(10,10,10,0.75)] tw:p-8 tw:opacity-100 tw:visible tw:backdrop-blur-md tw:[overscroll-behavior:contain] tw:max-[760px]:items-start tw:max-[760px]:p-4" data-lenis-prevent @click.self="close">
-      <button class="modal-close-btn pgp-modal-close-in tw:fixed tw:top-6 tw:right-6 tw:z-[2001] tw:inline-flex tw:size-[42px] tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[1.6rem] tw:leading-none tw:text-[var(--text-color-dark)] tw:transition-[background-color,color,transform] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)] tw:max-[760px]:top-3 tw:max-[760px]:right-3" type="button" @click="close">&times;</button>
+    <div v-if="modelValue" id="pgp-modal" role="dialog" aria-modal="true" aria-label="公開鍵とその他の連絡先" class="modal-overlay visible tw:fixed tw:inset-0 tw:z-[2000] tw:flex tw:items-center tw:justify-center tw:bg-[rgba(10,10,10,0.75)] tw:p-8 tw:opacity-100 tw:visible tw:backdrop-blur-md tw:[overscroll-behavior:contain] tw:max-[760px]:items-start tw:max-[760px]:p-4" data-lenis-prevent @click.self="close">
+      <button class="modal-close-btn pgp-modal-close-in tw:fixed tw:top-6 tw:right-6 tw:z-[2001] tw:inline-flex tw:size-[42px] tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[1.6rem] tw:leading-none tw:text-[var(--text-color-dark)] tw:transition-[background-color,color,transform] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)] tw:max-[760px]:top-3 tw:max-[760px]:right-3" type="button" aria-label="閉じる" data-tooltip="閉じる（Esc）" @click="close"><SiteIcon name="close" :size="24"/></button>
       <div class="modal-content tw:w-[min(1040px,100%)] tw:max-h-[min(86vh,860px)] tw:overflow-y-auto tw:rounded-[14px] tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--card-bg-color-dark)] tw:p-8 tw:text-[var(--text-color-dark)] tw:shadow-[0_24px_80px_rgba(0,0,0,0.55)] tw:[overscroll-behavior:contain] tw:max-[760px]:max-h-[calc(100vh-2rem)] tw:max-[760px]:p-5" data-lenis-prevent>
         <section class="modal-section pgp-modal-section-in tw:mx-auto tw:w-[min(820px,100%)] tw:rounded-xl tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--bg-alt-color-dark)] tw:p-[1.1rem]">
           <h3 class="tw:mt-0 tw:mb-4 tw:text-left tw:text-[1.1rem] tw:tracking-normal tw:text-[var(--text-color-dark)] tw:[font-family:var(--font-display)]"><span v-for="(char, index) in pgpTitleChars" :key="`${char}-${index}`" class="pgp-modal-title-char" :style="{ '--pgp-char-delay': `${180 + index * 42}ms` }">{{ char }}</span></h3>
           <div class="pgp-key-wrap pgp-key-in tw:relative">
-            <button type="button" class="pgp-copy-btn tw:absolute tw:top-3 tw:right-7 tw:z-[1] tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[var(--text-color-dark)] tw:transition-[background-color,color] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)]" aria-label="Copy PGP public key" @click="copyKey">
-              <i class="fa-regular fa-copy"></i>
+            <button type="button" class="pgp-copy-btn tw:absolute tw:top-3 tw:right-7 tw:z-[1] tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[var(--text-color-dark)] tw:transition-[background-color,color] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)]" aria-label="PGP公開鍵をコピー" :data-tooltip="keyCopied ? 'コピーしました' : 'PGP公開鍵をコピー'" @click="copyKey">
+              <SiteIcon :name="keyCopied ? 'check' : 'copy'" :size="18"/>
             </button>
             <pre class="pgp-key-block tw:max-h-[220px] tw:overflow-y-auto tw:rounded-[10px] tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[#101010] tw:p-4 tw:text-left tw:font-mono tw:text-[0.78rem] tw:leading-[1.55] tw:text-[#adb5bd] tw:whitespace-pre-wrap tw:break-all">{{ pgpKeyText }}</pre>
           </div>

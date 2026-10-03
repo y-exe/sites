@@ -52,7 +52,7 @@ const info = [
   keyValue('Role', 'developer-wannabe'),
   keyValue('Location', 'Fukuoka, Japan'),
   '',
-  keyValue('Languages', 'VSCode · IntelliJ IDEA · Vim'),
+  keyValue('IDEs', 'VSCode · IntelliJ IDEA · Vim'),
   keyValue('Frontend', 'TS · JS · Vue · Nuxt.js · React · Next.js · Astro'),
   keyValue('Backend', 'Node.js · Python · Go · Java · Kotlin'),
   '',
@@ -75,4 +75,64 @@ export const curlPage = [
   ''
 ].join('\n')
 
-export const isTerminalClient = (userAgent: string) => /\b(?:curl|wget)\//i.test(userAgent)
+const wgetDownload = [
+  'y_exe / yexe.net',
+  '=================',
+  '',
+  'Role: developer-wannabe',
+  'Location: Fukuoka, Japan',
+  '',
+  'IDEs: VS Code, IntelliJ IDEA, Vim',
+  'Frontend: TypeScript, JavaScript, Vue, Nuxt, React, Next.js, Astro',
+  'Backend: Node.js, Python, Go, Java, Kotlin, PostgreSQL',
+  '',
+  'GitHub: https://github.com/y-exe',
+  'X: https://x.com/y__exe',
+  'Discord: https://discord.com/users/483307286513582090',
+  'Website: https://yexe.net',
+  ''
+].join('\n')
+
+const httpiePage = JSON.stringify({
+  site: {
+    name: 'yexe.net',
+    type: 'portfolio',
+    language: 'ja',
+    sections: {
+      projects: 'https://yexe.net/#projects',
+      about: 'https://yexe.net/#about'
+    }
+  },
+  person: {
+    handle: 'y_exe',
+    greeting: "(*'▽')",
+    role: 'developer-wannabe',
+    location: 'Fukuoka, Japan'
+  },
+  toolkit: {
+    frontend: ['TypeScript', 'JavaScript', 'Vue', 'Nuxt', 'React', 'Next.js', 'Astro'],
+    backend: ['Node.js', 'Python', 'Go', 'Java', 'Kotlin', 'PostgreSQL'],
+    IDEs: ['VS Code', 'IntelliJ IDEA', 'Vim']
+  },
+  contact: {
+    github: 'https://github.com/y-exe',
+    x: 'https://x.com/y__exe',
+    discord: 'https://discord.com/users/483307286513582090',
+    telegram: 'https://t.me/h_exe',
+    email: 'y.exe.1201@proton.me'
+  }
+}, null, 2) + '\n'
+
+export const isTerminalClient = (userAgent: string) => /\b(?:curl|wget|httpie)\//i.test(userAgent)
+
+export const terminalPageFor = (userAgent: string) => {
+  if (/\bwget\//i.test(userAgent)) {
+    return {
+      body: wgetDownload,
+      contentType: 'text/plain; charset=utf-8',
+      downloadName: 'yexe.txt'
+    }
+  }
+  if (/\bhttpie\//i.test(userAgent)) return { body: httpiePage, contentType: 'application/json; charset=utf-8', downloadName: undefined }
+  return { body: curlPage, contentType: 'text/plain; charset=utf-8', downloadName: undefined }
+}

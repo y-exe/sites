@@ -1,0 +1,2 @@
+Devicon 2.17.0
+https://github.com/devicons/devicon

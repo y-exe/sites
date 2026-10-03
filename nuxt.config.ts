@@ -23,11 +23,12 @@ export default defineNuxtConfig({
     '@vueuse/nuxt'
   ],
 
-  css: ['~/assets/css/style.css'],
+  css: ['~/assets/css/style.css', '~/assets/css/refinements.css'],
 
   app: {
     head: {
       htmlAttrs: { lang: 'ja' },
+      script: [{ innerHTML: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark-mode',d);document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}})()` }],
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
