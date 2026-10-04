@@ -217,6 +217,7 @@ onMounted(() => {
     <PgpModal v-model="showPgpModal" />
     <TheToast :data="toastData" />
     <SiteTooltip />
+    <PlayLab />
 
     <a href="#top" id="back-to-top" aria-label="トップに戻る" data-tooltip="トップに戻る" :tabindex="isScrolledEnough ? 0 : -1" :class="{ 'visible': isScrolledEnough }" @click="scrollToAnchor($event, '#top')">
       <SiteIcon name="up" :size="22"/>

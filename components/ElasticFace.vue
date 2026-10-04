@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { createSpring } from '~/utils/spring'
+const { face, react, sleeping } = usePlayState()
 const root = ref<HTMLElement | null>(null)
 const springs = new Map<HTMLElement, ReturnType<typeof createSpring<'lift' | 'tilt'>>>()
 const timers: ReturnType<typeof setTimeout>[] = []
@@ -25,7 +26,13 @@ const follow = (event: PointerEvent) => {
   })
 }
 const reset = () => springs.forEach(spring => spring.to({ lift: 0, tilt: 0 }))
-const wave = () => {
+let waveGeneration = 0
+const wave = async () => {
+  const generation = ++waveGeneration
+  react()
+  await nextTick()
+  if (generation !== waveGeneration) return
+  springs.forEach((spring, el) => { if (!root.value?.contains(el)) { spring.stop(); springs.delete(el) } })
   timers.forEach(clearTimeout); timers.length = 0
   root.value?.querySelectorAll<HTMLElement>('.face-letter').forEach((el, index) => {
     timers.push(setTimeout(() => { springFor(el).to({ lift: 0, tilt: 0 }); springFor(el).kick({ lift: -320, tilt: index % 2 ? 100 : -100 }) }, index * 45))
@@ -37,10 +44,10 @@ watch([visible, documentVisibility], ([inView, visibility]) => {
     springs.forEach(spring => spring.jump({ lift: 0, tilt: 0 }))
   }
 })
-onUnmounted(() => { timers.forEach(clearTimeout); springs.forEach(spring => spring.stop()) })
+onUnmounted(() => { waveGeneration++; timers.forEach(clearTimeout); springs.forEach(spring => spring.stop()) })
 </script>
 <template>
-  <button ref="root" class="elastic-face" type="button" aria-label="顔文字を弾ませる" @pointermove="follow" @pointerleave="reset" @click="wave">
-    <span v-for="(char, i) in `(*'▽')`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`"><span class="face-letter">{{ char }}</span></span>
+  <button ref="root" class="elastic-face" :class="{ 'face-asleep': sleeping }" type="button" :aria-label="sleeping ? '顔文字を起こす' : '顔文字の表情を変える'" @pointermove="follow" @pointerleave="reset" @click="wave">
+    <Transition name="mood-change"><span :key="face" class="face-expression"><span v-for="(char, i) in face!.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`"><span class="face-letter">{{ char }}</span></span></span></Transition>
   </button>
 </template>

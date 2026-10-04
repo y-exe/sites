@@ -46,8 +46,8 @@ test('sound follows activation and copy results, respects mute, and cleans up li
   t.after(() => Object.assign(globalThis, originals))
   const enabled = ref(false), pulse = ref(0), toast = ref({ show: false, kind: 'success' })
   const listeners = new Map(), windowListeners = new Map(), played = []
-  let unlocks = 0, cancels = 0, disposed = false, unmount, clickCapture
-  const document = { visibilityState: 'visible', querySelector: () => null, addEventListener: (name, fn, capture) => { listeners.set(name, fn); if (name === 'click') clickCapture = capture }, removeEventListener: name => listeners.delete(name) }
+  let unlocks = 0, cancels = 0, disposed = false, unmount, clickCapture, errorPage = false
+  const document = { visibilityState: 'visible', querySelector: () => errorPage ? {} : null, addEventListener: (name, fn, capture) => { listeners.set(name, fn); if (name === 'click') clickCapture = capture }, removeEventListener: name => listeners.delete(name) }
   Object.assign(globalThis, {
     document, window: { addEventListener: (name, fn) => windowListeners.set(name, fn), removeEventListener: name => windowListeners.delete(name) },
     localStorage: { getItem: () => '1' }, watch,
@@ -72,6 +72,7 @@ test('sound follows activation and copy results, respects mute, and cleans up li
   click({ detail: 0 })
   assert.deepEqual(played, ['tap'])
   assert.equal(clickCapture, true)
+  errorPage = true; click(); assert.equal(played.length, 1); errorPage = false
   assert.equal(listeners.has('pointerenter'), false)
   click({ ctrlKey: true })
   element = host({ disabled: true }); click()

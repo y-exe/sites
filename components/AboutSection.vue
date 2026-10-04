@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const now = useNow()
 const clockReady = useMounted()
+const timeTrigger = ref<HTMLButtonElement | null>(null), timeDetailsOpen = ref(false)
 
 const currentJstTime = computed(() => {
   if (!clockReady.value) return '--:--'
@@ -20,6 +21,11 @@ const currentJstTime = computed(() => {
 })
 
 const avatar = ref<HTMLElement | null>(null)
+const avatarArena = ref<HTMLElement | null>(null)
+const instrument = useToyAudio()
+const avatarSpin = useAvatarSpin(avatar, (delta, seconds) => { void instrument.scratch(delta / 360 * .86, seconds) }, instrument.endScratch)
+const avatarBall = useAvatarBall(avatar, avatarArena, ref(true), note => { void instrument.note(note, .2) })
+const avatarGesture = useAvatarGesture(avatar, avatarSpin, avatarBall, () => { void instrument.prepareScratch() })
 const greeting = ref<HTMLElement | null>(null)
 const avatarVisible = useElementVisibility(avatar)
 const greetingVisible = useElementVisibility(greeting)
@@ -78,10 +84,14 @@ watch([greetingVisible, documentVisibility], ([visible, visibility]) => {
   }
 })
 const followAvatar = (event: PointerEvent) => {
+  if (avatarGesture.move(event)) { avatarSpring?.to({ lift: 0, tilt: 0, squash: 0 }); return }
+  if (avatarSpin.dragging.value) return
   if (event.pointerType !== 'mouse' || !avatar.value || matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const bounds = avatar.value.getBoundingClientRect()
   avatarSpring?.to({ tilt: (event.clientX - bounds.left - bounds.width / 2) / 6, lift: -5 })
 }
+watch(avatarSpin.dragging, value => { if (value) avatarSpring?.to({ lift: 0, tilt: 0, squash: 0 }) })
+const clickAvatar = (event: MouseEvent) => { if (avatarGesture.click(event)) jiggleIcon() }
 onMounted(() => {
   avatarSpring = createSpring({ lift: 0, tilt: 0, squash: 0 }, ({ lift, tilt, squash }) => {
     const image = avatar.value?.querySelector('img')
@@ -98,8 +108,10 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
     </h2>
     <p class="about-subtitle hover-highlight tw:mt-0 tw:mb-8 tw:text-base tw:text-[var(--text-muted-color)]" v-reveal>なんかいろいろ</p>
     <div class="about-container tw:grid tw:w-full tw:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] tw:gap-8">
-      <div class="about-card tw:flex tw:flex-col tw:justify-center tw:rounded-2xl tw:border tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:p-8 tw:text-center tw:shadow-[0_4px_15px_var(--shadow-color)]">
-        <button ref="avatar" class="about-avatar-action" type="button" aria-label="アイコンを揺らす" @pointermove="followAvatar" @pointerleave="avatarSpring?.to({ tilt: 0, lift: 0 })" @click="jiggleIcon">
+      <div ref="avatarArena" class="about-card avatar-arena tw:flex tw:flex-col tw:justify-center tw:rounded-2xl tw:border tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:p-8 tw:text-center tw:shadow-[0_4px_15px_var(--shadow-color)]">
+        <div class="about-avatar-shell" :style="{ transform: `translate(${avatarBall.offset.x}px, ${avatarBall.offset.y}px)` }">
+        <button ref="avatar" class="about-avatar-action" :class="{ 'is-spinning': avatarSpin.dragging.value || avatarBall.dragging.value }" type="button" aria-label="アイコンで遊ぶ" aria-description="縁を回すとスクラッチ、つかんで引っぱると音の玉。左右キーで回転、ShiftとEnterで投げる" @contextmenu.prevent @pointerdown="avatarGesture.start" @pointermove="followAvatar" @pointerup="avatarGesture.end" @pointercancel="avatarGesture.cancel" @lostpointercapture="avatarGesture.cancel" @keydown="avatarSpin.key($event)" @keydown.enter.shift.prevent="avatarBall.toss($event)" @dragstart.prevent @pointerleave="avatarSpring?.to({ tilt: 0, lift: 0 })" @click="clickAvatar">
+        <span class="avatar-spin-layer">
         <NuxtImg 
           src="/icon.webp" 
           alt="y_exe icon" 
@@ -112,14 +124,16 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
           loading="eager"
 
         />
+        </span>
         </button>
+        </div>
         <h2 :aria-label="greetingWords.map(word => word.text).join(' ')" ref="greeting" class="about-greeting section-title hover-highlight tw:mt-0! tw:mb-[0.35rem]! tw:w-fit tw:max-w-full tw:self-center tw:text-[2em]! tw:leading-[1.05]!" @pointermove="followLetters" @pointerleave="resetLetters" v-split-text>
           <template v-for="(word, wordIndex) in greetingWords" :key="word.text"><span class="greeting-word"><span v-for="(char, i) in word.text" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${(word.offset + i) * 50}ms`"><span class="greeting-letter">{{ char }}</span></span></span><span v-if="wordIndex < greetingWords.length - 1" aria-hidden="true" class="char greeting-space" :style="`--char-delay: ${(word.offset + word.text.length) * 50}ms`"><span class="greeting-letter">&nbsp;</span></span></template>
         </h2>
         <p class="about-description hover-highlight tw:mt-0 tw:mb-[1.25em] tw:max-w-full tw:self-center tw:text-base tw:leading-[1.5] tw:text-[var(--text-muted-color)]" v-reveal>I am a 16 year old developer-wannabe.</p>
         <div class="info-pills tw:flex tw:flex-wrap tw:justify-center tw:gap-[0.8em]">
           <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow,color] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:text-[var(--active-text)] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="fa-solid fa-user"></i> He/Him</span>
-          <span v-reveal id="about-time" class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow,color] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:text-[var(--active-text)] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="fa-solid fa-clock"></i> JST - {{ currentJstTime }}</span>
+          <span v-reveal id="about-time" class="info-time-pill tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow,color] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:text-[var(--active-text)] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="fa-solid fa-clock" aria-hidden="true"></i> JST - {{ currentJstTime }}<button ref="timeTrigger" class="info-time-trigger" type="button" aria-label="日本時間と端末の時差を見る" aria-haspopup="dialog" aria-controls="jst-time-details" :aria-expanded="timeDetailsOpen" data-tooltip="時刻と時差を見る" @click="timeDetailsOpen = !timeDetailsOpen"></button></span>
           <span v-reveal class="tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-lg tw:bg-[var(--pill-bg-color)] tw:px-[1em] tw:py-[0.5em] tw:text-[0.9em] tw:font-medium tw:text-[var(--text-muted-color)] tw:transition-[transform,box-shadow,color] tw:duration-150 tw:ease-[var(--ease-out-expo)] tw:hover:scale-[1.08] tw:hover:text-[var(--active-text)] tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]"><i class="fa-solid fa-location-dot"></i> FUKUOKA</span>
         </div>
       </div>
@@ -161,5 +175,6 @@ onUnmounted(() => { waveTimers.forEach(clearTimeout); avatarSpring?.stop(); lett
       </div>
     </div>
     <SiteFooter />
+    <Teleport to="body"><Transition name="time-details-pop"><TimeDetails v-if="timeDetailsOpen" :anchor="timeTrigger" @close="timeDetailsOpen = false"/></Transition></Teleport>
   </section>
 </template>

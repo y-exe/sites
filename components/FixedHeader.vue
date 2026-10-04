@@ -2,6 +2,7 @@
 import { useIntro } from '~/composables/useIntro'
 
 const { isHeaderIntroDone, setIntroRef } = useIntro()
+const { sleeping } = usePlayState()
 const { y: scrollY } = useWindowScroll()
 const isScrolledDown = computed(() => scrollY.value > 50)
 const currentTime = useDateFormat(useNow(), 'HH:mm:ss')
@@ -32,7 +33,7 @@ const headerClasses = computed(() => ({
     </ClientOnly>
 
     <div id="hayane" class="header-fixed-item intro-sequence tw:fixed tw:top-14 tw:left-1/2 tw:z-[1000] tw:text-[1rem] tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-display)]" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
-      はよ寝ろ
+      <button class="sleep-trigger" type="button" :aria-pressed="sleeping" @click="sleeping = !sleeping">{{ sleeping ? 'おはよう' : 'はよ寝ろ' }}</button>
     </div>
   </div>
 </template>

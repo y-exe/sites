@@ -8,7 +8,7 @@ export const useDialogFocus = (open: Ref<boolean>, selector: string, close: () =
     if (topDialog && topDialog !== dialog) return
     if (event.key === 'Escape') { event.preventDefault(); close() }
     if (event.key !== 'Tab') return
-    const controls = Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex="0"]') || []).filter(el => el.getClientRects().length)
+    const controls = Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]') || []).filter(el => el.getClientRects().length && !el.closest('[inert]'))
     const first = controls[0], last = controls.at(-1)
     if (!first) { event.preventDefault(); dialog?.focus(); return }
     if (event.shiftKey && (document.activeElement === first || !dialog?.contains(document.activeElement))) { event.preventDefault(); last?.focus() }

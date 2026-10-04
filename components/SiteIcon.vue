@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import AnimatedIconShape from '~/components/AnimatedIconShape.vue'
-defineProps<{ name: 'image' | 'link' | 'alert' | 'search' | 'eye' | 'arrow' | 'up' | 'chevron' | 'close' | 'copy' | 'check' | 'external' | 'expand' | 'sun' | 'moon' | 'monitor' | 'clock' | 'user' | 'pin' | 'star' | 'fork' | 'code' | 'play' | 'pause' | 'replay' | 'mail' | 'more'; size?: number; expanded?: boolean; checked?: boolean }>()
+defineProps<{ name: 'image' | 'link' | 'alert' | 'search' | 'zoom-in' | 'zoom-out' | 'eye' | 'arrow' | 'up' | 'download' | 'chevron' | 'close' | 'copy' | 'check' | 'external' | 'expand' | 'sun' | 'moon' | 'monitor' | 'clock' | 'user' | 'pin' | 'star' | 'fork' | 'code' | 'play' | 'pause' | 'replay' | 'mail' | 'more'; size?: number; expanded?: boolean; checked?: boolean }>()
 </script>
 <template>
   <svg class="site-icon" :class="`icon-${name}`" :width="size || 20" :height="size || 20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <g v-if="name === 'image'"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/></g>
     <g v-else-if="name === 'alert'"><circle cx="12" cy="12" r="9"/><path d="M12 7v5m0 4v.01"/></g>
     <g v-else-if="name === 'search'"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></g>
+    <g v-else-if="name === 'zoom-in' || name === 'zoom-out'"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5M7 10h6"/><path v-if="name === 'zoom-in'" d="M10 7v6"/></g>
     <g v-else-if="name === 'eye'" class="eye-shape"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle class="eye-pupil" cx="12" cy="12" r="3"/></g>
     <g v-else-if="name === 'arrow'"><path d="M4 12h15"/><path class="icon-tip" d="m13 5 7 7-7 7"/></g>
     <g v-else-if="name === 'up'"><path d="M12 20V4"/><path d="m5 11 7-7 7 7"/></g>
+    <g v-else-if="name === 'download'"><g class="download-arrow"><path d="M12 3v12m-5-5 5 5 5-5"/></g><path d="M4 16v4h16v-4"/></g>
     <AnimatedIconShape v-else-if="name === 'chevron'" kind="chevron" :active="!!expanded"/>
     <g v-else-if="name === 'close'"><path d="m6 6 12 12M18 6 6 18"/></g>
     <AnimatedIconShape v-else-if="name === 'copy' || name === 'check'" kind="copy" :active="name === 'check'"/>

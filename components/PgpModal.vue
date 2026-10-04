@@ -70,6 +70,7 @@ l3vt8HcNWaH+4Ob5YpDq7BzHIAI=
 -----END PGP PUBLIC KEY BLOCK-----`
 const pgpFingerprint = 'd4c3e04190c51e407afc65147bcfcf0c72d76593'
 const fingerprintGroups = pgpFingerprint.toUpperCase().match(/.{4}/g) || []
+const keyDownloadHref = `data:application/pgp-keys,${encodeURIComponent(pgpKeyText.replace('\n', '\n\n') + '\n')}`
 
 const close = () => emit('update:modelValue', false)
 useDialogFocus(toRef(props, 'modelValue'), '#pgp-modal', close)
@@ -145,6 +146,7 @@ onUnmounted(() => {
         <section class="modal-section pgp-modal-section-in tw:mx-auto tw:w-[min(820px,100%)] tw:rounded-xl tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--bg-alt-color-dark)] tw:p-[1.1rem]">
           <h3 class="tw:mt-0 tw:mb-4 tw:text-left tw:text-[1.1rem] tw:tracking-normal tw:text-[var(--text-color-dark)] tw:[font-family:var(--font-display)]"><span v-for="(char, index) in pgpTitleChars" :key="`${char}-${index}`" class="pgp-modal-title-char" :style="{ '--pgp-char-delay': `${180 + index * 42}ms` }">{{ char }}</span></h3>
           <div class="pgp-key-wrap pgp-key-in tw:relative">
+            <a class="pgp-download-btn icon-button" :href="keyDownloadHref" download="yexe-public-key.asc" aria-label="PGP公開鍵を保存" data-tooltip="公開鍵を保存（.asc）"><SiteIcon name="download" :size="18"/></a>
             <button type="button" class="pgp-copy-btn tw:absolute tw:top-3 tw:right-7 tw:z-[1] tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[var(--text-color-dark)] tw:transition-[background-color,color] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)]" aria-label="PGP公開鍵をコピー" :data-tooltip="keyCopied ? 'コピーしました' : 'PGP公開鍵をコピー'" @click="copyKey">
               <SiteIcon :name="keyCopied ? 'check' : 'copy'" :size="18"/>
             </button>
