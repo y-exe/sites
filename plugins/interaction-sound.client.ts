@@ -13,6 +13,7 @@ export default defineNuxtPlugin(nuxtApp => {
     if (enabled.value && value.show && document.visibilityState === 'visible') void audio.play(value.kind)
   })
   const activate = (event: MouseEvent) => {
+    if (document.querySelector('.page-404')) return
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
     const target = event.target as Element | null
     const host = target?.closest<HTMLElement>('button, a[href], [role="button"]') || target
@@ -21,7 +22,7 @@ export default defineNuxtPlugin(nuxtApp => {
     if (!enabled.value) return
     void audio.unlock()
     const kind: InteractionSound = host.matches('.theme-toggle') ? 'toggle'
-      : host.matches('.modal-close-btn, .project-modal-close, .image-viewer-close, .toast-dismiss, .project-modal-overlay, #pgp-modal, .image-viewer') ? 'close'
+      : host.matches('.modal-close-btn, .project-modal-close, .image-viewer-close, .toast-dismiss, .project-modal-overlay, #pgp-modal, .image-viewer, .play-close, .play-backdrop') ? 'close'
       : host.hasAttribute('aria-expanded') ? host.getAttribute('aria-expanded') === 'true' ? 'close' : 'open'
       : host.hasAttribute('aria-haspopup') || host.matches('.project-card, .gallery-expand') ? 'open' : 'tap'
     void audio.play(kind)

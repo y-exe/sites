@@ -1,340 +1,139 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { createRunnerGame, RUNNER, type RunnerEvent, type RunnerState } from '~/utils/runner-game'
+import { createRunnerPose } from '~/utils/runner-pose'
 
-defineProps<{
-  error: {
-    statusCode?: number
-    statusMessage?: string
-    message?: string
-  }
-}>()
-
-useHead({
-  link: [
-    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap' }
-  ]
-})
-
+const props = defineProps<{ error: { statusCode?: number; statusMessage?: string; message?: string } }>()
+useHead({ title: `${props.error.statusCode || 404} | yexe.net`, link: [{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap' }] })
 const canvasEl = ref<HTMLCanvasElement | null>(null)
 const dinoEl = ref<HTMLImageElement | null>(null)
-const isNight = ref(false)
-let animId = 0
-let cleanup: (() => void) | null = null
-
+const jumpEl = ref<HTMLImageElement | null>(null)
+const state = ref<RunnerState>('ready'), score = ref(0), best = ref(0), night = ref(false)
+const reduced = usePreferredReducedMotion()
+const { isDarkMode } = useSiteTheme()
+let input = () => {}, pause = () => {}, cleanup = () => {}
 onMounted(() => {
-  const canvas = canvasEl.value!
-  const dinoImg = dinoEl.value!
-  const ctx = canvas.getContext('2d')!
-
-  const W = 800
-  const H = 300
-  const GROUND = 248
-  const DINO_X = 100
-  const DINO_W_RUN = 48
-  const DINO_H_RUN = 85
-  const DINO_W_JUMP = 85
-  const DINO_H_JUMP = 85
-  const GRAVITY = 0.85
-  const JUMP_VY = -20
-  const TILE_W = 880
-
-  const spriteUrls = {
-    run: '/game/1.png',
-    jump: '/game/2.png',
-    dead: '/game/3.png'
-  }
-
-  const obstacleVideo = document.createElement('video')
-  obstacleVideo.src = '/game/4.mp4'
-  obstacleVideo.loop = true
-  obstacleVideo.muted = true
-  obstacleVideo.playsinline = true
-  obstacleVideo.style.display = 'none'
-  document.body.appendChild(obstacleVideo)
-
-  let videoPlaying = false
-  const startVideo = () => {
-    if (!videoPlaying) {
-      videoPlaying = true
-      obstacleVideo.play().catch(() => {})
+  const canvas = canvasEl.value!, dino = dinoEl.value!, jumpingSprite = jumpEl.value!, ctx = canvas.getContext('2d')
+  if (!ctx) return
+  try { best.value = Math.max(0, Number(localStorage.getItem('404-dino-hi')) || 0) } catch {}
+  const video = document.createElement('video')
+  video.src = '/game/4.mp4'; video.loop = true; video.muted = true; video.playsInline = true; video.preload = 'auto'
+  const processed = document.createElement('canvas'); processed.width = processed.height = 120
+  const processCtx = processed.getContext('2d', { willReadFrequently: true })!
+  let frameId = 0, previous = 0, videoAge = 1, videoReady = false, landAge = 1, deadAge = 1
+  const pose = createRunnerPose()
+  const event = (event: RunnerEvent) => {
+    if (event === 'jump') pose.launch()
+    if (event === 'land') {
+      landAge = 0
+      pose.land()
     }
-  }
-
-  const obstacleImg = new Image()
-  obstacleImg.src = '/game/5.png'
-
-  const videoProcessCanvas = document.createElement('canvas')
-  videoProcessCanvas.width = 120
-  videoProcessCanvas.height = 120
-  const videoProcessCtx = videoProcessCanvas.getContext('2d')!
-
-  let hiScore = parseInt(localStorage.getItem('404-dino-hi') || '0')
-
-  const DINO_W = DINO_W_RUN
-  const DINO_H = DINO_H_RUN
-
-  type State = 'idle' | 'running' | 'dead'
-  let state: State = 'idle'
-  let dinoY = GROUND - DINO_H
-  let dinoVY = 0
-  let jumping = false
-  let speed = 5
-  let rawScore = 0
-  let frame = 0
-  let nightMode = false
-  let groundOff = 0
-  let nextObstTimer = 90
-  let landingFrameCount = 0
-
-  type Obstacle = { x: number; h: number; useVideo: boolean }
-  let obstacles: Obstacle[] = []
-
-  const groundDots: Array<{ ox: number; dy: number; dw: number; dh: number }> = []
-  const rng = (seed: number) => {
-    let s = seed
-    return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
-  }
-  const rand = rng(42)
-  for (let i = 0; i < 120; i++) {
-    groundDots.push({
-      ox: i * 7.5 + rand() * 3,
-      dy: 3 + rand() * 7,
-      dw: 1 + rand() * 2,
-      dh: 1 + rand() * 2,
-    })
-  }
-
-  const resetGame = () => {
-    state = 'running'
-    dinoY = GROUND - DINO_H
-    dinoVY = 0
-    jumping = false
-    speed = 5
-    rawScore = 0
-    frame = 0
-    nightMode = false
-    isNight.value = false
-    obstacles = []
-    nextObstTimer = 90
-    groundOff = 0
-    startVideo()
-  }
-
-  const handleInput = (e: Event) => {
-    if (e instanceof KeyboardEvent) {
-      if (e.code !== 'Space' && e.code !== 'ArrowUp') return
-      e.preventDefault()
-    }
-    if (e instanceof TouchEvent) e.preventDefault()
-    if (state === 'idle') { resetGame(); return }
-    if (state === 'dead') { resetGame(); return }
-    if (!jumping) {
-      dinoVY = JUMP_VY
-      jumping = true
-    }
-  }
-
-  window.addEventListener('keydown', handleInput)
-  canvas.addEventListener('click', handleInput)
-  canvas.addEventListener('touchstart', handleInput, { passive: false })
-
-  const spawnObstacle = () => {
-    const heights = [60, 80, 100]
-    const h = heights[Math.floor(Math.random() * heights.length)]
-    obstacles.push({ x: W + 30, h, useVideo: true })
-  }
-
-  const drawObstacle = (o: Obstacle, useVideo: boolean) => {
-    const w = o.h
-
-    if (videoPlaying && obstacleVideo.readyState >= 2) {
-      videoProcessCtx.clearRect(0, 0, 120, 120)
-      videoProcessCtx.drawImage(obstacleVideo, 0, 0, 120, 120)
-
-      const imgData = videoProcessCtx.getImageData(0, 0, 120, 120)
-      const data = imgData.data
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i]
-        const g = data[i + 1]
-        const b = data[i + 2]
-        if (g > 180 && r < 80 && b < 80) {
-          data[i + 3] = 0
-        }
-      }
-      videoProcessCtx.putImageData(imgData, 0, 0)
-      ctx.drawImage(videoProcessCanvas, 0, 0, 120, 120, o.x, GROUND - o.h, w, o.h)
-    } else {
-      ctx.fillStyle = '#888'
-      ctx.fillRect(o.x, GROUND - o.h, w, o.h)
-    }
-  }
-
-  const checkCollision = () => {
-    const pad = 10
-    const dx = DINO_X + pad
-    const dw = DINO_W - pad * 2
-    const dy = dinoY + pad
-    const dh = DINO_H - pad
-    for (const o of obstacles) {
-      const w = o.h
-      const margin = o.useVideo ? 8 : 0
-
-      const collisionX = o.x + margin
-      const collisionW = w - margin * 2
-      const collisionH = o.h
-      const collisionY = GROUND - collisionH
-
-      if (
-        dx < collisionX + collisionW - 2 &&
-        dx + dw > collisionX + 2 &&
-        dy + dh > collisionY + 4
-      ) return true
-    }
-    return false
-  }
-
-  const updateDinoSprite = () => {
-    let src = spriteUrls.dead
-    let displayW = DINO_W_JUMP
-    let displayH = DINO_H_JUMP
-
-    if (state === 'running') {
-      src = jumping ? spriteUrls.jump : spriteUrls.run
-      if (!jumping) {
-        displayW = DINO_W_RUN
-        displayH = DINO_H_RUN
+    if (event === 'dead') {
+      deadAge = 0; video.pause()
+      if (Math.floor(runner.game.score) > best.value) {
+        best.value = Math.floor(runner.game.score)
+        try { localStorage.setItem('404-dino-hi', String(best.value)) } catch {}
       }
     }
-
-    if (dinoImg.src !== location.origin + src) dinoImg.src = src
-    dinoImg.style.left   = (DINO_X / W * 100) + '%'
-    dinoImg.style.top    = (dinoY  / H * 100) + '%'
-    dinoImg.style.width  = (displayW / W * 100) + '%'
-    dinoImg.style.height = (displayH / H * 100) + '%'
   }
-
-  const loop = () => {
-    ctx.fillStyle = nightMode ? '#1a1a1a' : '#ffffff'
-    ctx.fillRect(0, 0, W, H)
-
-    if (state === 'running') {
-      frame++
-      speed = Math.min(13, 5 + frame * 0.0015)
-      rawScore += speed / 10
-      const intScore = Math.floor(rawScore)
-
-      const shouldBeNight = Math.floor(intScore / 700) % 2 === 1
-      if (shouldBeNight !== nightMode) {
-        nightMode = shouldBeNight
-        isNight.value = nightMode
-      }
-
-      groundOff = (groundOff + speed) % TILE_W
-
-      if (jumping) {
-        dinoVY += GRAVITY
-        dinoY += dinoVY
-        if (dinoY >= GROUND - DINO_H) {
-          dinoY = GROUND - DINO_H
-          dinoVY = 0
-          jumping = false
-          landingFrameCount = 8
-        }
-      }
-
-      nextObstTimer--
-      if (nextObstTimer <= 0) {
-        spawnObstacle()
-        const minGap = Math.max(35, 70 - Math.floor(frame / 400) * 8)
-        nextObstTimer = minGap + Math.random() * 55
-      }
-      for (const o of obstacles) o.x -= speed
-      obstacles = obstacles.filter(o => o.x + o.h > 0)
-
-      if (checkCollision()) {
-        state = 'dead'
-        if (Math.floor(rawScore) > hiScore) {
-          hiScore = Math.floor(rawScore)
-          localStorage.setItem('404-dino-hi', String(hiScore))
-        }
-      }
+  const runner = createRunnerGame(Math.random, event)
+  const startVideo = () => { void video.play().catch(() => {}) }
+  input = () => {
+    if (runner.game.state === 'dead' && deadAge < .35) return
+    if (runner.game.state === 'paused') { pause(); return }
+    const restarting = runner.game.state !== 'running'
+    if (restarting) { landAge = 1; pose.reset() }
+    runner.input(); state.value = runner.game.state; startVideo()
+  }
+  pause = () => {
+    runner.pause(); state.value = runner.game.state; previous = 0
+    if (state.value === 'paused') video.pause()
+    else if (state.value === 'running') startVideo()
+  }
+  const key = (e: KeyboardEvent) => {
+    if (e.repeat || e.altKey || e.ctrlKey || e.metaKey || (e.target as HTMLElement)?.closest('input, textarea, select, [contenteditable="true"]')) return
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      if ((e.target as HTMLElement)?.closest('button, a')) return
+      e.preventDefault(); input()
     }
-
-    ctx.strokeStyle = nightMode ? '#4A7BA7' : '#42C4D9'
-    ctx.lineWidth = 3
+  }
+  const visibility = () => {
+    if (document.visibilityState !== 'visible' && runner.game.state === 'running') pause()
+  }
+  const blur = () => { if (runner.game.state === 'running') pause() }
+  const paint = (time: number) => {
+    const dt = previous ? Math.min((time - previous) / 1000, .1) : 0; previous = time
+    runner.advance(dt)
+    const g = runner.game
+    state.value = g.state; score.value = Math.floor(g.score)
+    night.value = Math.floor(g.score / 700) % 2 === 1
+    landAge += dt; deadAge += dt; videoAge += dt
+    const dark = night.value || isDarkMode.value
+    ctx.clearRect(0, 0, 800, 300)
+    const jumpHeight = Math.max(0, RUNNER.ground - RUNNER.heightRun - g.y)
+    ctx.fillStyle = dark ? '#9ba9b6' : '#78878d'; ctx.globalAlpha = .13 - Math.min(.08, jumpHeight / 180 * .08)
+    ctx.beginPath(); ctx.ellipse(124, RUNNER.ground - 1, 22 - Math.min(12, jumpHeight / 180 * 12), 2.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1
+    ctx.strokeStyle = dark ? '#6797b8' : '#42b9ca'; ctx.lineWidth = 2
+    const bounce = reduced.value ? 0 : Math.sin(landAge * 24) * Math.exp(-landAge * 10) * 8
     ctx.beginPath()
-    ctx.moveTo(0, GROUND)
-    for (let x = 0; x <= W; x += 5) {
-      let y = GROUND
-      if (landingFrameCount > 0) {
-        const dino_center = DINO_X + DINO_W / 2
-        const dist = Math.abs(x - dino_center)
-        const progress = 1 - (landingFrameCount / 12)
-
-        if (dist < 80) {
-          const mainDepth = Math.sin(Math.PI - progress * Math.PI) * 5 * (1 - dist / 80)
-          const bounceWave = Math.sin(progress * Math.PI * 2) * 1 * (1 - dist / 80)
-          y += mainDepth + bounceWave
-        }
-      }
-      if (x === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
+    for (let x = 0; x <= 800; x += 4) {
+      const y = RUNNER.ground + bounce * Math.max(0, 1 - Math.abs(x - 124) / 80)
+      if (!x) ctx.moveTo(x, y); else ctx.lineTo(x, y)
     }
     ctx.stroke()
-
-    for (const o of obstacles) drawObstacle(o, o.useVideo)
-
-    updateDinoSprite()
-
-    const textColor = nightMode ? '#9e9e9e' : '#535353'
-    ctx.fillStyle = textColor
-    ctx.font = '14px "Press Start 2P", monospace'
-    ctx.textAlign = 'right'
-    const sc = String(Math.floor(rawScore)).padStart(5, '0')
-    const hi = String(hiScore).padStart(5, '0')
-    ctx.fillText(`HI ${hi}  ${sc}`, W - 10, 28)
-
-    if (state === 'idle') {
-      ctx.fillStyle = textColor
-      ctx.font = '13px "Press Start 2P", monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText('PRESS SPACE OR CLICK TO START', W / 2, GROUND - 70)
+    ctx.fillStyle = dark ? '#657080' : '#b3bbc4'
+    for (let i = 0; i < 100; i++) {
+      const x = ((i * 31 + (i % 3) * 7 - g.groundOffset) % 880 + 880) % 880
+      ctx.fillRect(x, RUNNER.ground + 5 + i % 8, 2 + i % 3, 1)
     }
-
-    if (state === 'dead') {
-      ctx.fillStyle = textColor
-      ctx.font = '18px "Press Start 2P", monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText('GAME OVER', W / 2, 60)
-      ctx.font = '13px "Press Start 2P", monospace'
-      ctx.fillText('RETRY', W / 2, 85)
+    if (video.readyState >= 2 && videoAge >= 1 / 30) {
+      videoAge = 0
+      processCtx.drawImage(video, 0, 0, 120, 120)
+      const pixels = processCtx.getImageData(0, 0, 120, 120)
+      for (let i = 0; i < pixels.data.length; i += 4) if (pixels.data[i + 1]! > 180 && pixels.data[i]! < 80 && pixels.data[i + 2]! < 80) pixels.data[i + 3] = 0
+      processCtx.putImageData(pixels, 0, 0); videoReady = true
     }
-
-    if (landingFrameCount > 0) landingFrameCount--
-
-    animId = requestAnimationFrame(loop)
+    for (const obstacle of g.obstacles) {
+      if (videoReady) ctx.drawImage(processed, obstacle.x, RUNNER.ground - obstacle.size, obstacle.size, obstacle.size)
+      else { ctx.fillStyle = '#818994'; ctx.fillRect(obstacle.x + 8, RUNNER.ground - obstacle.size, obstacle.size - 16, obstacle.size) }
+    }
+    ctx.fillStyle = dark ? '#9e9e9e' : '#535353'
+    ctx.font = '14px "Press Start 2P", monospace'; ctx.textAlign = 'right'
+    ctx.fillText(`HI ${String(best.value).padStart(5, '0')}  ${String(score.value).padStart(5, '0')}`, 790, 28)
+    if (g.state !== 'running') {
+      ctx.textAlign = 'center'
+      ctx.font = `${g.state === 'ready' ? 13 : 18}px "Press Start 2P", monospace`
+      ctx.fillText(g.state === 'ready' ? 'PRESS SPACE OR CLICK TO START' : g.state === 'paused' ? 'PAUSED' : 'GAME OVER', 400, g.state === 'ready' ? RUNNER.ground - 70 : 60)
+      if (g.state !== 'ready') {
+        ctx.font = '13px "Press Start 2P", monospace'
+        ctx.fillText(g.state === 'paused' ? 'SPACE OR CLICK TO RESUME' : 'RETRY', 400, 85)
+      }
+    }
+    const src = g.state === 'dead' ? '/game/3.png' : '/game/1.png'
+    if (dino.getAttribute('src') !== src) dino.src = src
+    const visual = pose.advance(g.state === 'paused' ? 0 : dt, g.jumping && g.state !== 'dead', g.velocity, reduced.value)
+    const wide = g.state === 'dead'
+    dino.style.left = `${(124 - (wide ? 42.5 : 24)) / 8}%`; dino.style.top = `${g.y / 3}%`; dino.style.width = `${(wide ? 85 : 48) / 8}%`; dino.style.height = `${85 / 3}%`
+    jumpingSprite.style.left = `${(124 - 85 * .44) / 8}%`; jumpingSprite.style.top = `${g.y / 3}%`; jumpingSprite.style.width = `${85 / 8}%`; jumpingSprite.style.height = `${85 / 3}%`
+    dino.style.opacity = String(1 - visual.blend); jumpingSprite.style.opacity = String(visual.blend)
+    for (const sprite of [dino, jumpingSprite]) sprite.style.transform = `rotate(${visual.angle}deg) scale(${visual.x},${visual.y})`
+    frameId = requestAnimationFrame(paint)
   }
-
-  animId = requestAnimationFrame(loop)
-
+  window.addEventListener('keydown', key); window.addEventListener('blur', blur); document.addEventListener('visibilitychange', visibility)
+  frameId = requestAnimationFrame(paint)
   cleanup = () => {
-    window.removeEventListener('keydown', handleInput)
-    canvas.removeEventListener('click', handleInput)
-    canvas.removeEventListener('touchstart', handleInput)
-    cancelAnimationFrame(animId)
+    cancelAnimationFrame(frameId); window.removeEventListener('keydown', key); window.removeEventListener('blur', blur); document.removeEventListener('visibilitychange', visibility)
+    video.pause(); video.removeAttribute('src'); video.load()
   }
 })
-
-onUnmounted(() => cleanup?.())
+onUnmounted(() => cleanup())
 </script>
 
 <template>
-  <div :class="['page-404', { night: isNight }]">
+  <div :class="['page-404', { night: night }]">
     <div class="content-wrap">
       <div class="game-container">
-        <canvas ref="canvasEl" width="800" height="300" />
-        <img ref="dinoEl" alt="" class="dino-sprite" />
+        <canvas ref="canvasEl" width="800" height="300" tabindex="0" role="button" :data-game-state="state" aria-label="ゲームを開始、またはジャンプ" @pointerdown.prevent="$event.button === 0 && input()" />
+        <img ref="dinoEl" src="/game/1.png" alt="" class="dino-sprite" /><img ref="jumpEl" src="/game/2.png" alt="" class="dino-sprite jump-sprite" />
       </div>
       <div class="err-body">
         <h1>このページは存在しません</h1>
@@ -363,7 +162,7 @@ onUnmounted(() => cleanup?.())
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: #ffffff;
+  background: var(--active-bg);
   transition: background 0.5s ease;
   font-family: 'Noto Sans JP', 'Inter', sans-serif;
   padding: 40px 20px 20px;
@@ -392,17 +191,20 @@ canvas {
   width: 100%;
   height: 100%;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .dino-sprite {
   position: absolute;
   image-rendering: auto;
   pointer-events: none;
+  transform-origin: 50% 100%;
 }
+.jump-sprite { opacity: 0; transform-origin: 44% 100%; }
 
 .err-body {
   margin-top: 4px;
-  color: #535353;
+  color: var(--text-muted-color);
   transition: color 0.5s ease;
 }
 
@@ -414,7 +216,7 @@ h1 {
   font-size: 24px;
   font-weight: 400;
   margin: 0 0 12px;
-  color: #000000;
+  color: var(--active-text);
   transition: color 0.5s ease;
 }
 
@@ -434,7 +236,7 @@ ul {
 }
 
 ul li {
-  color: #535353;
+  color: var(--text-muted-color);
   margin-bottom: 4px;
 }
 
