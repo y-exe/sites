@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ElasticFace from '~/components/ElasticFace.vue'
 const { copy } = useSiteToast()
+const { label: moodLabel } = usePlayState()
 import { useIntro } from '~/composables/useIntro'
 import { useVideoPlayback } from '~/composables/useVideoPlayback'
 
@@ -330,7 +331,7 @@ onUnmounted(() => {
       <p class="text-line-2 intro-sequence tw:mt-0 tw:mb-[0.5rem] tw:text-[clamp(1.8rem,6vw,2.2rem)] tw:font-medium tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `I'm `.split('')" :key="`im-${i}`" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '\u00a0' : char }}</span>
         <span class="char" :style="`--char-delay: ${4*50}ms`">
-          <span class="gradient-text tw:inline-block tw:bg-clip-text tw:text-transparent tw:font-bold! tw:[background-image:var(--gradient)]">Hentai</span>
+          <span class="mood-label" aria-live="polite"><Transition name="mood-change"><span :key="moodLabel" :class="{ 'mood-label-long': moodLabel.length > 10 }" class="gradient-text tw:inline-block tw:bg-clip-text tw:text-transparent tw:font-bold! tw:[background-image:var(--gradient)]" >{{ moodLabel }}</span></Transition></span>
         </span>
       </p>
       

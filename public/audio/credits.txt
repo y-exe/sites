@@ -1,0 +1,6 @@
+Vinyl Scratch #14
+Author: Joseph SARDIN / BigSoundBank
+Source: https://bigsoundbank.com/vinyl-scratch-14-s2871.html
+License: CC0 (public domain)
+https://creativecommons.org/publicdomain/zero/1.0/
+Changes: trimmed, filtered, faded, converted to mono PCM WAV.

@@ -4,7 +4,7 @@ import { stripTypeScriptTypes, createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { test } from 'node:test'
 import { parse, compileScript } from '@vue/compiler-sfc'
-import { createRenderer, h, nextTick } from 'vue'
+import { createRenderer, h, nextTick, ref } from 'vue'
 
 test('carousel gives each decoded image four seconds and pauses for interaction and loading', async t => {
   const source = await readFile(new URL('../components/ProjectsSection.vue', import.meta.url), 'utf8')
@@ -40,7 +40,8 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     createElement: () => ({}), createText: () => ({}), setText() {}, setElementText() {}, patchProp() {}
   })
   let instance
-  const app = renderer.createApp({ render: () => h(Projects, { projects: null, status: 'idle', ref: value => { instance = value } }) })
+  const projectList = ref(null)
+  const app = renderer.createApp({ render: () => h(Projects, { projects: projectList.value, status: 'idle', ref: value => { instance = value } }) })
   app.provide('registerThemeTrigger', () => {})
   app.mount({})
   t.after(() => { app.unmount(); Object.assign(globalThis, originals) })
@@ -105,4 +106,32 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     assert.equal(getCopiedProjectLink(), 'https://yexe.net/?project=different-project#projects')
   })
 
+  await t.test('project browsing follows the filter, preserves return focus and resets the image viewer', async () => {
+    const repos = [{ id: 10, name: 'first', language: 'Vue' }, { id: 11, name: 'middle', language: 'Python' }, { id: 12, name: 'last', language: 'Vue' }]
+    projectList.value = repos
+    state().selectedProject = repos[0]
+    const origin = Object.freeze({})
+    state().projectReturnFocus = origin
+    state().currentProjectImageIndex = 3
+    state().isImageViewerOpen = true
+    await nextTick()
+    assert.equal(state().browsingIndex, 0)
+    assert.equal(state().previousProject, undefined)
+    await state().browseProject(1)
+    assert.equal(state().selectedProject.id, 11)
+    assert.equal(state().currentProjectImageIndex, 0)
+    assert.equal(state().isImageViewerOpen, false)
+    assert.equal(state().projectReturnFocus, origin)
+    state().selectedLanguage = 'Vue'
+    state().selectedProject = repos[0]
+    await nextTick()
+    assert.equal(state().browsingProjects.length, 2)
+    await state().browseProject(1)
+    assert.equal(state().selectedProject.id, 12)
+    assert.equal(state().nextProject, undefined)
+    await state().browseProject(1)
+    assert.equal(state().selectedProject.id, 12)
+    await state().browseProject(-1)
+    assert.equal(state().selectedProject.id, 10)
+  })
 })
