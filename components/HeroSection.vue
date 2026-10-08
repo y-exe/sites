@@ -18,7 +18,7 @@ const discordProfileUrl = `https://discord.com/users/${discordUserId}`
 const discordStatus = ref('unknown')
 const discordStatusLabels: Record<string, string> = { online: 'オンライン', idle: '退席中', dnd: '取り込み中', offline: 'オフライン', unknown: '状況を確認中' }
 const discordStatusLabel = computed(() => `Discord：${discordStatusLabels[discordStatus.value] || discordStatusLabels.unknown}`)
-const customStatus = ref({ emoji: '', text: '', visible: false })
+const customStatus = ref({ emoji: '', emojiUrl: '', text: '', visible: false })
 const avatarUrl = ref('/icon.webp')
 const discordName = ref("(*'▽')")
 const discordUsername = ref("@y_xyz")
@@ -186,8 +186,6 @@ const connectLanyard = () => {
   if (disposed) return
   ws = new WebSocket('wss://api.lanyard.rest/socket')
 
-  if (!ws) return
-
   ws.onmessage = (event) => {
     const { op, d, t } = JSON.parse(event.data)
 
@@ -244,15 +242,13 @@ const updateDiscordData = (data: any) => {
 
   const customAct = (data.activities || []).find((a: any) => a.type === 4)
   if (customAct && (customAct.state || customAct.emoji)) {
-    let emojiHtml = ''
-    if (customAct.emoji) {
-       emojiHtml = customAct.emoji.id 
-        ? `<img src="https://cdn.discordapp.com/emojis/${customAct.emoji.id}.${customAct.emoji.animated ? 'gif' : 'png'}" class="custom-status-emoji">`
-        : `<span>${customAct.emoji.name}</span>`
-    }
-    customStatus.value = { emoji: emojiHtml, text: customAct.state || '', visible: true }
+    const id = customAct.emoji?.id
+    const emojiUrl = typeof id === 'string' && /^\d{17,20}$/.test(id)
+      ? `https://cdn.discordapp.com/emojis/${id}.${customAct.emoji.animated ? 'gif' : 'png'}` : ''
+    const emoji = typeof customAct.emoji?.name === 'string' ? customAct.emoji.name : ''
+    customStatus.value = { emoji, emojiUrl, text: customAct.state || '', visible: true }
   } else {
-    customStatus.value = { emoji: '', text: '', visible: false }
+    customStatus.value = { emoji: '', emojiUrl: '', text: '', visible: false }
   }
 
   const otherAct = (data.activities || []).find((a: any) => a.type !== 4)
@@ -400,7 +396,10 @@ onUnmounted(() => {
               </div>
             </div>
             <div v-else-if="customStatus.visible" class="discord-activity-bubble custom-status-activity-bubble">
-              <span v-if="customStatus.emoji" class="activity-icon custom-status-activity-icon" v-html="customStatus.emoji"></span>
+              <span v-if="customStatus.emojiUrl || customStatus.emoji" class="activity-icon custom-status-activity-icon">
+                <img v-if="customStatus.emojiUrl" :src="customStatus.emojiUrl" :alt="customStatus.emoji" class="custom-status-emoji">
+                <span v-else>{{ customStatus.emoji }}</span>
+              </span>
               <div class="activity-text-info">
                 <div class="activity-name">
                   <i class="fa-solid fa-comment" style="color: #b5bac1; margin-right: 4px;"></i>
