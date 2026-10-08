@@ -13,7 +13,7 @@ export default defineNuxtConfig({
       publicDir: 'dist'
     }
   },
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   experimental: {
     appManifest: false
   },

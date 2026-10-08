@@ -18,7 +18,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test:security": "node --experimental-strip-types --test tests/github-security.test.mjs tests/discord-card.test.mjs"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.12.1",
@@ -35,5 +36,11 @@
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3",
     "wrangler": "^4.147.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.5",
+    "simple-git": "^4.0.2",
+    "@simple-git/argv-parser": "^2.0.1",
+    "node-forge": "^1.4.0"
   }
 }
