@@ -58,21 +58,6 @@ type ProjectDetails = { description: string; images: string[]; shields: ProjectS
 const projectDetails = ref<Record<string | number, ProjectDetails>>({})
 const selectedProject = ref<any | null>(null)
 const projectReturnFocus = ref<HTMLElement | null>(null)
-const projectPager = ref<HTMLElement | null>(null)
-const browsingProjects = computed(() => filteredProjects.value.some(repo => repo.id === selectedProject.value?.id) ? filteredProjects.value : props.projects || [])
-const browsingIndex = computed(() => browsingProjects.value.findIndex(repo => repo.id === selectedProject.value?.id))
-const previousProject = computed(() => browsingProjects.value[browsingIndex.value - 1])
-const nextProject = computed(() => browsingProjects.value[browsingIndex.value + 1])
-const browseProject = async (direction: number) => {
-  const repo = direction < 0 ? previousProject.value : nextProject.value
-  if (!repo) return
-  const focusedPagerButton = projectPager.value?.contains(document.activeElement) ? document.activeElement as HTMLButtonElement : null
-  linkedProjectName = null
-  if (props.requestedProject) emit('close-link')
-  selectedProject.value = repo
-  await nextTick()
-  if (focusedPagerButton?.disabled) projectPager.value?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true })
-}
 useDialogFocus(computed(() => Boolean(selectedProject.value)), '.project-modal-overlay', () => closeProject(), () => projectReturnFocus.value)
 const currentProjectImageIndex = ref(0)
 const imageDirection = ref(1)
@@ -384,7 +369,7 @@ onUnmounted(() => {
     <Teleport to="body">
       <Transition name="project-modal-pop" :duration="{ enter: 700, leave: 180 }">
         <div v-if="selectedProject" class="project-modal-overlay tw:fixed tw:inset-0 tw:z-[3000] tw:grid tw:place-items-center tw:overflow-y-auto tw:p-[clamp(1rem,4vw,3.5rem)] tw:bg-[rgba(9,12,20,0.72)] tw:backdrop-blur-[14px]" :inert="Boolean(expandedImage)" role="dialog" aria-modal="true" :aria-label="`${selectedProject.name} の詳細`" data-lenis-prevent @click.self="closeProject">
-          <button class="project-modal-close project-modal-close-in tw:fixed tw:top-6 tw:right-6 tw:z-[3001] tw:inline-flex tw:items-center tw:justify-center tw:cursor-pointer tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[var(--text-color-dark)] tw:transition-[background-color,color] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)] tw:max-[760px]:top-3 tw:max-[760px]:right-3" type="button" aria-label="プロジェクト詳細を閉じる" data-tooltip="閉じる（Esc）" @click="closeProject"><SiteIcon name="close" :size="24"/></button>
+          <button class="project-modal-close project-modal-close-in fullscreen-back-button tw:fixed tw:top-6 tw:right-6 tw:z-[3001] tw:inline-flex tw:items-center tw:justify-center tw:cursor-pointer tw:rounded-lg tw:border-2 tw:border-[var(--card-border-color-dark)] tw:bg-[var(--pill-bg-color-dark)] tw:p-0 tw:text-[var(--text-color-dark)] tw:transition-[background-color,color] tw:duration-200 tw:hover:bg-[var(--text-color-dark)] tw:hover:text-[var(--bg-color-dark)] tw:max-[760px]:top-3 tw:max-[760px]:right-3" type="button" aria-label="プロジェクト詳細を閉じる" data-tooltip="閉じる（Esc）" @click="closeProject"><SiteIcon name="close" :size="24" class="modal-desktop-close-icon"/><SiteIcon name="back" :size="24" class="modal-mobile-back-icon"/></button>
           <article :class="{ 'has-no-images': !selectedProjectImages.length }" class="project-modal project-modal-content-in tw:relative tw:w-[min(72rem,100%)] tw:max-h-[min(94vh,66rem)] tw:overflow-hidden tw:rounded-[1.25rem] tw:bg-[var(--card-bg-color)] tw:text-[var(--active-text)] tw:shadow-[0_1.5rem_5rem_rgba(0,0,0,0.42)] tw:[transform-origin:center]" data-lenis-prevent>
             <div class="project-modal-hero tw:relative tw:min-h-[clamp(8rem,20vh,12rem)] tw:overflow-hidden tw:bg-[url('/notfrond.png')] tw:bg-center tw:bg-cover">
               <div class="project-modal-parallax tw:absolute tw:-inset-4 tw:will-change-transform tw:transition-transform tw:duration-300 tw:ease-out" :style="projectHeroParallaxStyle">
@@ -423,11 +408,6 @@ onUnmounted(() => {
                 <dl class="project-facts project-modal-sidebar-in"><template v-if="selectedProject.language"><dt>主な言語</dt><dd><img v-if="languageIcons[selectedProject.language]" class="project-language-icon" :src="`/icons/languages/${languageIcons[selectedProject.language]}.svg`" alt="" />{{ selectedProject.language }}</dd></template><template v-if="selectedProject.license"><dt>ライセンス</dt><dd>{{ selectedProject.license.spdx_id || selectedProject.license.name }}</dd></template><dt>GitHub</dt><dd><SiteIcon name="star" :size="15"/>{{ selectedProject.stargazers_count || 0 }}<SiteIcon name="fork" :size="15"/>{{ selectedProject.forks_count || 0 }}</dd></dl>
               </aside>
             </div>
-            <nav v-if="browsingProjects.length > 1 && browsingIndex >= 0" ref="projectPager" class="project-pager" aria-label="プロジェクトを切り替える">
-              <button type="button" class="project-pager-button" :disabled="!previousProject" :aria-label="previousProject ? `前のプロジェクト：${previousProject.name}` : '前のプロジェクトはありません'" @click="browseProject(-1)"><SiteIcon name="chevron" class="chevron-prev" :size="20"/><span><span class="project-pager-label">前のプロジェクト</span><span class="project-pager-name">{{ previousProject?.name || '—' }}</span></span></button>
-              <span class="project-pager-count" role="status" aria-live="polite" aria-atomic="true"><span class="tw:sr-only">{{ selectedProject.name }}、</span>{{ browsingIndex + 1 }} / {{ browsingProjects.length }}</span>
-              <button type="button" class="project-pager-button project-pager-next" :disabled="!nextProject" :aria-label="nextProject ? `次のプロジェクト：${nextProject.name}` : '次のプロジェクトはありません'" @click="browseProject(1)"><span><span class="project-pager-label">次のプロジェクト</span><span class="project-pager-name">{{ nextProject?.name || '—' }}</span></span><SiteIcon name="chevron" class="chevron-next" :size="20"/></button>
-            </nav>
           </article>
         </div>
       </Transition>

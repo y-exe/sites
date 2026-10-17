@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AnimatedIconShape from '~/components/AnimatedIconShape.vue'
-defineProps<{ name: 'image' | 'link' | 'alert' | 'search' | 'zoom-in' | 'zoom-out' | 'eye' | 'arrow' | 'up' | 'download' | 'chevron' | 'close' | 'copy' | 'check' | 'external' | 'expand' | 'sun' | 'moon' | 'monitor' | 'clock' | 'user' | 'pin' | 'star' | 'fork' | 'code' | 'play' | 'pause' | 'replay' | 'mail' | 'more'; size?: number; expanded?: boolean; checked?: boolean }>()
+defineProps<{ name: 'image' | 'link' | 'alert' | 'search' | 'zoom-in' | 'zoom-out' | 'eye' | 'arrow' | 'up' | 'download' | 'chevron' | 'back' | 'close' | 'copy' | 'check' | 'external' | 'expand' | 'sun' | 'moon' | 'monitor' | 'clock' | 'user' | 'pin' | 'star' | 'fork' | 'code' | 'play' | 'pause' | 'replay' | 'mail' | 'more'; size?: number; expanded?: boolean; checked?: boolean }>()
 </script>
 <template>
   <svg class="site-icon" :class="`icon-${name}`" :width="size || 20" :height="size || 20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -13,6 +13,7 @@ defineProps<{ name: 'image' | 'link' | 'alert' | 'search' | 'zoom-in' | 'zoom-ou
     <g v-else-if="name === 'up'"><path d="M12 20V4"/><path d="m5 11 7-7 7 7"/></g>
     <g v-else-if="name === 'download'"><g class="download-arrow"><path d="M12 3v12m-5-5 5 5 5-5"/></g><path d="M4 16v4h16v-4"/></g>
     <AnimatedIconShape v-else-if="name === 'chevron'" kind="chevron" :active="!!expanded"/>
+    <path v-else-if="name === 'back'" d="m15 5-7 7 7 7"/>
     <g v-else-if="name === 'close'"><path d="m6 6 12 12M18 6 6 18"/></g>
     <AnimatedIconShape v-else-if="name === 'copy' || name === 'check'" kind="copy" :active="name === 'check'"/>
     <AnimatedIconShape v-else-if="name === 'link'" kind="link" :active="!!checked"/>
