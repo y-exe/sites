@@ -29,12 +29,13 @@ export default defineNuxtPlugin(() => {
   const over = (event: PointerEvent | FocusEvent) => {
     const el = find(event)
     if (!el || el.contains(event.relatedTarget as Node) || (event instanceof PointerEvent && event.pointerType !== 'mouse')) return
+    if (event instanceof PointerEvent ? !matchMedia('(hover: hover) and (pointer: fine)').matches : !el.matches(':focus-visible')) return
     const tag = el.matches('.tech-pills > span, .info-pills > span')
     motion(el).to({ hover: 1, lift: el.matches('#top .contact-item') ? -2 : 0, scale: tag ? 1.08 : 1 })
   }
   const out = (event: PointerEvent | FocusEvent) => {
     const el = find(event)
-    if (!el || el.contains(event.relatedTarget as Node)) return
+    if (!el || !motions.has(el) || el.contains(event.relatedTarget as Node)) return
     motion(el).to({ hover: 0, lift: 0, scale: 1 })
   }
   document.addEventListener('pointerover', over)

@@ -7,7 +7,7 @@ export default defineNuxtPlugin(() => {
     if (event instanceof PointerEvent && (event.button !== 0 || !event.isPrimary)) return
     if (event instanceof KeyboardEvent && (event.repeat || !['Enter', ' '].includes(event.key))) return
     const host = (event.target as Element)?.closest<HTMLElement>(selector)
-    if (!host || host.closest('.nuxt-devtools-anchor, [inert]') || host.matches(':disabled, [aria-disabled="true"]')) return
+    if (!host || host.closest('.nuxt-devtools-anchor, [inert], [data-no-ripple]') || host.matches(':disabled, [aria-disabled="true"]')) return
     if (event instanceof KeyboardEvent && event.key === ' ' && host.matches('a[href]:not([role="button"])')) return
     const rect = host.getBoundingClientRect()
     if (!rect.width || !rect.height) return
