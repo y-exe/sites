@@ -118,32 +118,29 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     assert.equal(getCopiedProjectLink(), 'https://yexe.net/?project=different-project#projects')
   })
 
-  await t.test('project browsing follows the filter, preserves return focus and resets the image viewer', async () => {
+  await t.test('tag filtering and reopening project details reset the gallery and preserve return focus', async () => {
     const repos = [{ id: 10, name: 'first', topics: ['web'] }, { id: 11, name: 'middle', topics: ['discord'] }, { id: 12, name: 'last', topics: ['web'] }]
     projectList.value = repos
     state().selectedProject = repos[0]
     const origin = Object.freeze({})
     state().projectReturnFocus = origin
+    await nextTick()
     state().currentProjectImageIndex = 3
     state().isImageViewerOpen = true
     await nextTick()
-    assert.equal(state().browsingIndex, 0)
-    assert.equal(state().previousProject, undefined)
-    await state().browseProject(1)
+    state().closeProject()
+    await nextTick()
+    state().selectedProject = repos[1]
+    await nextTick()
     assert.equal(state().selectedProject.id, 11)
     assert.equal(state().currentProjectImageIndex, 0)
     assert.equal(state().isImageViewerOpen, false)
     assert.equal(state().projectReturnFocus, origin)
     state().selectedTag = 'web'
-    state().selectedProject = repos[0]
     await nextTick()
-    assert.equal(state().browsingProjects.length, 2)
-    await state().browseProject(1)
-    assert.equal(state().selectedProject.id, 12)
-    assert.equal(state().nextProject, undefined)
-    await state().browseProject(1)
-    assert.equal(state().selectedProject.id, 12)
-    await state().browseProject(-1)
-    assert.equal(state().selectedProject.id, 10)
+    assert.deepEqual(state().filteredProjects.map(repo => repo.id), [10, 12])
+    state().closeProject()
+    await nextTick()
+    assert.equal(state().selectedProject, null)
   })
 })
