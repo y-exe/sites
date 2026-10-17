@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { languageIcons } from '~/utils/language-icons'
+import { getReadmeShields, type ProjectShield } from '~/utils/project-shields'
+import { getProjectTags, getProjectTagCounts } from '~/utils/project-tags'
 import ProjectGalleryImage from './ProjectGalleryImage.vue'
+import ProjectDescription from './ProjectDescription.vue'
+import ProjectTagFilter from './ProjectTagFilter.vue'
 import { useGallerySwipe } from '~/composables/useGallerySwipe'
 import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
 
@@ -10,12 +14,12 @@ const { copy } = useSiteToast()
 const projectLinkCopied = ref(false)
 let projectLinkTimer: ReturnType<typeof setTimeout> | undefined
 let linkedProjectName: string | null = null
-const selectedLanguage = ref('all')
+const selectedTag = ref('all')
 const projectGrid = ref<HTMLElement | null>(null)
 const projectGridHeight = ref<string>()
 const isFiltering = ref(false)
 let filterMotionTimer: ReturnType<typeof setTimeout> | undefined
-watch(selectedLanguage, () => {
+watch(selectedTag, () => {
   isFiltering.value = true
   clearTimeout(filterMotionTimer)
   filterMotionTimer = setTimeout(() => { isFiltering.value = false }, 750)
@@ -37,24 +41,20 @@ const releaseProjectResult = (element: Element) => {
   Object.assign(el.style, { width: '', height: '', left: '', top: '' })
   el.inert = false
 }
-const projectLanguages = computed(() => {
-  const counts = new Map<string, number>()
-  props.projects?.forEach(repo => { if (repo.language) counts.set(repo.language, (counts.get(repo.language) || 0) + 1) })
-  return Array.from(counts, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-})
+const projectTagFilters = computed(() => getProjectTagCounts(props.projects || []))
 const filteredProjects = computed(() => {
   return (props.projects || []).filter(repo =>
-    selectedLanguage.value === 'all' || repo.language === selectedLanguage.value
+    selectedTag.value === 'all' || getProjectTags(repo).includes(selectedTag.value)
   )
 })
-watch(projectLanguages, languages => {
-  if (selectedLanguage.value !== 'all' && !languages.some(language => language.name === selectedLanguage.value)) selectedLanguage.value = 'all'
+watch(projectTagFilters, tags => {
+  if (selectedTag.value !== 'all' && !tags.some(tag => tag.name === selectedTag.value)) selectedTag.value = 'all'
 })
-const resetProjectFilters = () => { selectedLanguage.value = 'all' }
+const resetProjectFilters = () => { selectedTag.value = 'all' }
 
 const themeTriggerRef = ref<HTMLElement | null>(null)
 const registerThemeTrigger = inject<(el: HTMLElement) => void>('registerThemeTrigger')
-type ProjectDetails = { description: string; images: string[]; shields: string[]; commitTrend: string }
+type ProjectDetails = { description: string; images: string[]; shields: ProjectShield[]; commitTrend: string }
 const projectDetails = ref<Record<string | number, ProjectDetails>>({})
 const selectedProject = ref<any | null>(null)
 const projectReturnFocus = ref<HTMLElement | null>(null)
@@ -172,10 +172,13 @@ const projectImageCounts: Record<string, number> = {
   'ymkw-mad': 1
 }
 
-const projectImages = (repo: any) => Array.from(
-  { length: projectImageCounts[repo.name] || 0 },
-  (_, index) => `${projectAssetBase(repo)}/${index + 1}.png`
-)
+const projectImages = (repo: any) => {
+  const count = projectImageCounts[repo.name] || 0
+  if (count) return Array.from({ length: count }, (_, index) => `${projectAssetBase(repo)}/${index + 1}.png`)
+  const owner = encodeURIComponent(repo.owner?.login || 'y-exe')
+  const version = encodeURIComponent(repo.pushed_at || repo.updated_at || '1')
+  return [`https://opengraph.githubassets.com/${version}/${owner}/${encodeURIComponent(repo.name)}`]
+}
 
 const projectThumbnail = (repo: any) => projectImages(repo)[0] || '/notfrond.png'
 const fallbackCommitTrend = ''
@@ -184,14 +187,6 @@ const decodeReadme = (content: string) => {
   const bytes = Uint8Array.from(atob(content.replace(/\s/g, '')), char => char.charCodeAt(0))
   return new TextDecoder().decode(bytes)
 }
-
-const getReadmeShields = (readme: string, repo: any) => [...readme.matchAll(/<img[^>]+src=["']([^"']+)["']/gi), ...readme.matchAll(/!\[[^\]]*\]\(([^\s)]+)/g)]
-  .map(match => match[1])
-  .filter(url => /img\.shields\.io/i.test(url))
-  .slice(0, 4)
-  .map((source) => /^https?:\/\//i.test(source)
-    ? source.replace('github.com/', 'raw.githubusercontent.com/').replace('/blob/', '/')
-    : new URL(source.replace(/^\//, ''), `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${repo.default_branch}/`).href)
 
 const selectedProjectImages = computed(() => selectedProject.value ? projectDetails.value[selectedProject.value.id]?.images || projectImages(selectedProject.value) : [])
 const currentProjectImage = computed(() => selectedProjectImages.value[currentProjectImageIndex.value] || '/notfrond.png')
@@ -358,10 +353,7 @@ onUnmounted(() => {
     </h2>
     <div class="projects-source-wrap" v-reveal><p class="projects-source"><img class="github-lockup" src="/github-lockup.png" alt="GitHub" /><span>より</span></p></div>
     <div v-if="projects?.length" class="project-toolbar" v-reveal>
-      <SelectionTrack class="project-filters" :active="selectedLanguage" role="group" aria-label="主な言語で絞り込む">
-        <button type="button" data-selection="all" :aria-pressed="selectedLanguage === 'all'" @click="selectedLanguage = 'all'">すべて<span class="filter-count">{{ projects.length }}</span></button>
-        <button v-for="language in projectLanguages" :key="language.name" type="button" :data-selection="language.name" :aria-pressed="selectedLanguage === language.name" @click="selectedLanguage = language.name"><img v-if="languageIcons[language.name]" :src="`/icons/languages/${languageIcons[language.name]}.svg`" alt="" />{{ language.name }}<span class="filter-count">{{ language.count }}</span></button>
-      </SelectionTrack>
+      <ProjectTagFilter :active="selectedTag" :tags="projectTagFilters" :total="projects.length" @select="selectedTag = $event" />
     </div>
     <div v-if="status === 'error'" class="project-request-error" role="status"><SiteIcon name="alert" :size="20"/><p>{{ projects?.length ? '一覧を更新できませんでした。前回取得した内容を表示しています。' : 'プロジェクトを読み込めませんでした。' }}</p><button type="button" class="filter-reset" @click="emit('retry')"><SiteIcon name="replay" :size="16"/>再読み込み</button></div>
     <div v-if="status !== 'error' || projects?.length" class="project-results-stage" :class="{ 'is-filtering': isFiltering }" :style="{ height: projectGridHeight }">
@@ -403,12 +395,17 @@ onUnmounted(() => {
               <div class="project-modal-title project-modal-title-in tw:absolute tw:right-[clamp(1.25rem,4vw,3rem)] tw:bottom-[clamp(1.25rem,4vw,2.5rem)] tw:left-[clamp(1.25rem,4vw,3rem)] tw:text-white">
                 <p v-if="selectedProject.updated_at"><SiteIcon name="clock" :size="13"/> 最終更新 {{ relativeUpdate(selectedProject.updated_at) }}</p>
                 <div class="project-modal-heading"><h2>{{ selectedProject.name }}</h2><button class="icon-button project-share" type="button" :aria-label="projectLinkCopied ? 'コピーしました' : 'プロジェクトのURLをコピー'" :data-tooltip="projectLinkCopied ? 'コピーしました' : 'プロジェクトのURLをコピー'" @click="copyProjectLink"><SiteIcon name="link" :checked="projectLinkCopied" :size="19"/></button></div>
+                <div class="project-detail-tags" aria-label="タグ"><button v-for="tag in getProjectTags(selectedProject)" :key="tag" type="button" :aria-label="`#${tag} で絞り込む`" @click="selectedTag = tag; closeProject()">#{{ tag }}</button></div>
               </div>
             </div>
             <div :key="selectedProject.id" class="project-modal-body tw:grid tw:max-h-[min(66vh,40rem)] tw:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] tw:overflow-hidden tw:bg-[var(--card-bg-color)]">
               <main class="project-modal-readme tw:min-h-0 tw:overflow-y-auto tw:px-[clamp(1.35rem,5vw,3rem)] tw:py-[clamp(1.35rem,4vw,2.4rem)]">
-                <div v-if="projectDetails[selectedProject.id]?.shields.length" class="project-modal-badges project-modal-description-in" aria-label="プロジェクトのバッジ"><img v-for="shield in projectDetails[selectedProject.id].shields" :key="shield" :src="shield" alt="" /></div>
-                <p v-if="projectDetails[selectedProject.id]?.description" class="project-modal-description project-modal-description-in tw:mt-0 tw:mb-5 tw:text-[0.96rem] tw:leading-[1.7] tw:text-[var(--text-muted-color)] tw:whitespace-pre-wrap">{{ projectDetails[selectedProject.id].description }}</p>
+                <div v-if="projectDetails[selectedProject.id]?.shields.length" class="project-modal-badges project-modal-description-in" aria-label="プロジェクトのバッジ">
+                  <component :is="shield.href ? 'a' : 'span'" v-for="shield in projectDetails[selectedProject.id].shields" :key="shield.src" class="tw:inline-flex tw:max-w-full" :href="shield.href" :target="shield.href ? '_blank' : undefined" :rel="shield.href ? 'noopener noreferrer' : undefined" :aria-label="shield.href ? `${shield.alt}（新しいタブで開く）` : undefined">
+                    <img :src="shield.src" :alt="shield.alt" />
+                  </component>
+                </div>
+                <ProjectDescription v-if="projectDetails[selectedProject.id]?.description" :source="projectDetails[selectedProject.id].description" class="project-modal-description project-modal-description-in tw:mt-0 tw:mb-5 tw:text-[0.96rem] tw:leading-[1.7] tw:text-[var(--text-muted-color)]" />
                 <div v-if="selectedProjectImages.length" class="gallery-interaction" @pointerenter="interactWithCarousel(true)" @pointerleave="interactWithCarousel(false)" @focusin="focusCarousel" @focusout="focusCarousel" @keydown="galleryKeyboard"><div class="project-gallery project-gallery-in tw:relative tw:grid tw:h-[min(52vh,26rem)] tw:place-items-center tw:overflow-hidden tw:rounded-[0.8rem] tw:bg-[var(--pill-bg-color)] tw:max-sm:h-auto tw:max-sm:aspect-video" aria-label="プロジェクト画像" @pointerdown="gallerySwipe.start" @pointermove="gallerySwipe.move" @pointerup="gallerySwipe.end" @pointercancel="gallerySwipe.cancel" @lostpointercapture="gallerySwipe.cancel" @click.capture="gallerySwipe.click" @dragstart.prevent :style="{ '--gallery-direction': imageDirection }">
                   <ProjectGalleryImage class="gallery-swipe-image" :class="{ 'can-swipe': selectedProjectImages.length > 1, 'is-dragging': galleryDragging }" :style="gallerySwipeStyle" :src="currentProjectImage" :alt="`${selectedProject.name} の画像 ${currentProjectImageIndex + 1}`" @busy="galleryImageBusy = $event" />
                   <button ref="galleryExpand" type="button" class="icon-button gallery-expand" :disabled="galleryImageBusy" aria-label="画像を拡大" data-tooltip="画像を拡大" @click="isImageViewerOpen = true"><SiteIcon name="expand" :size="18"/></button><span v-if="selectedProjectImages.length > 1 && carouselPlaying" :key="`${currentProjectImageIndex}-${carouselCycle}`" class="project-gallery-progress" :class="{ 'is-paused': carouselInteracting || galleryImageBusy }" aria-hidden="true"></span>
@@ -416,7 +413,7 @@ onUnmounted(() => {
                   <button v-if="selectedProjectImages.length > 1" class="project-gallery-arrow project-gallery-arrow-next" type="button" aria-label="次の画像" data-tooltip="次の画像" @click="changeProjectImage(1)"><SiteIcon name="chevron" :size="20" class="chevron-next"/></button>
                   <div v-if="selectedProjectImages.length > 1" class="gallery-controls"><span class="gallery-count" :aria-live="carouselPlaying && !carouselInteracting ? 'off' : 'polite'">{{ currentProjectImageIndex + 1 }} / {{ selectedProjectImages.length }}</span><button type="button" class="icon-button gallery-play" :aria-label="carouselPlaying ? '自動再生を停止' : '自動再生を開始'" :data-tooltip="carouselPlaying ? '自動再生を停止' : '自動再生を開始'" :aria-pressed="carouselPlaying" @click="toggleCarousel"><SiteIcon :name="carouselPlaying ? 'pause' : 'play'" :size="16"/></button></div>
                 </div>
-                <div v-if="selectedProjectImages.length > 1" ref="galleryThumbnails" class="gallery-thumbnails" role="group" aria-label="画像を選ぶ"><button v-for="(image, index) in selectedProjectImages" :key="`${image}-${index}`" type="button" :aria-label="`${index + 1} 枚目を表示`" :aria-pressed="currentProjectImageIndex === index" @click="selectProjectImage(index)"><img :src="image" alt="" loading="lazy" /><span>{{ index + 1 }}</span></button></div></div>
+                <div v-if="selectedProjectImages.length > 1" ref="galleryThumbnails" class="gallery-thumbnails" role="group" aria-label="画像を選ぶ" data-no-ripple><button v-for="(image, index) in selectedProjectImages" :key="`${image}-${index}`" type="button" :aria-label="`${index + 1} 枚目を表示`" :aria-pressed="currentProjectImageIndex === index" @click="selectProjectImage(index)"><img :src="image" alt="" loading="lazy" /><span class="gallery-thumbnail-index">{{ index + 1 }}</span></button></div></div>
                 <div v-else class="project-gallery-empty project-gallery-in"><SiteIcon name="image" :size="22"/><span>画像はありません</span></div>
               </main>
               <aside class="project-modal-sidebar project-modal-sidebar-in tw:min-h-0 tw:overflow-y-auto tw:bg-[color-mix(in_srgb,var(--pill-bg-color)_48%,transparent)] tw:p-[clamp(1.35rem,3vw,2rem)]" aria-label="プロジェクト情報">

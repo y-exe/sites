@@ -9,7 +9,7 @@ test('ripples follow actual keyboard activation and cancel when touch becomes sc
   const animations = []
   const element = (tag = 'span') => ({
     tagName: tag.toUpperCase(), children: [], style: {}, classList: { add() {} }, disabled: false,
-    closest(selector) { return selector.startsWith('.nuxt-devtools') ? null : this },
+    closest(selector) { return selector.startsWith('.nuxt-devtools') ? (this.noRipple ? this : null) : this },
     matches(selector) { return selector.startsWith('a[href]') ? this.tagName === 'A' : this.disabled },
     getBoundingClientRect() { return { left: 10, top: 10, width: 60, height: 36 } },
     setAttribute() {},
@@ -53,5 +53,11 @@ test('ripples follow actual keyboard activation and cancel when touch becomes sc
   listeners.get('pointercancel')(new PointerEvent({ pointerId: 8 }))
   assert.equal(button.children.length, 1)
   listeners.get('pointercancel')(new PointerEvent({ pointerId: 7 }))
+  assert.equal(button.children.length, 0)
+  button.noRipple = true
+  const beforeThumbnail = animations.length
+  listeners.get('pointerdown')(new PointerEvent({ target: button }))
+  listeners.get('pointerdown')(new PointerEvent({ target: button }))
+  assert.equal(animations.length, beforeThumbnail)
   assert.equal(button.children.length, 0)
 })

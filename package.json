@@ -14,6 +14,10 @@
     "test:toast": "node --experimental-strip-types --test tests/toast.test.mjs",
     "test:pgp": "node --test tests/pgp-key.test.mjs",
     "test:search": "node --experimental-strip-types --test tests/project-search.test.ts tests/project-results.test.ts",
+    "test:badges": "node --experimental-strip-types --test tests/project-shields.test.ts",
+    "test:description": "node --experimental-strip-types --test tests/project-description.test.ts",
+    "test:tags": "node --experimental-strip-types --test tests/project-tags.test.ts",
+    "test:hover": "node --experimental-strip-types --test tests/hover.test.mjs",
     "build": "nuxt generate",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -26,6 +30,8 @@
     "@vueuse/core": "^14.1.0",
     "@vueuse/nuxt": "^14.1.0",
     "lenis": "^1.3.16",
+    "markdown-it": "^15.0.3",
+    "markdown-it-task-lists": "^2.1.1",
     "nuxt": "^3.20.1",
     "vue": "^3.5.25",
     "vue-router": "^4.6.3"
@@ -34,6 +40,7 @@
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/markdown-it": "^14.2.0",
     "tailwindcss": "^4.3.3",
     "wrangler": "^4.147.0"
   },

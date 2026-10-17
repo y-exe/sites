@@ -1,0 +1,2 @@
+いろんなSNSをまとめて通知できるようにする自分用Self-Bot。
+セルボなのでそれ以前だが　[![技術者倫理 厳守してない](https://img.shields.io/badge/技術者倫理-厳守してない-0a0a0a?style=for-the-badge&labelColor=ffffff)](https://技術者倫理.com)

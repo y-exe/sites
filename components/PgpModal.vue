@@ -48,7 +48,7 @@ const otherContacts = [
     label: 'Annict',
     logoUrl: 'https://www.google.com/s2/favicons?domain=annict.com&sz=64',
     value: 'yexe',
-    href: 'https://annict.com/@yexe'
+    href: 'https://annict.com/@yexe/watched'
   }
 ]
 

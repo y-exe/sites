@@ -26,7 +26,11 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     .replace("from '~/utils/language-icons'", `from '${new URL('../utils/language-icons.ts', import.meta.url).href}'`)
     .replace("from '~/composables/useGallerySwipe'", `from '${new URL('../composables/useGallerySwipe.ts', import.meta.url).href}'`)
     .replace("from '~/utils/project-search'", `from '${new URL('../utils/project-search.ts', import.meta.url).href}'`)
+    .replace("from '~/utils/project-shields'", `from '${new URL('../utils/project-shields.ts', import.meta.url).href}'`)
+    .replace("from '~/utils/project-tags'", `from '${new URL('../utils/project-tags.ts', import.meta.url).href}'`)
     .replace("import ProjectGalleryImage from './ProjectGalleryImage.vue'", 'const ProjectGalleryImage = {}')
+    .replace("import ProjectDescription from './ProjectDescription.vue'", 'const ProjectDescription = {}')
+    .replace("import ProjectTagFilter from './ProjectTagFilter.vue'", 'const ProjectTagFilter = {}')
   const { default: Projects, getCopiedProjectLink } = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
   Projects.render = () => null
   const originals = { document: globalThis.document, window: globalThis.window, matchMedia: globalThis.matchMedia }
@@ -46,6 +50,14 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
   app.mount({})
   t.after(() => { app.unmount(); Object.assign(globalThis, originals) })
   const state = () => instance.$.setupState
+  await t.test('projects without attachments use their GitHub social preview, while attachments stay first', () => {
+    const repo = { name: 'AniCome', owner: { login: 'y-exe' }, pushed_at: '2026-10-18T00:00:00Z' }
+    const preview = 'https://opengraph.githubassets.com/2026-10-18T00%3A00%3A00Z/y-exe/AniCome'
+    assert.deepEqual(state().projectImages(repo), [preview])
+    assert.equal(state().projectThumbnail(repo), preview)
+    assert.equal(state().projectImages({ name: 'image-to-url' })[0], 'https://opengraph.githubassets.com/1/y-exe/image-to-url')
+    assert.deepEqual(state().projectImages({ name: 'sites' }), [1, 2, 3, 4].map(index => `/project/sites/${index}.png`))
+  })
   const advance = async ms => { t.mock.timers.tick(ms); await nextTick() }
   state().projectDetails = { 1: { description: '', shields: [], commitTrend: '', images: ['/one.png', '/two.png'] } }
   state().selectedProject = { id: 1, name: 'sites' }
@@ -107,7 +119,7 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
   })
 
   await t.test('project browsing follows the filter, preserves return focus and resets the image viewer', async () => {
-    const repos = [{ id: 10, name: 'first', language: 'Vue' }, { id: 11, name: 'middle', language: 'Python' }, { id: 12, name: 'last', language: 'Vue' }]
+    const repos = [{ id: 10, name: 'first', topics: ['web'] }, { id: 11, name: 'middle', topics: ['discord'] }, { id: 12, name: 'last', topics: ['web'] }]
     projectList.value = repos
     state().selectedProject = repos[0]
     const origin = Object.freeze({})
@@ -122,7 +134,7 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     assert.equal(state().currentProjectImageIndex, 0)
     assert.equal(state().isImageViewerOpen, false)
     assert.equal(state().projectReturnFocus, origin)
-    state().selectedLanguage = 'Vue'
+    state().selectedTag = 'web'
     state().selectedProject = repos[0]
     await nextTick()
     assert.equal(state().browsingProjects.length, 2)

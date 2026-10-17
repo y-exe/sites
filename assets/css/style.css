@@ -235,7 +235,14 @@ main {
 .history-popover { position: relative; display: inline-flex; vertical-align: middle; margin-left: 0.35rem; z-index: 20; opacity: 0; transition: opacity 0.25s ease 0.75s; }
 .text-line-3.is-visible .history-popover { opacity: 1; }
 .history-trigger { width: 1.7rem; height: 1.7rem; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; color: var(--text-muted-color); background: transparent; font-size: 0.72rem; -webkit-tap-highlight-color: transparent; transition: transform 0.36s cubic-bezier(0.22, 1.45, 0.36, 1), background-color 0.2s ease, color 0.2s ease; }
-.history-trigger:hover, .history-trigger:focus-visible { color: var(--active-text); background-color: var(--pill-bg-color); outline: none; }
+ .history-trigger:focus-visible { color: var(--active-text); background-color: var(--pill-bg-color); outline: none; }
+@media (hover: hover) and (pointer: fine) {
+    .history-trigger:hover {
+        color: var(--active-text);
+        background-color: var(--pill-bg-color);
+        outline: none;
+    }
+}
 .history-trigger[aria-expanded="true"] { transform: rotate(180deg); }
 .history-menu { position: absolute; top: calc(100% + 0.6rem); left: 50%; z-index: 10; width: max-content; max-width: min(29rem, calc(100vw - 2rem)); padding: 0.8rem 1rem; border: 1px solid var(--card-border-color); border-radius: 12px; background: var(--card-bg-color); box-shadow: 0 14px 34px var(--shadow-hover-color); backdrop-filter: blur(8px); color: var(--active-text); font-size: 0.85rem; line-height: 1.5; text-align: left; transform: translateX(-50%); transform-origin: top center; }
 .history-menu-label { display: block; margin-bottom: 0.25rem; color: var(--text-muted-color); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; }
@@ -282,10 +289,12 @@ main {
     border: 1px solid var(--card-border-color);
 }
 
-.contact-item:not(.discord):hover {
-    background-color: var(--pill-bg-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px var(--shadow-hover-color);
+@media (hover: hover) and (pointer: fine) {
+    .contact-item:not(.discord):hover {
+        background-color: var(--pill-bg-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px var(--shadow-hover-color);
+    }
 }
 
 .contact-info-left {
@@ -360,9 +369,11 @@ main {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.contact-item.discord:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px var(--shadow-hover-color);
+@media (hover: hover) and (pointer: fine) {
+    .contact-item.discord:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px var(--shadow-hover-color);
+    }
 }
 
 .discord-banner {
@@ -403,13 +414,13 @@ main {
     transition: border-color 0.2s;
 }
 
-.contact-item.discord:hover .discord-pfp-wrapper img {
-    border-color: #4a4a55;
+@media (hover: hover) and (pointer: fine) {
+    .contact-item.discord:hover .discord-pfp-wrapper img {
+        border-color: #4a4a55;
+    }
 }
 
-.discord-pfp-wrapper .discord-avatar-decoration,
-.contact-item.discord:not(:hover) .discord-pfp-wrapper .discord-avatar-decoration,
-.contact-item.discord:hover .discord-pfp-wrapper .discord-avatar-decoration {
+.contact-item.discord .discord-pfp-wrapper .discord-avatar-decoration {
     left: 50%;
     top: 50%;
     right: auto;
@@ -532,9 +543,11 @@ main {
     z-index: -1;
 }
 
-.hover-highlight:hover::after {
-    transform-origin: left;
-    transform: scaleX(1);
+@media (hover: hover) and (pointer: fine) {
+    .hover-highlight:hover::after {
+        transform-origin: left;
+        transform: scaleX(1);
+    }
 }
 
 .section-title {
@@ -583,8 +596,10 @@ main {
     outline-offset: 4px;
 }
 
-.project-card:hover {
-    transform: none;
+@media (hover: hover) and (pointer: fine) {
+    .project-card:hover {
+        transform: none;
+    }
 }
 
 .project-image {
@@ -658,9 +673,11 @@ main {
     transition: transform 0.58s cubic-bezier(0.16, 1, 0.3, 1), filter 0.42s ease;
 }
 
-.project-card:hover .project-image-media {
-    filter: brightness(0.7);
-    transform: scale(1.08);
+@media (hover: hover) and (pointer: fine) {
+    .project-card:hover .project-image-media {
+        filter: brightness(0.7);
+        transform: scale(1.08);
+    }
 }
 
 .project-heading {
@@ -747,9 +764,11 @@ main {
     transition: opacity 0.22s ease, transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.project-card:hover .project-view-label {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+@media (hover: hover) and (pointer: fine) {
+    .project-card:hover .project-view-label {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 body.project-modal-open {
@@ -835,13 +854,24 @@ body.project-modal-open {
     transition: opacity 0.2s ease, transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
 }
 
-.project-gallery:hover .project-gallery-arrow,
+
 .project-gallery:focus-within .project-gallery-arrow {
     opacity: 1;
     transform: translateY(-50%) scale(1);
 }
 
-.project-gallery-arrow:hover { background: rgba(15, 23, 42, 0.86); }
+@media (hover: hover) and (pointer: fine) {
+    .project-gallery:hover .project-gallery-arrow {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .project-gallery-arrow:hover {
+        background: rgba(15, 23, 42, 0.86);
+    }
+}
 .project-gallery-arrow-prev { left: 0.8rem; }
 .project-gallery-arrow-next { right: 0.8rem; }
 
@@ -1149,8 +1179,10 @@ body.project-modal-open {
     border-radius: 999px;
 }
 
-.pgp-key-block::-webkit-scrollbar-thumb:hover {
-    background-color: #8a8f98;
+@media (hover: hover) and (pointer: fine) {
+    .pgp-key-block::-webkit-scrollbar-thumb:hover {
+        background-color: #8a8f98;
+    }
 }
 
 #back-to-top {
@@ -1180,9 +1212,11 @@ body.project-modal-open {
     transform: translateY(0);
 }
 
-#back-to-top:hover {
-    box-shadow: 0 8px 20px var(--shadow-hover-color);
-    transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+    #back-to-top:hover {
+        box-shadow: 0 8px 20px var(--shadow-hover-color);
+        transform: scale(1.1);
+    }
 }
 
 @media screen and (max-width: 768px) {
