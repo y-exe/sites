@@ -4,6 +4,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   runtimeConfig: {
     githubToken: process.env.GITHUB_TOKEN,
+    spotifyClientId: process.env.SPOTIFY_CLIENT_ID || '',
+    spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',
+    spotifyRefreshToken: process.env.SPOTIFY_REFRESH_TOKEN || '',
     public: {
       gaId: process.env.GA_ID || process.env.NUXT_PUBLIC_GA_ID || ''
     }
