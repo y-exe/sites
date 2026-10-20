@@ -4,6 +4,7 @@ const { copy } = useSiteToast()
 const { label: moodLabel } = usePlayState()
 import { useIntro } from '~/composables/useIntro'
 import { useVideoPlayback } from '~/composables/useVideoPlayback'
+import { selectListeningActivity, type ListeningActivity, type SpotifySnapshot } from '~/utils/listening-activity'
 
 const props = defineProps<{
   onScrollTo: (e: Event, id: string) => void
@@ -173,7 +174,14 @@ const playbackProgressPercent = computed(() => {
 })
 
 const primaryGuild = ref<{ tag: string, badgeUrl: string } | null>(null)
-const currentActivity = ref<{ name: string, details: string, state: string, iconUrl: string, timestamps?: { start?: number, end?: number } } | null>(null)
+const discordActivity = ref<ListeningActivity | null>(null)
+const spotifySnapshot = ref<SpotifySnapshot | null>(null)
+const spotifyCheckedAt = ref(0)
+const currentActivity = computed(() => selectListeningActivity(
+  discordActivity.value,
+  nowMs.value - spotifyCheckedAt.value < 30_000 ? spotifySnapshot.value : null,
+  nowMs.value,
+))
 
 let disposed = false
 let reconnect: ReturnType<typeof setTimeout> | undefined
@@ -181,6 +189,38 @@ let ws: WebSocket | null = null
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null
 const nowMs = ref(Date.now())
 let timeInterval: ReturnType<typeof setInterval> | null = null
+let spotifyTimer: ReturnType<typeof setTimeout> | undefined
+let spotifyRequest: AbortController | null = null
+
+const pollSpotify = async () => {
+  if (disposed || spotifyRequest) return
+  clearTimeout(spotifyTimer)
+  if (documentVisibility.value !== 'visible') return
+  const controller = new AbortController()
+  spotifyRequest = controller
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+  try {
+    const response = await fetch('/api/spotify', { signal: controller.signal, cache: 'no-store' })
+    if (!response.ok) throw new Error('Spotify unavailable')
+    const snapshot = await response.json()
+    if (typeof snapshot.available !== 'boolean') throw new Error('Invalid Spotify response')
+    if (!disposed) {
+      spotifySnapshot.value = snapshot
+      spotifyCheckedAt.value = Date.now()
+    }
+  } catch {
+    if (!disposed) spotifySnapshot.value = null
+  } finally {
+    clearTimeout(timeout)
+    spotifyRequest = null
+    if (!disposed && documentVisibility.value === 'visible') spotifyTimer = setTimeout(pollSpotify, 15_000)
+  }
+}
+
+watch(documentVisibility, visibility => {
+  if (visibility === 'visible') void pollSpotify()
+  else clearTimeout(spotifyTimer)
+})
 
 const connectLanyard = () => {
   if (disposed) return
@@ -206,6 +246,7 @@ const connectLanyard = () => {
 
   ws.onclose = () => {
     discordStatus.value = 'unknown'
+    discordActivity.value = null
     if (heartbeatInterval) clearInterval(heartbeatInterval)
     if (!disposed) reconnect = setTimeout(connectLanyard, 5000)
   }
@@ -264,7 +305,7 @@ const updateDiscordData = (data: any) => {
         iconUrl = `https://cdn.discordapp.com/app-assets/${otherAct.application_id}/${largeImg}.png`
       }
     }
-    currentActivity.value = {
+    discordActivity.value = {
       name: otherAct.name,
       details: otherAct.details || '',
       state: otherAct.state || '',
@@ -276,14 +317,14 @@ const updateDiscordData = (data: any) => {
       fetch(`https://discord.com/api/v10/applications/${otherAct.application_id}/rpc`)
         .then(res => res.json())
         .then(appData => {
-          if (appData.icon && currentActivity.value && currentActivity.value.name === otherAct.name) {
-            currentActivity.value.iconUrl = `https://cdn.discordapp.com/app-icons/${otherAct.application_id}/${appData.icon}.webp`
+          if (appData.icon && discordActivity.value && discordActivity.value.name === otherAct.name) {
+            discordActivity.value.iconUrl = `https://cdn.discordapp.com/app-icons/${otherAct.application_id}/${appData.icon}.webp`
           }
         })
         .catch(err => console.error('Failed to fetch app icon:', err))
     }
   } else if (data.spotify) {
-    currentActivity.value = {
+    discordActivity.value = {
       name: 'Spotify',
       details: data.spotify.song,
       state: data.spotify.artist,
@@ -291,7 +332,7 @@ const updateDiscordData = (data: any) => {
       timestamps: data.spotify.timestamps
     }
   } else {
-    currentActivity.value = null
+    discordActivity.value = null
   }
 }
 
@@ -301,6 +342,7 @@ const copyEmail = () => {
 
 onMounted(() => {
   connectLanyard()
+  void pollSpotify()
   timeInterval = setInterval(() => { nowMs.value = Date.now() }, 1000)
   document.addEventListener('click', closeHistoryOnOutsideClick)
   document.addEventListener('keydown', closeHistoryOnEscape)
@@ -309,6 +351,8 @@ onMounted(() => {
 onUnmounted(() => {
   disposed = true
   clearTimeout(reconnect)
+  clearTimeout(spotifyTimer)
+  spotifyRequest?.abort()
   if (ws) ws.close()
   if (heartbeatInterval) clearInterval(heartbeatInterval)
   if (timeInterval) clearInterval(timeInterval)

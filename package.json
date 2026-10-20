@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "spotify:auth": "node scripts/spotify-auth.mjs",
+    "test:spotify": "node --experimental-strip-types --test tests/spotify.test.mjs",
     "test:tooltip": "node --experimental-strip-types --test tests/tooltip.test.mjs",
     "test:sound": "node --experimental-strip-types --test tests/interaction-audio.test.ts tests/interaction-sound.test.mjs",
     "test:theme": "node --test tests/theme.test.mjs",
