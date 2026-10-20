@@ -477,10 +477,10 @@ onUnmounted(() => {
           <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
           <span class="contact-username-pill">@y-exe</span>
         </a>
-        <a href="https://t.me/y_exe" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <button type="button" disabled class="contact-item intro-sequence" data-original-look :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
           <span class="contact-username-pill">@y_exe</span>
-        </a>
+        </button>
         <a href="https://signal.me/#eu/coWGpls-QtNkrqZ8-wohlyrkC35mfWNncnTFRuoU_q6P9mXTqnpDp4h1g05dWLTY" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
           <span class="contact-username-pill">@yexe.77</span>

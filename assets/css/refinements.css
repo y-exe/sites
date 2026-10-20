@@ -290,6 +290,7 @@ button.contact-item { font: inherit; text-align: left; }
 }
 
 .contact-item[data-original-look] { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; cursor: pointer; }
+.contact-item[data-original-look]:disabled { cursor: default; pointer-events: none; opacity: .5; }
 .theme-system { width: 36px; height: 36px; color: var(--active-text); }
 .history-trigger { width: 28px; height: 28px; border-radius: 8px; }
 .history-trigger .site-icon { transition: transform .35s var(--ease-out-expo); }

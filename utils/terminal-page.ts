@@ -118,7 +118,6 @@ const httpiePage = JSON.stringify({
     github: 'https://github.com/y-exe',
     x: 'https://x.com/y__exe',
     discord: 'https://discord.com/users/483307286513582090',
-    telegram: 'https://t.me/y_exe',
     email: 'y.exe.1201@proton.me'
   }
 }, null, 2) + '\n'
