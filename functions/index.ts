@@ -9,7 +9,11 @@ const playfulHeaders = {
 
 export const onRequest = async ({ request, next }: { request: Request; next: () => Promise<Response> }) => {
   const userAgent = request.headers.get('user-agent') || ''
-  const path = new URL(request.url).pathname
+  const requestUrl = new URL(request.url)
+  const path = requestUrl.pathname
+  const onionHeaders = requestUrl.protocol === 'https:' && requestUrl.hostname === 'yexe.net'
+    ? { 'Onion-Location': `http://yexenetrw3zrn2hqgrzm5qe24ww4ilh2df3ftm5d5rziu7nvm7iajgid.onion${path}${requestUrl.search}` }
+    : {}
 
   if (path === '/' && isTerminalClient(userAgent)) {
     const terminal = terminalPageFor(userAgent)
@@ -19,7 +23,8 @@ export const onRequest = async ({ request, next }: { request: Request; next: () 
         'Cache-Control': 'public, max-age=300',
         'Vary': 'User-Agent',
         ...(terminal.downloadName ? { 'Content-Disposition': `attachment; filename="${terminal.downloadName}"` } : {}),
-        ...playfulHeaders
+        ...playfulHeaders,
+        ...onionHeaders
       }
     })
   }
@@ -27,5 +32,6 @@ export const onRequest = async ({ request, next }: { request: Request; next: () 
   const response = await next()
   const headers = new Headers(response.headers)
   Object.entries(playfulHeaders).forEach(([name, value]) => headers.set(name, value))
+  Object.entries(onionHeaders).forEach(([name, value]) => headers.set(name, value))
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
