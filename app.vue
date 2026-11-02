@@ -1,5 +1,5 @@
 <template>
-  <NuxtPage />
+  <NuxtPage page-key="portfolio" />
 </template>
 
 <style>

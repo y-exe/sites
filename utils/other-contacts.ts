@@ -4,7 +4,7 @@ export const otherContacts = [
     logoUrl: 'https://www.google.com/s2/favicons?domain=element.io&sz=64',
     value: 'yexe',
     copyValue: '@yexe:matrix.org',
-    href: 'https://matrix.to/#/@yexe:matrix.org'
+    href: '/matrix'
   },
   {
     label: 'Session',
@@ -16,13 +16,13 @@ export const otherContacts = [
     label: 'Spotify',
     logoUrl: 'https://www.google.com/s2/favicons?domain=open.spotify.com&sz=64',
     value: "(*'▽')",
-    href: 'https://open.spotify.com/user/31n5nex7qn7xy3of33wft4dl5ine'
+    href: '/spotify'
   },
   {
     label: 'VRchat',
     logoUrl: 'https://www.google.com/s2/favicons?domain=vrchat.com&sz=64',
     value: 'y_exe',
-    href: 'https://vrchat.com/home/user/usr_ed7337f3-110d-4669-87a3-2d2c4b734e4a'
+    href: '/vrchat'
   },
   {
     label: 'Genshin',
@@ -43,6 +43,6 @@ export const otherContacts = [
     label: 'sizu.me',
     logoUrl: 'https://www.google.com/s2/favicons?domain=sizu.me&sz=64',
     value: 'yexe',
-    href: 'https://sizu.me/yexe'
+    href: '/sizume'
   }
 ]

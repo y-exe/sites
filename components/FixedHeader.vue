@@ -23,12 +23,12 @@ const headerClasses = computed(() => ({
 <template>
   <div :inert="isScrolledDown">
     <div class="header-fixed-item shields-container intro-sequence tw:fixed tw:top-6 tw:left-6 tw:z-[1000] tw:flex tw:flex-col tw:items-start tw:gap-2" :ref="setIntroRef" data-reveal="down" :class="headerClasses">
-      <a href="https://github.com/y-exe/sites" target="_blank" rel="noopener noreferrer" class="tw:inline-flex tw:items-center tw:overflow-hidden tw:rounded-[3px]">
+      <a href="/github/sites" target="_blank" rel="noopener noreferrer" class="tw:inline-flex tw:items-center tw:overflow-hidden tw:rounded-[3px]">
         <img class="shields-badge tw:bg-[#555]" :src="lastCommitLabelUrl" alt="Last Commit" height="20" loading="eager">
         <img class="shields-badge tw:bg-[#007ec6]" :src="lastCommitBadgeUrl" alt="最終コミット日時" height="20" loading="eager">
       </a>
-      <a href="https://github.com/y-exe" target="_blank" rel="noopener noreferrer"><img class="shields-badge" src="https://img.shields.io/badge/Github-y--exe-007ec6?style=flat&amp;labelColor=555&amp;logo=github&amp;logoColor=white" alt="Github y-exe" height="20" loading="eager"></a>
-      <a href="https://x.com/y__exe" target="_blank" rel="noopener noreferrer"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y____exe-007ec6?style=flat&amp;labelColor=555&amp;logo=x&amp;logoColor=white" alt="Twitter(X) @y__exe" height="20" loading="eager"></a>
+      <a href="/github" target="_blank" rel="noopener noreferrer"><img class="shields-badge" src="https://img.shields.io/badge/Github-y--exe-007ec6?style=flat&amp;labelColor=555&amp;logo=github&amp;logoColor=white" alt="Github y-exe" height="20" loading="eager"></a>
+      <a href="/x" target="_blank" rel="noopener noreferrer"><img class="shields-badge" src="https://img.shields.io/badge/Twitter(X)-@y____exe-007ec6?style=flat&amp;labelColor=555&amp;logo=x&amp;logoColor=white" alt="Twitter(X) @y__exe" height="20" loading="eager"></a>
     </div>
 
     <div id="getloli-counter" class="header-fixed-item intro-sequence tw:fixed tw:top-4 tw:right-6 tw:z-[1000] tw:flex tw:flex-col tw:items-center" :ref="setIntroRef" data-reveal="down" :class="headerClasses">

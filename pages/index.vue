@@ -5,6 +5,9 @@ import { useProjectResults } from '~/composables/useProjectResults'
 import { useSharedObserver } from '~/composables/useSharedObserver'
 import { otherContactLogoUrls } from '~/utils/preload-assets'
 import { provide, watch } from 'vue'
+import { portfolioSection } from '~/utils/site-links'
+
+definePageMeta({ key: 'portfolio' })
 
 useSeoMeta({
   title: "yexe/(*'▽') Portfolio | yexe.net",
@@ -41,12 +44,12 @@ useHead({
 
 const route = useRoute()
 const router = useRouter()
-const requestedProject = computed(() => typeof route.query.project === 'string' ? route.query.project : null)
+const requestedProject = computed(() => typeof route.params.project === 'string' ? route.params.project
+  : typeof route.query.project === 'string' ? route.query.project : null)
+const openProjectLink = (name: string) => { void router.push(`/project/${encodeURIComponent(name)}`) }
 const clearProjectLink = () => {
-  if (route.query.project === undefined) return
-  const query = { ...route.query }
-  delete query.project
-  void router.replace({ query, hash: route.hash })
+  if (!requestedProject.value) return
+  void router.push('/project')
 }
 
 const isLoading = ref(true)
@@ -125,6 +128,22 @@ const startIntroSequence = () => {
 }
 
 const scrollToAnchor = useSectionNavigation(() => lenis.value)
+const sectionNavigationActive = useState('section-navigation-active', () => false)
+watch([() => route.fullPath, isLoading], async () => {
+  if (!import.meta.client || isLoading.value || sectionNavigationActive.value) return
+  if (['#projects', '#about', '#top'].includes(route.hash)) {
+    const path = route.path === '/' ? route.hash === '#projects' ? '/project' : route.hash === '#about' ? '/about' : '/' : route.path
+    void router.replace({ path, query: route.query, hash: '' })
+    return
+  }
+  await nextTick()
+  const id = portfolioSection(route.path, route.hash)
+  const target = document.querySelector<HTMLElement>(id)
+  if (!target) return
+  if (lenis.value) lenis.value.scrollTo(id === '#top' ? 0 : target, { immediate: true })
+  else if (id === '#top') window.scrollTo({ top: 0, behavior: 'instant' })
+  else target.scrollIntoView({ behavior: 'instant' })
+}, { immediate: true, flush: 'sync' })
 
 watch(themeTriggerEl, (newEl) => {
   if (newEl) {
@@ -208,7 +227,7 @@ onMounted(() => {
       <main>
         <HeroSection :on-scroll-to="scrollToAnchor" @open-pgp="showPgpModal = true" />
 
-        <ProjectsSection :projects="projects" :status="projectStatus" :requested-project="!isLoading ? requestedProject : null" @close-link="clearProjectLink" @retry="refreshProjects()" />
+        <ProjectsSection :projects="projects" :status="projectStatus" :requested-project="!isLoading ? requestedProject : null" @open-link="openProjectLink" @close-link="clearProjectLink" @retry="refreshProjects()" />
 
         <AboutSection />
       </main>
@@ -219,7 +238,7 @@ onMounted(() => {
     <SiteTooltip />
     <PlayLab />
 
-    <a href="#top" id="back-to-top" aria-label="トップに戻る" data-tooltip="トップに戻る" :tabindex="isScrolledEnough ? 0 : -1" :class="{ 'visible': isScrolledEnough }" @click="scrollToAnchor($event, '#top')">
+    <a href="/" id="back-to-top" aria-label="トップに戻る" data-tooltip="トップに戻る" :tabindex="isScrolledEnough ? 0 : -1" :class="{ 'visible': isScrolledEnough }" @click="scrollToAnchor($event, '#top')">
       <SiteIcon name="up" :size="22"/>
     </a>
   </div>

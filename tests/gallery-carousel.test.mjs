@@ -28,6 +28,7 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     .replace("from '~/utils/project-search'", `from '${new URL('../utils/project-search.ts', import.meta.url).href}'`)
     .replace("from '~/utils/project-shields'", `from '${new URL('../utils/project-shields.ts', import.meta.url).href}'`)
     .replace("from '~/utils/project-tags'", `from '${new URL('../utils/project-tags.ts', import.meta.url).href}'`)
+    .replace("from '~/utils/site-links'", `from '${new URL('../utils/site-links.ts', import.meta.url).href}'`)
     .replace("import ProjectGalleryImage from './ProjectGalleryImage.vue'", 'const ProjectGalleryImage = {}')
     .replace("import ProjectDescription from './ProjectDescription.vue'", 'const ProjectDescription = {}')
     .replace("import ProjectTagFilter from './ProjectTagFilter.vue'", 'const ProjectTagFilter = {}')
@@ -109,13 +110,13 @@ test('carousel gives each decoded image four seconds and pauses for interaction 
     state().selectedProject = { id: 2, name: 'DiscordWebBotClient' }
     await nextTick()
     await state().copyProjectLink()
-    assert.equal(getCopiedProjectLink(), 'https://yexe.net/?project=DiscordWebBotClient#projects')
+    assert.equal(getCopiedProjectLink(), 'https://yexe.net/project/DiscordWebBotClient')
     assert.equal(state().projectLinkCopied, true)
     state().selectedProject = { id: 3, name: 'different-project' }
     await nextTick()
     assert.equal(state().projectLinkCopied, false)
     await state().copyProjectLink()
-    assert.equal(getCopiedProjectLink(), 'https://yexe.net/?project=different-project#projects')
+    assert.equal(getCopiedProjectLink(), 'https://yexe.net/project/different-project')
   })
 
   await t.test('tag filtering and reopening project details reset the gallery and preserve return focus', async () => {

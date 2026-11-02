@@ -2,6 +2,7 @@
 import { languageIcons } from '~/utils/language-icons'
 import { getReadmeShields, type ProjectShield } from '~/utils/project-shields'
 import { getProjectTags, getProjectTagCounts } from '~/utils/project-tags'
+import { outboundPathFor } from '~/utils/site-links'
 import ProjectGalleryImage from './ProjectGalleryImage.vue'
 import ProjectDescription from './ProjectDescription.vue'
 import ProjectTagFilter from './ProjectTagFilter.vue'
@@ -9,7 +10,7 @@ import { useGallerySwipe } from '~/composables/useGallerySwipe'
 import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps<{ projects: any[] | null; status: string; requestedProject?: string | null }>()
-const emit = defineEmits<{ retry: []; 'close-link': [] }>()
+const emit = defineEmits<{ retry: []; 'close-link': []; 'open-link': [name: string] }>()
 const { copy } = useSiteToast()
 const projectLinkCopied = ref(false)
 let projectLinkTimer: ReturnType<typeof setTimeout> | undefined
@@ -110,7 +111,10 @@ const relativeUpdate = (date: string) => {
 
 const openProject = (repo: any, fromLink = false) => {
   projectReturnFocus.value = fromLink ? document.getElementById('projects') : document.activeElement as HTMLElement
-  if (!fromLink && props.requestedProject) { linkedProjectName = null; emit('close-link') }
+  if (!fromLink) {
+    linkedProjectName = repo.name
+    emit('open-link', repo.name)
+  }
   selectedProject.value = repo
 }
 
@@ -122,9 +126,7 @@ const closeProject = () => {
 
 const copyProjectLink = async () => {
   if (!selectedProject.value) return
-  const url = new URL('/', window.location.origin)
-  url.searchParams.set('project', selectedProject.value.name)
-  url.hash = 'projects'
+  const url = new URL(`/project/${encodeURIComponent(selectedProject.value.name)}`, window.location.origin)
   projectLinkCopied.value = await copy(url.href, 'プロジェクトのURLをコピーしました')
   clearTimeout(projectLinkTimer)
   projectLinkTimer = setTimeout(() => { projectLinkCopied.value = false }, 2200)
@@ -386,7 +388,7 @@ onUnmounted(() => {
             <div :key="selectedProject.id" class="project-modal-body tw:grid tw:max-h-[min(66vh,40rem)] tw:grid-cols-[minmax(0,1fr)_minmax(12rem,16rem)] tw:overflow-hidden tw:bg-[var(--card-bg-color)]">
               <main class="project-modal-readme tw:min-h-0 tw:overflow-y-auto tw:px-[clamp(1.35rem,5vw,3rem)] tw:py-[clamp(1.35rem,4vw,2.4rem)]">
                 <div v-if="projectDetails[selectedProject.id]?.shields.length" class="project-modal-badges project-modal-description-in" aria-label="プロジェクトのバッジ">
-                  <component :is="shield.href ? 'a' : 'span'" v-for="shield in projectDetails[selectedProject.id].shields" :key="shield.src" class="tw:inline-flex tw:max-w-full" :href="shield.href" :target="shield.href ? '_blank' : undefined" :rel="shield.href ? 'noopener noreferrer' : undefined" :aria-label="shield.href ? `${shield.alt}（新しいタブで開く）` : undefined">
+                  <component :is="shield.href ? 'a' : 'span'" v-for="shield in projectDetails[selectedProject.id].shields" :key="shield.src" class="tw:inline-flex tw:max-w-full" :href="shield.href ? outboundPathFor(shield.href) : undefined" :target="shield.href ? '_blank' : undefined" :rel="shield.href ? 'noopener noreferrer' : undefined" :aria-label="shield.href ? `${shield.alt}（新しいタブで開く）` : undefined">
                     <img :src="shield.src" :alt="shield.alt" />
                   </component>
                 </div>
@@ -403,7 +405,7 @@ onUnmounted(() => {
               </main>
               <aside class="project-modal-sidebar project-modal-sidebar-in tw:min-h-0 tw:overflow-y-auto tw:bg-[color-mix(in_srgb,var(--pill-bg-color)_48%,transparent)] tw:p-[clamp(1.35rem,3vw,2rem)]" aria-label="プロジェクト情報">
                 <h3 class="project-modal-sidebar-heading-in tw:mt-0 tw:mb-[0.9rem] tw:text-[1.35rem] tw:leading-normal tw:text-[var(--active-text)]">関連サイト</h3>
-                <ProjectRelatedLink v-if="projectHomepage" :href="projectHomepage" />
+                <ProjectRelatedLink v-if="projectHomepage" :href="projectHomepage" :via="`/project/${encodeURIComponent(selectedProject.name)}/website`" />
                 <ProjectRelatedLink :href="selectedProject.html_url" />
                 <dl class="project-facts project-modal-sidebar-in"><template v-if="selectedProject.language"><dt>主な言語</dt><dd><img v-if="languageIcons[selectedProject.language]" class="project-language-icon" :src="`/icons/languages/${languageIcons[selectedProject.language]}.svg`" alt="" />{{ selectedProject.language }}</dd></template><template v-if="selectedProject.license"><dt>ライセンス</dt><dd>{{ selectedProject.license.spdx_id || selectedProject.license.name }}</dd></template><dt>GitHub</dt><dd><SiteIcon name="star" :size="15"/>{{ selectedProject.stargazers_count || 0 }}<SiteIcon name="fork" :size="15"/>{{ selectedProject.forks_count || 0 }}</dd></dl>
               </aside>

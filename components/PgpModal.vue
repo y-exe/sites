@@ -9,7 +9,7 @@ const otherContacts = [
     logoUrl: 'https://www.google.com/s2/favicons?domain=element.io&sz=64',
     value: 'yexe',
     copyValue: '@yexe:matrix.org',
-    href: 'https://matrix.to/#/@yexe:matrix.org'
+    href: '/matrix'
   },
   {
     label: 'Session',
@@ -21,13 +21,13 @@ const otherContacts = [
     label: 'Minecraft',
     logoUrl: 'https://www.google.com/s2/favicons?domain=minecraft.net&sz=64',
     value: 'y_exe',
-    href: 'https://namemc.com/profile/y_exe'
+    href: '/minecraft'
   },
   {
     label: 'VRchat',
     logoUrl: 'https://www.google.com/s2/favicons?domain=vrchat.com&sz=64',
     value: 'y_exe',
-    href: 'https://vrchat.com/home/user/usr_ed7337f3-110d-4669-87a3-2d2c4b734e4a'
+    href: '/vrchat'
   },
   {
     label: 'Genshin',
@@ -48,7 +48,7 @@ const otherContacts = [
     label: 'Annict',
     logoUrl: 'https://www.google.com/s2/favicons?domain=annict.com&sz=64',
     value: 'yexe',
-    href: 'https://annict.com/@yexe/watched'
+    href: '/annict'
   }
 ]
 

@@ -1,6 +1,18 @@
 import tailwindcss from '@tailwindcss/vite'
+import { contactDestinations } from './utils/site-links'
 
 export default defineNuxtConfig({
+  hooks: {
+    'pages:extend'(pages) {
+      const index = pages.find(page => page.path === '/')
+      if (!index?.file) return
+      pages.push(
+        { name: 'project', path: '/project', file: index.file },
+        { name: 'project-detail', path: '/project/:project', file: index.file },
+        { name: 'about', path: '/about', file: index.file },
+      )
+    }
+  },
   compatibilityDate: '2024-04-03',
   runtimeConfig: {
     githubToken: process.env.GITHUB_TOKEN,
@@ -12,6 +24,9 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
+    prerender: {
+      ignore: [...Object.keys(contactDestinations), /^\/project\/[^/]+\/website(?:\/|$)/]
+    },
     output: {
       publicDir: 'dist'
     }

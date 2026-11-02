@@ -1,4 +1,4 @@
-import { tinoPixelRows, tinoWidth } from './tino-art'
+import { tinoPixelRows, tinoWidth } from './tino-art.ts'
 
 const pixelAt = (row: number, column: number): string | null => {
   const pixel = tinoPixelRows[row]?.slice(column * 6, column * 6 + 6)
@@ -56,9 +56,9 @@ const info = [
   keyValue('Frontend', 'TS · JS · Vue · Nuxt.js · React · Next.js · Astro'),
   keyValue('Backend', 'Node.js · Python · Go · Java · Kotlin'),
   '',
-  keyValue('GitHub', hyperlink('https://github.com/y-exe', '@y-exe'), '#6da7f2'),
-  keyValue('X', hyperlink('https://x.com/y__exe', '@y__exe'), '#a0b1ed'),
-  keyValue('Discord', hyperlink('https://discord.com/users/483307286513582090', '@y_exe'), '#8e93e1'),
+  keyValue('GitHub', hyperlink('https://yexe.net/github', '@y-exe'), '#6da7f2'),
+  keyValue('X', hyperlink('https://yexe.net/x', '@y__exe'), '#a0b1ed'),
+  keyValue('Discord', hyperlink('https://yexe.net/discord', '@y_exe'), '#8e93e1'),
   keyValue('Website', hyperlink('https://yexe.net', 'https://yexe.net'), '#38427D'),
   '',
   `  ${colorSwatches}`,
@@ -86,9 +86,9 @@ const wgetDownload = [
   'Frontend: TypeScript, JavaScript, Vue, Nuxt, React, Next.js, Astro',
   'Backend: Node.js, Python, Go, Java, Kotlin, PostgreSQL',
   '',
-  'GitHub: https://github.com/y-exe',
-  'X: https://x.com/y__exe',
-  'Discord: https://discord.com/users/483307286513582090',
+  'GitHub: https://yexe.net/github',
+  'X: https://yexe.net/x',
+  'Discord: https://yexe.net/discord',
   'Website: https://yexe.net',
   ''
 ].join('\n')
@@ -99,8 +99,8 @@ const httpiePage = JSON.stringify({
     type: 'portfolio',
     language: 'ja',
     sections: {
-      projects: 'https://yexe.net/#projects',
-      about: 'https://yexe.net/#about'
+      projects: 'https://yexe.net/project',
+      about: 'https://yexe.net/about'
     }
   },
   person: {
@@ -115,9 +115,9 @@ const httpiePage = JSON.stringify({
     IDEs: ['VS Code', 'IntelliJ IDEA', 'Vim']
   },
   contact: {
-    github: 'https://github.com/y-exe',
-    x: 'https://x.com/y__exe',
-    discord: 'https://discord.com/users/483307286513582090',
+    github: 'https://yexe.net/github',
+    x: 'https://yexe.net/x',
+    discord: 'https://yexe.net/discord',
     email: 'y.exe.1201@proton.me'
   }
 }, null, 2) + '\n'

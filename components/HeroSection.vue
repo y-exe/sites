@@ -5,6 +5,7 @@ const { label: moodLabel } = usePlayState()
 import { useIntro } from '~/composables/useIntro'
 import { useVideoPlayback } from '~/composables/useVideoPlayback'
 import { selectListeningActivity, type ListeningActivity, type SpotifySnapshot } from '~/utils/listening-activity'
+import { discordUserId } from '~/utils/site-links'
 
 const props = defineProps<{
   onScrollTo: (e: Event, id: string) => void
@@ -13,8 +14,7 @@ const props = defineProps<{
 const emit = defineEmits(['open-pgp'])
 const { setIntroRef } = useIntro()
 
-const discordUserId = '483307286513582090'
-const discordProfileUrl = `https://discord.com/users/${discordUserId}`
+const discordProfileUrl = '/discord'
 
 const discordStatus = ref('unknown')
 const discordStatusLabels: Record<string, string> = { online: 'オンライン', idle: '退席中', dnd: '取り込み中', offline: 'オフライン', unknown: '状況を確認中' }
@@ -396,8 +396,8 @@ onUnmounted(() => {
     </header>
 
     <div class="quick-nav-buttons intro-sequence tw:mt-3 tw:flex tw:gap-[0.8rem]" :ref="setIntroRef" v-reveal data-reveal="up">
-      <a href="#projects" class="quick-nav-btn btn-primary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:bg-[var(--btn-primary-bg)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--btn-primary-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#projects')">Projects <SiteIcon name="arrow" :size="19"/></a>
-      <a href="#about" class="quick-nav-btn btn-secondary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:border-2 tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--active-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#about')">About <SiteIcon name="arrow" :size="19"/></a>
+      <a href="/project" class="quick-nav-btn btn-primary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:bg-[var(--btn-primary-bg)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--btn-primary-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#projects')">Projects <SiteIcon name="arrow" :size="19"/></a>
+      <a href="/about" class="quick-nav-btn btn-secondary tw:inline-flex tw:items-center tw:gap-[0.5em] tw:rounded-full tw:border-2 tw:border-[var(--card-border-color)] tw:bg-[var(--card-bg-color)] tw:px-[1.5em] tw:py-[0.7em] tw:font-bold tw:text-[var(--active-text)] tw:no-underline tw:transition-[transform,box-shadow] tw:duration-200 tw:hover:scale-105 tw:hover:shadow-[0_6px_15px_var(--shadow-hover-color)]" @click="onScrollTo($event, '#about')">About <SiteIcon name="arrow" :size="19"/></a>
     </div>
     
     <div class="contact-section">
@@ -469,11 +469,11 @@ onUnmounted(() => {
           <i class="fa-brands fa-discord discord-icon"></i>
         </a>
         
-        <a href="https://x.com/y__exe" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="/x" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-twitter"></i><span class="contact-name">Twitter</span></div>
           <span class="contact-username-pill">@y__exe</span>
         </a>
-        <a href="https://github.com/y-exe" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="/github" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-github"></i><span class="contact-name">GitHub</span></div>
           <span class="contact-username-pill">@y-exe</span>
         </a>
@@ -481,7 +481,7 @@ onUnmounted(() => {
           <div class="contact-info-left"><i class="fa-brands fa-telegram"></i><span class="contact-name">Telegram</span></div>
           <span class="contact-username-pill">@y_exe</span>
         </button>
-        <a href="https://signal.me/#eu/coWGpls-QtNkrqZ8-wohlyrkC35mfWNncnTFRuoU_q6P9mXTqnpDp4h1g05dWLTY" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
+        <a href="/signal" target="_blank" rel="noopener noreferrer" class="contact-item intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
           <div class="contact-info-left"><i class="fa-brands fa-signal-messenger"></i><span class="contact-name">Signal</span></div>
           <span class="contact-username-pill">@yexe.77</span>
         </a>
@@ -495,7 +495,7 @@ onUnmounted(() => {
         </button>
         
         <div class="server-status intro-sequence" :ref="setIntroRef" v-reveal data-reveal="up">
-          <a class="icon-button server-status-link" href="https://status.yexe.xyz/status/all" target="_blank" rel="noopener noreferrer" aria-label="ステータスページを新しいタブで開く" data-tooltip="ステータスページを開く"><SiteIcon name="external" :size="18"/></a>
+          <a class="icon-button server-status-link" href="/status" target="_blank" rel="noopener noreferrer" aria-label="ステータスページを新しいタブで開く" data-tooltip="ステータスページを開く"><SiteIcon name="external" :size="18"/></a>
           <h3 aria-label="起動状況" class="hover-highlight" v-split-text>
             <span v-for="(char, i) in `起動状況`.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
           </h3>
@@ -507,7 +507,7 @@ onUnmounted(() => {
       </div>
     </div>
     
-    <a href="#projects" id="scroll-down-container" class="intro-sequence tw:absolute tw:bottom-12 tw:flex tw:flex-col tw:items-center tw:text-[var(--text-muted-color)] tw:no-underline tw:animate-[bounce_2s_infinite] tw:hover:text-[var(--active-text)]" :ref="setIntroRef" aria-label="Scroll to Projects" v-reveal data-reveal="up" @click="onScrollTo($event, '#projects')">
+    <a href="/project" id="scroll-down-container" class="intro-sequence tw:absolute tw:bottom-12 tw:flex tw:flex-col tw:items-center tw:text-[var(--text-muted-color)] tw:no-underline tw:animate-[bounce_2s_infinite] tw:hover:text-[var(--active-text)]" :ref="setIntroRef" aria-label="Scroll to Projects" v-reveal data-reveal="up" @click="onScrollTo($event, '#projects')">
       <span class="scroll-down-text tw:mb-[0.5em] tw:text-[0.9em] tw:font-bold tw:[font-family:var(--font-display)]">Projects</span>
       <SiteIcon name="chevron" :size="24" class="scroll-down-icon"/>
     </a>
