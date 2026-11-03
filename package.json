@@ -5,6 +5,7 @@
   "scripts": {
     "test:onion": "node --experimental-strip-types --test tests/onion-location.test.mjs",
     "test:routes": "node --experimental-strip-types --test tests/site-routing.test.mjs",
+    "test:navigation": "node --experimental-strip-types --test tests/portfolio-navigation.test.mjs",
     "spotify:auth": "node scripts/spotify-auth.mjs",
     "test:spotify": "node --experimental-strip-types --test tests/spotify.test.mjs",
     "test:tooltip": "node --experimental-strip-types --test tests/tooltip.test.mjs",

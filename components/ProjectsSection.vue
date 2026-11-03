@@ -338,7 +338,6 @@ onUnmounted(() => {
     <h2 aria-label="Projects" class="section-title hover-highlight" v-split-text>
       <span v-for="(char, i) in `Projects`.split('')" :key="i" aria-hidden="true" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>
     </h2>
-    <div class="projects-source-wrap" v-reveal><p class="projects-source"><img class="github-lockup" src="/github-lockup.png" alt="GitHub" /><span>より</span></p></div>
     <div v-if="projects?.length" class="project-toolbar" v-reveal>
       <ProjectTagFilter :active="selectedTag" :tags="projectTagFilters" :total="projects.length" @select="selectedTag = $event" />
     </div>

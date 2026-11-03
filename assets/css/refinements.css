@@ -37,8 +37,7 @@ body { -webkit-font-smoothing: antialiased; }
 .quick-nav-buttons { align-items: center; }
 .nav-theme-controls { position: absolute; right: 1.5rem; display: flex; align-items: center; gap: 4px; }
 .nav-links a { position: relative; padding: 7px 12px; margin: -7px -12px; border-radius: 9px; background: transparent; transition: background-color .24s cubic-bezier(.22, 1, .36, 1); }
- .nav-links a:focus-visible { background: var(--pill-bg-color); }
-@media (hover: hover) and (pointer: fine) { .nav-links a:hover { background: var(--pill-bg-color); } }
+ .nav-links a:focus-visible { background: transparent; }
 .theme-icon-enter-active, .theme-icon-leave-active { transition: opacity .12s, transform .2s var(--ease-out-expo); }
 .theme-icon-enter-from { opacity: 0; transform: rotate(-45deg) scale(.65); }
 .theme-icon-leave-to { opacity: 0; transform: rotate(45deg) scale(.65); }
@@ -290,7 +289,8 @@ button.contact-item { font: inherit; text-align: left; }
 }
 
 .contact-item[data-original-look] { font-family: 'Noto Sans JP', sans-serif; font-size: 1rem; cursor: pointer; }
-.contact-item[data-original-look]:disabled { cursor: default; pointer-events: none; opacity: .5; }
+.contact-item[data-original-look]:disabled { cursor: default; pointer-events: none; }
+.contact-item[data-original-look]:disabled.is-visible { opacity: .5; }
 .theme-system { width: 36px; height: 36px; color: var(--active-text); }
 .history-trigger { width: 28px; height: 28px; border-radius: 8px; }
 .history-trigger .site-icon { transition: transform .35s var(--ease-out-expo); }
@@ -321,7 +321,7 @@ button.contact-item { font: inherit; text-align: left; }
 .selection-track { position: relative; isolation: isolate; }
 .selection-marker { position: absolute; top: 0; left: 0; z-index: -1; border-radius: 9px; background: var(--pill-bg-color); opacity: 0; pointer-events: none; }
 .nav-links a[aria-current="location"] { background: transparent; }
-@media (hover: hover) and (pointer: fine) { .nav-links a:not([aria-current="location"]):hover { background: color-mix(in srgb, var(--pill-bg-color) 65%, transparent); } }
+.nav-links .selection-marker { background: color-mix(in srgb, var(--pill-bg-color) 65%, transparent); }
 @media (max-width: 600px) { #top-nav { padding-block: 9px; } #top-nav .nav-links { gap: 4px; } #top-nav .nav-links a { margin: 0; padding: 7px 9px; } }
 .project-toolbar { display: flex; justify-content: center; align-items: center; width: 100%; margin: 0 0 24px; }
 .project-tag-carousel { display: flex; align-items: center; gap: 8px; width: min(100%, 960px); min-width: 0; }
@@ -335,10 +335,12 @@ button.contact-item { font: inherit; text-align: left; }
 .project-tag-arrow:disabled { opacity: .25; cursor: default; }
 .project-filters { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; width: max-content; padding: 4px; }
 .project-filters button, .filter-reset { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 12px; border: 0; border-radius: 9px; background: transparent; color: var(--text-muted-color); font: inherit; font-size: .82rem; cursor: pointer; transition: color .2s ease, background-color .2s ease; }
-.project-filters button { flex-shrink: 0; white-space: nowrap; }
+.project-filters button { flex-shrink: 0; white-space: nowrap; background: color-mix(in srgb, var(--pill-bg-color) 50%, transparent); }
+body.theme-2 .project-filters button[aria-pressed="false"] { background: #fff; color: #6c757d; }
 .project-filters button[aria-pressed="true"] { background: var(--active-text); color: var(--active-bg); box-shadow: 0 2px 7px var(--shadow-color); }
 .project-filters button[aria-pressed="true"] .filter-count { opacity: 1; }
-@media (hover: hover) and (pointer: fine) { .project-filters button[aria-pressed="false"]:hover { background: color-mix(in srgb, var(--pill-bg-color) 50%, transparent); color: var(--active-text); } }
+@media (hover: hover) and (pointer: fine) { .project-filters button[aria-pressed="false"]:hover { color: var(--active-text); } }
+@media (hover: hover) and (pointer: fine) { body.theme-2 .project-filters button[aria-pressed="false"]:hover { color: #212529; } }
 .project-filters img { width: 16px; height: 16px; object-fit: contain; }
 .filter-count { font-size: .7rem; font-variant-numeric: tabular-nums; opacity: .65; }
 .project-detail-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 12px; }

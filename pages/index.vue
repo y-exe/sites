@@ -5,7 +5,7 @@ import { useProjectResults } from '~/composables/useProjectResults'
 import { useSharedObserver } from '~/composables/useSharedObserver'
 import { otherContactLogoUrls } from '~/utils/preload-assets'
 import { provide, watch } from 'vue'
-import { portfolioSection } from '~/utils/site-links'
+import { PROJECT_THEME_LINE, projectThemeActive } from '~/utils/portfolio-navigation'
 
 definePageMeta({ key: 'portfolio' })
 
@@ -41,16 +41,6 @@ useHead({
     }
   ]
 })
-
-const route = useRoute()
-const router = useRouter()
-const requestedProject = computed(() => typeof route.params.project === 'string' ? route.params.project
-  : typeof route.query.project === 'string' ? route.query.project : null)
-const openProjectLink = (name: string) => { void router.push(`/project/${encodeURIComponent(name)}`) }
-const clearProjectLink = () => {
-  if (!requestedProject.value) return
-  void router.push('/project')
-}
 
 const isLoading = ref(true)
 const isFadeOut = ref(false)
@@ -127,32 +117,17 @@ const startIntroSequence = () => {
   })
 }
 
-const scrollToAnchor = useSectionNavigation(() => lenis.value)
-const sectionNavigationActive = useState('section-navigation-active', () => false)
-watch([() => route.fullPath, isLoading], async () => {
-  if (!import.meta.client || isLoading.value || sectionNavigationActive.value) return
-  if (['#projects', '#about', '#top'].includes(route.hash)) {
-    const path = route.path === '/' ? route.hash === '#projects' ? '/project' : route.hash === '#about' ? '/about' : '/' : route.path
-    void router.replace({ path, query: route.query, hash: '' })
-    return
-  }
-  await nextTick()
-  const id = portfolioSection(route.path, route.hash)
-  const target = document.querySelector<HTMLElement>(id)
-  if (!target) return
-  if (lenis.value) lenis.value.scrollTo(id === '#top' ? 0 : target, { immediate: true })
-  else if (id === '#top') window.scrollTo({ top: 0, behavior: 'instant' })
-  else target.scrollIntoView({ behavior: 'instant' })
-}, { immediate: true, flush: 'sync' })
+const { requestedProject, openProjectLink, clearProjectLink, cancelEntryNavigation } = usePortfolioNavigation(() => lenis.value, isLoading)
+const scrollToAnchor = useSectionNavigation(() => lenis.value, cancelEntryNavigation)
 
 watch(themeTriggerEl, (newEl) => {
   if (newEl) {
     sectionObserver?.disconnect()
     sectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        document.body.classList.toggle('theme-2', entry.boundingClientRect.top < 0)
+        document.body.classList.toggle('theme-2', projectThemeActive(entry.boundingClientRect.top))
       })
-    }, { threshold: [0, 1] })
+    }, { threshold: [0, 1], rootMargin: `-${PROJECT_THEME_LINE}px 0px 0px 0px` })
     sectionObserver.observe(newEl)
   }
 })
@@ -227,7 +202,7 @@ onMounted(() => {
       <main>
         <HeroSection :on-scroll-to="scrollToAnchor" @open-pgp="showPgpModal = true" />
 
-        <ProjectsSection :projects="projects" :status="projectStatus" :requested-project="!isLoading ? requestedProject : null" @open-link="openProjectLink" @close-link="clearProjectLink" @retry="refreshProjects()" />
+        <ProjectsSection :projects="projects" :status="projectStatus" :requested-project="requestedProject" @open-link="openProjectLink" @close-link="clearProjectLink" @retry="refreshProjects()" />
 
         <AboutSection />
       </main>
