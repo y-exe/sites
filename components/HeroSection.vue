@@ -368,12 +368,12 @@ onUnmounted(() => {
         <ElasticFace />
       </p>
       
-      <p class="text-line-2 intro-sequence tw:mt-0 tw:mb-[0.5rem] tw:text-[clamp(1.8rem,6vw,2.2rem)] tw:font-medium tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
+      <h1 class="text-line-2 intro-sequence tw:mt-0 tw:mb-[0.5rem] tw:text-[clamp(1.8rem,6vw,2.2rem)] tw:font-medium tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" aria-label="y_exe — ポートフォリオ" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `I'm `.split('')" :key="`im-${i}`" class="char" :style="`--char-delay: ${i*50}ms`">{{ char === ' ' ? '\u00a0' : char }}</span>
         <span class="char" :style="`--char-delay: ${4*50}ms`">
           <span class="mood-label" aria-live="polite"><Transition name="mood-change"><span :key="moodLabel" :class="{ 'mood-label-long': moodLabel.length > 10 }" class="gradient-text tw:inline-block tw:bg-clip-text tw:text-transparent tw:font-bold! tw:[background-image:var(--gradient)]" >{{ moodLabel }}</span></Transition></span>
         </span>
-      </p>
+      </h1>
       
       <p class="text-line-3 intro-sequence tw:m-0 tw:text-[clamp(0.9rem,2.5vw,1rem)] tw:text-[var(--text-muted-color)] tw:[font-family:var(--font-sans)]" :ref="setIntroRef" v-split-text>
         <span v-for="(char, i) in `自分で書いてなさ過ぎてバイブコーダー`.split('')" :key="i" class="char" :style="`--char-delay: ${i*50}ms`">{{ char }}</span>

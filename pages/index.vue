@@ -87,10 +87,11 @@ provide('registerThemeTrigger', registerThemeTrigger)
 
 const { data: fetchedProjects, status: projectStatus, refresh: refreshProjects } = await useFetch('/api/github', {
   query: { resource: 'repos' },
-  transform: (repos: any[]) => Array.isArray(repos) ? repos.filter(repo => !repo.fork) : [],
+  transform: (repos: any[]) => Array.isArray(repos) ? repos.filter(repo => !repo.fork && !repo.private) : [],
   default: () => [],
-  lazy: true,
-  server: false
+  // サーバー側 (build時 prerender) で取得してHTMLに焼き込む。ペイロードが
+  // ない環境 (トークン未設定のビルド) ではハイドレーション時に再取得される。
+  server: true
 })
 const projects = useProjectResults(fetchedProjects, projectStatus)
 
